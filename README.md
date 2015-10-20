@@ -175,7 +175,10 @@ the mailing list).
 
 ### Performance & Analysis
 
- Optimize your JavaScript and/or GLSL code. Web Tracing Framework
+**Before doing performance analysis,** you must disable debug mode by changing
+`debugMode` to `false` in `framework.js`.
+
+Optimize your JavaScript and/or GLSL code. Web Tracing Framework
 and Chrome/Firefox's profiling tools will be useful for this. For each change
 that improves performance, show the before and after render times.
 
@@ -201,11 +204,7 @@ For each *performance* feature (required or extra), please provide:
   * Show debug views when possible.
     * If the debug view correlates with performance, explain how.
 
-**Notes:**
-
-* Before doing performance analysis, you must disable debug mode by changing
-`debugMode` to `false` in `framework.js`.
-* Be aware that stats.js may give 0 millisecond frame timings in Chrome on
+Note: Be aware that stats.js may give 0 millisecond frame timings in Chrome on
 occasion - if this happens, you can use the FPS counter.
 
 ### Starter Code Tour
