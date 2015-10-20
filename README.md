@@ -76,7 +76,7 @@ You will need to perform the following tasks:
   * With normal mapping
 
 * Implement one of the following effects:
-  * Bloom using post-process box or Gaussian blur [1]
+  * Bloom using post-process blur (box or Gaussian) [1]
   * Toon shading (with ramp shading + simple edge detection for outlines)
 
 **Optimizations:**
@@ -84,8 +84,8 @@ You will need to perform the following tasks:
 * Scissor test optimization: when accumulating shading from each point
   light source, only render in a rectangle around the light.
   * Show a debug view for this (showing scissor masks clearly), e.g. by
-    modifying and using `red.frag.glsl` with additive blending
-  * Code is provided to compute this rectangle for you
+    modifying and using `red.frag.glsl` with additive blending.
+  * Code is provided to compute this rectangle for you.
 
 * Optimized g-buffer format
   * Ideas:
@@ -119,24 +119,19 @@ optimizations/analysis).
 
 **Optimizations/Analysis:**
 
-* (1pts) Improved screen-space AABB for scissor test
+* (2pts) Improved screen-space AABB for scissor test
   (smaller/more accurate than provided - but beware of CPU/GPU tradeoffs)
 
 * (3pts) Two-pass **Gaussian** blur using separable convolution (using a second
   postprocess render pass) to improve bloom or other 2D blur performance
 
-* (6pts) Tile-based deferred shading with detailed performance comparison
-  * On the CPU, check which lights overlap which tiles. Then, render each tile
-    just once for all lights (instead of once for each light), applying only
-    the overlapping lights.
-  * Show a debug view for this (number of lights per tile)
-
 * (4-6pts) Light proxies
-  * (4pts) Instead of rendering a full-screen quad for every light, render some
-    proxy geometry which covers the part of the screen affected by the light
-    (e.g. a sphere, for an attenuated point light).
+  * (4pts) Instead of rendering a scissored full-screen quad for every light,
+    render some proxy geometry which covers the part of the screen affected by
+    the light (e.g. a sphere, for an attenuated point light).
     * A model called `sphereModel` is provided which can be drawn in the same
-      way as the code in `drawScene`.
+      way as the code in `drawScene`. (Must be drawn with a vertex shader which
+      scales it to the light radius and translates it to the light position.)
   * (+2pts) To avoid lighting geometry far behind the light, render the proxy
     geometry (e.g. sphere) using an inverted depth test
     (`gl.depthFunc(gl.GREATER)`) with depth writing disabled (`gl.depthMask`).
@@ -145,13 +140,25 @@ optimizations/analysis).
     * Note that the copy pass's depth buffer must be bound to the FBO during
       this operation!
   * Show a debug view for this (showing light proxies)
+  * Compare performance of this, naive, and scissoring.
 
-* (5pts) Deferred shading without multiple render targets (i.e. without
-  WEBGL_draw_buffers).
+* (8pts) Tile-based deferred shading with detailed performance comparison
+  * On the CPU, check which lights overlap which tiles. Then, render each tile
+    just once for all lights (instead of once for each light), applying only
+    the overlapping lights.
+    * The method is described very well in
+      [Yuqin & Sijie's README](https://github.com/YuqinShao/Tile_Based_WebGL_DeferredShader/blob/master/README.md#algorithm-details).
+    * This feature requires allocating the global light list and tile light
+      index lists as shown at this link. These can be implemented as textures.
+  * Show a debug view for this (number of lights per tile)
+
+* (6pts) Deferred shading without multiple render targets
+  (i.e. without WEBGL_draw_buffers).
   * Render the scene once for each target g-buffer, each time into a different
     framebuffer object.
-  * Include a detailed performance analysis (for different models), comparing
-    with/without WEBGL_draw_buffers (like in the Mozilla blog article)
+  * Include a detailed performance analysis, comparing with/without
+    WEBGL_draw_buffers (like in the
+    [Mozilla blog article](https://hacks.mozilla.org/2014/01/webgl-deferred-shading/)).
 
 * (2-6pts) Compare performance to equivalently-lit forward-rendering:
   * (2pts) With no forward-rendering optimizations
