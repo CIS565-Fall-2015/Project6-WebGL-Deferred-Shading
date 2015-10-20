@@ -83,7 +83,8 @@ You will need to perform the following tasks:
 
 * Scissor test optimization: when accumulating shading from each point
   light source, only render in a rectangle around the light.
-  * Show a debug view for this (showing scissor masks clearly)
+  * Show a debug view for this (showing scissor masks clearly), e.g. by
+    modifying and using `red.frag.glsl` with additive blending
   * Code is provided to compute this rectangle for you
 
 * Optimized g-buffer format
@@ -95,7 +96,7 @@ You will need to perform the following tasks:
       * Applying the normal map in the `copy` shader pass instead of
         copying both geometry normals and normal maps
       * Reconstructing world space position using camera matrices and X/Y/depth
-  * For credit, you must show significant optimization effort and record the
+  * For credit, you must show a good optimization effort and record the
     performance of each version you test, in a simple table.
   * See mainly: `copy.frag.glsl`, `deferred/*.glsl`, `deferredSetup.js`
 
@@ -162,7 +163,8 @@ This extra feature list is not comprehensive. If you have a particular idea
 that you would like to implement, please **contact us first** (preferably on
 the mailing list).
 
-**Where possible, all features should be switchable using the GUI panel.**
+**Where possible, all features should be switchable using the GUI panel in
+`ui.js`.**
 
 ### Performance & Analysis
 
