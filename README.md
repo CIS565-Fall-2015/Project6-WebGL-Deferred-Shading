@@ -52,9 +52,10 @@ Google Chrome seems to work best on all platforms. If you have problems running
 the starter code, use Chrome or Chromium, and make sure you have updated your
 browser and video drivers.
 
-In Moore 100B/C, both Chrome and Firefox have been tested and verified.
-
+In Moore 100C, both Chrome and Firefox work.
 See below for notes on profiling/debugging tools.
+
+Use the screenshot button to save a screenshot.
 
 ## Requirements
 
@@ -68,7 +69,15 @@ In this project, you are given code for:
 
 ### Required Tasks
 
+**Before doing performance analysis,** you must disable debug mode by changing
+`debugMode` to `false` in `framework.js`. Keep it enabled when developing - it
+helps find WebGL errors *much* more easily.
+
 You will need to perform the following tasks:
+
+* Complete the deferred shading pipeline so that the Blinn-Phong and Post1
+  shaders recieve the correct input. Go through the Starter Code Tour **before
+  continuing!**
 
 **Effects:**
 
@@ -85,9 +94,10 @@ You will need to perform the following tasks:
   light source, only render in a rectangle around the light.
   * Show a debug view for this (showing scissor masks clearly), e.g. by
     modifying and using `red.frag.glsl` with additive blending.
-  * Code is provided to compute this rectangle for you.
+  * Code is provided to compute this rectangle for you, and there are
+    comments at the relevant place in `deferredRender.js` with more guidance.
 
-* Optimized g-buffer format
+* Optimized g-buffer format - reduce the number and size of g-buffers:
   * Ideas:
     * Pack values together into vec4s
     * Use 2-component normals
@@ -98,6 +108,8 @@ You will need to perform the following tasks:
       * Reconstructing world space position using camera matrices and X/Y/depth
   * For credit, you must show a good optimization effort and record the
     performance of each version you test, in a simple table.
+    * It is expected that you won't need all 4 provided g-buffers for a basic
+      pipeline - make sure you disable the unused ones.
   * See mainly: `copy.frag.glsl`, `deferred/*.glsl`, `deferredSetup.js`
 
 ### Extra Tasks
@@ -176,10 +188,12 @@ the mailing list).
 ### Performance & Analysis
 
 **Before doing performance analysis,** you must disable debug mode by changing
-`debugMode` to `false` in `framework.js`.
+`debugMode` to `false` in `framework.js`. Keep it enabled when developing - it
+helps find WebGL errors *much* more easily.
 
 Optimize your JavaScript and/or GLSL code. Web Tracing Framework
-and Chrome/Firefox's profiling tools will be useful for this. For each change
+and Chrome/Firefox's profiling tools (see Resources section) will
+be useful for this. For each change
 that improves performance, show the before and after render times.
 
 For each new *effect* feature (required or extra), please
@@ -223,11 +237,16 @@ Therefore, it is recommended that you review the comments to understand the
 process, BEFORE starting work in `deferredRender`.
 
 In `deferredRender`, start at the **START HERE!** comment.
-Look at all of the **`TODO`s** as you go - most of them are small.
-Your first goal should be to get the debug views working.
+Work through the appropriate **`TODO`s** as you go - most of them are very
+small. Test incrementally (after implementing each part, instead of testing
+all at once).
 
-For editing JavaScript, you can use the editor built into Chrome, or a simple
-editor with syntax highlighting such as Sublime, Vim, Emacs, etc.
+Your first goal should be to get the debug views working.
+Add code in `debug.frag.glsl` to examine your g-buffers before trying to
+render them. (Set the debugView in the UI to show them.)
+
+For editing JavaScript, you can use a simple editor with syntax highlighting
+such as Sublime, Vim, Emacs, etc., or the editor built into Chrome.
 
 * `js/`: JavaScript files for this project.
   * `main.js`: Handles initialization of other parts of the program.

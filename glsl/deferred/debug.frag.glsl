@@ -21,19 +21,17 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
 }
 
 void main() {
-    // Load properties from the g-buffers
-    // TODO: change for optimized g-buffers
     vec4 gb0 = texture2D(u_gbufs[0], v_uv);
     vec4 gb1 = texture2D(u_gbufs[1], v_uv);
     vec4 gb2 = texture2D(u_gbufs[2], v_uv);
     vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
-    vec3 pos = gb0.xyz;
-    vec3 geomnor = normalize(gb1.xyz);
-    vec3 colmap = gb2.xyz;
-    vec3 normap = gb3.xyz;
-    vec3 nor = applyNormalMap(geomnor, normap);
-    // ----
+    // TODO: Extract needed properties from the g-buffers into local variables
+    vec3 pos;
+    vec3 geomnor;
+    vec3 colmap;
+    vec3 normap;
+    vec3 nor;
 
     if (u_debug == 0) {
         gl_FragColor = vec4(vec3(depth), 1.0);
