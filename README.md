@@ -232,7 +232,7 @@ to get familiar with the code. At any point, you can also
 `console.log(some_var);` to show it in the console and inspect it.
 
 The setup in `deferredSetup` is already done for you, for many of the features.
-If you want to add uniforms (texuters or values), you'll change them here.
+If you want to add uniforms (textures or values), you'll change them here.
 Therefore, it is recommended that you review the comments to understand the
 process, BEFORE starting work in `deferredRender`.
 
