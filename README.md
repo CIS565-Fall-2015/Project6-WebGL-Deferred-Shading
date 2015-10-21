@@ -86,7 +86,7 @@ You will need to perform the following tasks:
 
 * Implement one of the following effects:
   * Bloom using post-process blur (box or Gaussian) [1]
-  * Toon shading (with ramp shading + simple edge detection for outlines)
+  * Toon shading (with ramp shading + simple depth-edge detection for outlines)
 
 **Optimizations:**
 
