@@ -227,7 +227,8 @@
             // Enable the bound buffer as the vertex attrib array for
             // prog.a_position, using gl.enableVertexAttribArray
             // TODO: ^
-            // Use gl.vertexAttribPointer to tell WebGL the type/layout of the buffer
+            // Use gl.vertexAttribPointer to tell WebGL the type/layout for
+            // prog.a_position's access pattern.
             // TODO: ^
 
             // Use gl.drawArrays (or gl.drawElements) to draw your quad.

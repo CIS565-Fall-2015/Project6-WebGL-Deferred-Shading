@@ -93,7 +93,7 @@ You will need to perform the following tasks:
 * Scissor test optimization: when accumulating shading from each point
   light source, only render in a rectangle around the light.
   * Show a debug view for this (showing scissor masks clearly), e.g. by
-    modifying and using `red.frag.glsl` with additive blending.
+    modifying and using `red.frag.glsl` with additive blending and alpha = 0.1.
   * Code is provided to compute this rectangle for you, and there are
     comments at the relevant place in `deferredRender.js` with more guidance.
 
@@ -237,9 +237,10 @@ Therefore, it is recommended that you review the comments to understand the
 process, BEFORE starting work in `deferredRender`.
 
 In `deferredRender`, start at the **START HERE!** comment.
-Work through the appropriate **`TODO`s** as you go - most of them are very
+Work through the appropriate `TODO`s as you go - most of them are very
 small. Test incrementally (after implementing each part, instead of testing
 all at once).
+* (The first thing you should be doing is implementing the fullscreen quad!)
 
 Your first goal should be to get the debug views working.
 Add code in `debug.frag.glsl` to examine your g-buffers before trying to
