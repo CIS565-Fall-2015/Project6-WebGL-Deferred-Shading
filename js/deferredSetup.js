@@ -21,8 +21,8 @@
     };
 
     // TODO: Edit if you want to change the light initial positions
-    R.light_min = [-6, 0, -14];
-    R.light_max = [6, 18, 14];
+    R.light_min = [-14, 0, -6];
+    R.light_max = [14, 18, 6];
     R.light_dt = -0.03;
     R.LIGHT_RADIUS = 4.0;
     R.NUM_LIGHTS = 20; // TODO: test with MORE lights!
@@ -34,14 +34,14 @@
             for (var i = 0; i < 3; i++) {
                 var mn = R.light_min[i];
                 var mx = R.light_max[i];
-                r = Math.random() * (mx - mn) + mn;
+                r[i] = Math.random() * (mx - mn) + mn;
             }
             return r;
         };
 
         for (var i = 0; i < R.NUM_LIGHTS; i++) {
             R.lights.push({
-                pos: [posfn(), posfn(), posfn()],
+                pos: posfn(),
                 col: [
                     1 + Math.random(),
                     1 + Math.random(),
