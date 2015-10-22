@@ -27,7 +27,7 @@ to implementation work. Complete the implementation early to leave time!
 Instructions (delete me)
 ========================
 
-This is due at midnight on the evening of Sunday, October 25.
+This is due at midnight on the evening of Tuesday, October 27.
 
 **Summary:** In this project, you'll be introduced to the basics of deferred
 shading and WebGL. You'll use GLSL and WebGL to implement a deferred shading
