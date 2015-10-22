@@ -24,16 +24,18 @@
         }
 
         // Execute deferred shading pipeline
-
+        console.log("I'm here!");
+        
         // CHECKITOUT: START HERE! You can even uncomment this:
-        //debugger;
+        debugger;
 
+        /*
         { // TODO: this block should be removed after testing renderFullScreenQuad
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             // TODO: Implement/test renderFullScreenQuad first
             renderFullScreenQuad(R.progRed);
             return;
-        }
+        }*/
 
         R.pass_copy.render(state);
 
@@ -56,22 +58,21 @@
      */
     R.pass_copy.render = function(state) {
         // * Bind the framebuffer R.pass_copy.fbo
-        // TODO: ^
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_copy.fbo);
 
         // * Clear screen using R.progClear
-        TODO: renderFullScreenQuad(R.progClear);
+        renderFullScreenQuad(R.progClear);
+
         // * Clear depth buffer to value 1.0 using gl.clearDepth and gl.clear
-        // TODO: ^
-        // TODO: ^
+        gl.clearDepth(1.0);
 
         // * "Use" the program R.progCopy.prog
-        // TODO: ^
-        // TODO: Write glsl/copy.frag.glsl
+        gl.useProgram(R.progCopy.prog);
 
         var m = state.cameraMat.elements;
         // * Upload the camera matrix m to the uniform R.progCopy.u_cameraMat
         //   using gl.uniformMatrix4fv
-        // TODO: ^
+        gl.uniformMatrix4fv(R.progCopy.u_cameraMat, gl.FALSE, m);
 
         // * Draw the scene
         drawScene(state);
@@ -204,13 +205,12 @@
 
         var init = function() {
             // Create a new buffer with gl.createBuffer, and save it as vbo.
-            // TODO: ^
-
+            vbo = gl.createBuffer();
             // Bind the VBO as the gl.ARRAY_BUFFER
-            // TODO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
             // Upload the positions array to the currently-bound array buffer
             // using gl.bufferData in static draw mode.
-            // TODO: ^
+            gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
         };
 
         return function(prog) {
@@ -223,15 +223,17 @@
             gl.useProgram(prog.prog);
 
             // Bind the VBO as the gl.ARRAY_BUFFER
-            // TODO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+
             // Enable the bound buffer as the vertex attrib array for
             // prog.a_position, using gl.enableVertexAttribArray
-            // TODO: ^
+            gl.enableVertexAttribArray(prog.a_position);
+
             // Use gl.vertexAttribPointer to tell WebGL the type/layout of the buffer
-            // TODO: ^
+            gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, false, 0, 0);
 
             // Use gl.drawArrays (or gl.drawElements) to draw your quad.
-            // TODO: ^
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
             // Unbind the array buffer.
             gl.bindBuffer(gl.ARRAY_BUFFER, null);

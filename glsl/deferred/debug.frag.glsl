@@ -27,8 +27,8 @@ void main() {
     vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
     // TODO: Extract needed properties from the g-buffers into local variables
-    vec3 pos;
-    vec3 geomnor;
+    vec3 pos = gb0.xyz;
+    vec3 geomnor = gb1.xyz;
     vec3 colmap;
     vec3 normap;
     vec3 nor;
