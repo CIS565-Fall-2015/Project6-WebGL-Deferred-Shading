@@ -83,7 +83,9 @@ window.loadModel = function(obj, callback) {
     var onProgress = function(xhr) {
         if (xhr.lengthComputable) {
             var percentComplete = xhr.loaded / xhr.total * 100;
-            console.log(Math.round(percentComplete, 2) + '% downloaded');
+            var msg = obj + ': ' + Math.round(percentComplete, 2) + '% loaded';
+            console.log(msg);
+            $('#msgbox').text(msg);
         }
     };
 
