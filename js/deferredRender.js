@@ -229,7 +229,8 @@
             // prog.a_position, using gl.enableVertexAttribArray
             gl.enableVertexAttribArray(prog.a_position);
 
-            // Use gl.vertexAttribPointer to tell WebGL the type/layout of the buffer
+            // Use gl.vertexAttribPointer to tell WebGL the type/layout for
+            // prog.a_position's access pattern.
             gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, false, 0, 0);
 
             // Use gl.drawArrays (or gl.drawElements) to draw your quad.

@@ -41,7 +41,7 @@ to expect and what to prepare for.
 
 ### Running the code
 
-If you have Python, you should be able to run `server.js` to start a server.
+If you have Python, you should be able to run `server.py` to start a server.
 Then, open [`http://localhost:10565/`](http://localhost:10565/) in your browser.
 
 This project requires a WebGL-capable web browser with support for
@@ -82,18 +82,18 @@ You will need to perform the following tasks:
 **Effects:**
 
 * Implement deferred Blinn-Phong shading (diffuse + specular)
-  * With normal mapping
+  * With normal mapping (code provided)
 
 * Implement one of the following effects:
   * Bloom using post-process blur (box or Gaussian) [1]
-  * Toon shading (with ramp shading + simple edge detection for outlines)
+  * Toon shading (with ramp shading + simple depth-edge detection for outlines)
 
 **Optimizations:**
 
 * Scissor test optimization: when accumulating shading from each point
   light source, only render in a rectangle around the light.
   * Show a debug view for this (showing scissor masks clearly), e.g. by
-    modifying and using `red.frag.glsl` with additive blending.
+    modifying and using `red.frag.glsl` with additive blending and alpha = 0.1.
   * Code is provided to compute this rectangle for you, and there are
     comments at the relevant place in `deferredRender.js` with more guidance.
 
@@ -232,14 +232,15 @@ to get familiar with the code. At any point, you can also
 `console.log(some_var);` to show it in the console and inspect it.
 
 The setup in `deferredSetup` is already done for you, for many of the features.
-If you want to add uniforms (texuters or values), you'll change them here.
+If you want to add uniforms (textures or values), you'll change them here.
 Therefore, it is recommended that you review the comments to understand the
 process, BEFORE starting work in `deferredRender`.
 
 In `deferredRender`, start at the **START HERE!** comment.
-Work through the appropriate **`TODO`s** as you go - most of them are very
+Work through the appropriate `TODO`s as you go - most of them are very
 small. Test incrementally (after implementing each part, instead of testing
 all at once).
+* (The first thing you should be doing is implementing the fullscreen quad!)
 
 Your first goal should be to get the debug views working.
 Add code in `debug.frag.glsl` to examine your g-buffers before trying to
