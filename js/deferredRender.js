@@ -27,13 +27,13 @@
 
         // CHECKITOUT: START HERE! You can even uncomment this:
         //debugger;
-
+        /*
         { // TODO: this block should be removed after testing renderFullScreenQuad
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            // TODO: Implement/test renderFullScreenQuad first
             renderFullScreenQuad(R.progRed);
             return;
         }
+        */
 
         R.pass_copy.render(state);
 
@@ -41,10 +41,11 @@
             // Do a debug render instead of a regular render
             // Don't do any post-processing in debug mode
             R.pass_debug.render(state);
+        } else if (cfg && cfg.debugScissor){
+            R.pass_deferred.renderScissor(state);
         } else {
             // * Deferred pass and postprocessing pass(es)
-            // TODO: uncomment these
-            //R.pass_deferred.render(state);
+            R.pass_deferred.render(state);
             //R.pass_post1.render(state);
 
             // OPTIONAL TODO: call more postprocessing passes, if any
@@ -56,22 +57,21 @@
      */
     R.pass_copy.render = function(state) {
         // * Bind the framebuffer R.pass_copy.fbo
-        // TODO: ^
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_copy.fbo);
 
         // * Clear screen using R.progClear
-        TODO: renderFullScreenQuad(R.progClear);
+        renderFullScreenQuad(R.progClear);
         // * Clear depth buffer to value 1.0 using gl.clearDepth and gl.clear
-        // TODO: ^
-        // TODO: ^
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
 
         // * "Use" the program R.progCopy.prog
-        // TODO: ^
-        // TODO: Write glsl/copy.frag.glsl
+        gl.useProgram(R.progCopy.prog);
 
         var m = state.cameraMat.elements;
         // * Upload the camera matrix m to the uniform R.progCopy.u_cameraMat
         //   using gl.uniformMatrix4fv
-        // TODO: ^
+        gl.uniformMatrix4fv(R.progCopy.u_cameraMat, false, m);
 
         // * Draw the scene
         drawScene(state);
@@ -103,11 +103,12 @@
     };
 
     /**
-     * 'deferred' pass: Add lighting results for each individual light
+     * 'deferred' pass: Scissor test debug view
      */
-    R.pass_deferred.render = function(state) {
+    R.pass_deferred.renderScissor = function(state) {
         // * Bind R.pass_deferred.fbo to write into for later postprocessing
-        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         // * Clear depth to 1.0 and color to black
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -115,10 +116,58 @@
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         // * _ADD_ together the result of each lighting pass
-
+        
         // Enable blending and use gl.blendFunc to blend with:
         //   color = 1 * src_color + 1 * dst_color
-        // TODO: ^
+        gl.blendFunc(gl.SRC_ALPHA, gl.DST_ALPHA);
+        gl.enable(gl.BLEND);
+
+        // A loop here, over the values in R.lights, which sets the
+        //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
+        //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
+
+        // TODO: In the lighting loop, use the scissor test optimization
+        // Enable gl.SCISSOR_TEST, render all lights, then disable it.
+        //
+        // getScissorForLight returns null if the scissor is off the screen.
+        // Otherwise, it returns an array [xmin, ymin, width, height].
+        //
+        //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
+        gl.enable(gl.SCISSOR_TEST);
+
+        for (var i = R.lights.length - 1; i >= 0; i--) {
+            var L = R.lights[i];
+            var sc = getScissorForLight(state.viewMat, state.projMat, L);
+            if (sc != null){
+                gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+                renderFullScreenQuad(R.progRed);
+            }
+        };
+
+        gl.disable(gl.SCISSOR_TEST);
+        // Disable blending so that it doesn't affect other code
+        gl.disable(gl.BLEND);
+    };
+
+    /**
+     * 'deferred' pass: Add lighting results for each individual light
+     */
+    R.pass_deferred.render = function(state) {
+        // * Bind R.pass_deferred.fbo to write into for later postprocessing
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Clear depth to 1.0 and color to black
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        gl.clearDepth(1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // * _ADD_ together the result of each lighting pass
+        
+        // Enable blending and use gl.blendFunc to blend with:
+        //   color = 1 * src_color + 1 * dst_color
+        gl.blendFunc(gl.SRC_ALPHA, gl.DST_ALPHA);
+        gl.enable(gl.BLEND);
 
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
@@ -127,7 +176,7 @@
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
 
-        // TODO: add a loop here, over the values in R.lights, which sets the
+        // A loop here, over the values in R.lights, which sets the
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
 
@@ -139,6 +188,22 @@
         //
         //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
 
+        gl.enable(gl.SCISSOR_TEST);
+        
+        for (var i = R.lights.length - 1; i >= 0; i--) {
+            var L = R.lights[i];
+            
+            var sc = getScissorForLight(state.viewMat, state.projMat, L);
+            if (sc != null){
+                gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+                gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightPos, L.pos[0], L.pos[1], L.pos[2]);
+                gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightCol, L.col[0], L.col[1], L.col[2]);
+                gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, L.rad);
+                renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+            }
+        };
+
+        gl.disable(gl.SCISSOR_TEST);
         // Disable blending so that it doesn't affect other code
         gl.disable(gl.BLEND);
     };
@@ -204,13 +269,13 @@
 
         var init = function() {
             // Create a new buffer with gl.createBuffer, and save it as vbo.
-            // TODO: ^
+            vbo = gl.createBuffer();
 
             // Bind the VBO as the gl.ARRAY_BUFFER
-            // TODO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
             // Upload the positions array to the currently-bound array buffer
             // using gl.bufferData in static draw mode.
-            // TODO: ^
+            gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
         };
 
         return function(prog) {
@@ -223,16 +288,16 @@
             gl.useProgram(prog.prog);
 
             // Bind the VBO as the gl.ARRAY_BUFFER
-            // TODO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
             // Enable the bound buffer as the vertex attrib array for
             // prog.a_position, using gl.enableVertexAttribArray
-            // TODO: ^
+            gl.enableVertexAttribArray(prog.a_position);
             // Use gl.vertexAttribPointer to tell WebGL the type/layout for
             // prog.a_position's access pattern.
-            // TODO: ^
+            gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, false, 0, 0);
 
             // Use gl.drawArrays (or gl.drawElements) to draw your quad.
-            // TODO: ^
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
             // Unbind the array buffer.
             gl.bindBuffer(gl.ARRAY_BUFFER, null);

@@ -8,6 +8,8 @@ precision highp int;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
 
+const vec4 SKY_COLOR = vec4(0.66, 0.73, 1.0, 0.2);
+
 varying vec2 v_uv;
 
 void main() {
@@ -16,12 +18,13 @@ void main() {
     vec4 gb2 = texture2D(u_gbufs[2], v_uv);
     vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
-    // TODO: Extract needed properties from the g-buffers into local variables
+
+    vec3 colmap = gb2.xyz;  // The color map - unlit "albedo" (surface color)
 
     if (depth == 1.0) {
         gl_FragColor = vec4(0, 0, 0, 0); // set alpha to 0
         return;
     }
 
-    gl_FragColor = vec4(0.1, 0.1, 0.1, 1);  // TODO: replace this
+    gl_FragColor = SKY_COLOR*vec4(colmap, 1.0);
 }

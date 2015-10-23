@@ -26,7 +26,12 @@ void main() {
     vec4 gb2 = texture2D(u_gbufs[2], v_uv);
     vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
-    // TODO: Extract needed properties from the g-buffers into local variables
+    // Extract needed properties from the g-buffers into local variables
+    vec3 pos = gb0.xyz;     // World-space position
+    vec3 geomnor = gb1.xyz;  // Normals of the geometry as defined, without normal mapping
+    vec3 colmap = gb2.xyz;  // The color map - unlit "albedo" (surface color)
+    vec3 normap = gb3.xyz;  // The raw normal map (normals relative to the surface they're on)
+    vec3 nor = applyNormalMap(geomnor, normap);     // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
 
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.
@@ -35,5 +40,22 @@ void main() {
         return;
     }
 
-    gl_FragColor = vec4(0, 0, 1, 1);  // TODO: perform lighting calculations
+    float dist = length(pos-u_lightPos);
+    if (dist > u_lightRad){
+        gl_FragColor = vec4(0, 0, 0, 0);
+        return;
+    }
+
+    // Camera at (0,0,0)
+    vec3 V = normalize(-pos);
+    vec3 L = normalize(u_lightPos-pos);
+    vec3 H = normalize(L+V);
+
+    float specExp = 10.0;
+    float diffIntense = dot(nor, L);
+    float specIntense = pow(dot(nor, H), specExp);
+    // Intensity falloff
+    float falloff = 1.0/pow(dist,1.5);
+
+    gl_FragColor = vec4(falloff*(diffIntense*colmap*u_lightCol+specIntense*vec3(1.0)), falloff);
 }
