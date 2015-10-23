@@ -65,6 +65,7 @@
 
         // * Clear depth buffer to value 1.0 using gl.clearDepth and gl.clear
         gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
 
         // * "Use" the program R.progCopy.prog
         gl.useProgram(R.progCopy.prog);
