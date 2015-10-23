@@ -143,7 +143,12 @@
 
         for (var i = R.lights.length - 1; i >= 0; i--) {
             var L = R.lights[i];
-            var sc = getScissorForLight(state.viewMat, state.projMat, L);
+            var sc;
+            if (cfg.improvedAABB){
+                var sc = getScissorForLightI(state.viewMat, state.projMat, L);
+            } else {
+                var sc = getScissorForLight(state.viewMat, state.projMat, L);
+            }
             if (sc != null){
                 gl.scissor(sc[0], sc[1], sc[2], sc[3]);
                 renderFullScreenQuad(R.progRed);
@@ -199,8 +204,12 @@
             
             for (var i = R.lights.length - 1; i >= 0; i--) {
                 var L = R.lights[i];
-
-                var sc = getScissorForLight(state.viewMat, state.projMat, L);
+                var sc;
+                if (cfg.improvedAABB){
+                    var sc = getScissorForLightI(state.viewMat, state.projMat, L);
+                } else {
+                    var sc = getScissorForLight(state.viewMat, state.projMat, L);
+                }
                 if (sc != null){
                     gl.scissor(sc[0], sc[1], sc[2], sc[3]);
 

@@ -8,6 +8,7 @@ var cfg;
         this.debugView = -1;
         this.debugScissor = false;
         this.scissoring = true;
+        this.improvedAABB = true;
         this.effects = -1;
     };
 
@@ -28,6 +29,7 @@ var cfg;
         gui.add(cfg, 'debugScissor');
 
         gui.add(cfg, 'scissoring');
+        gui.add(cfg, 'improvedAABB');
         gui.add(cfg, 'effects', {
             'None':             -1,
             '0 Bloom':           0,

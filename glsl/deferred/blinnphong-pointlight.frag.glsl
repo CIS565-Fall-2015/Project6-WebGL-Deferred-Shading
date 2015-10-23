@@ -59,7 +59,7 @@ void main() {
     //float specExp = 10.0;
     float diffIntense = max(dot(nor, L), 0.0);
     float specIntense = pow(max(dot(nor, H), 0.0), specExp);
-    float falloff = 1.0/pow(dist, 2.0);
+    float falloff = (1.0-dist/u_lightRad)/pow(dist/u_lightRad, 0.7);
 
     if (removeChannel == 0.0) colmap.x = 0.0;
     if (removeChannel == 1.0) colmap.y = 0.0;

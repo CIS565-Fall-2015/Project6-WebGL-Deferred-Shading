@@ -68,8 +68,9 @@ var width, height;
     };
 
     var init = function() {
-        // TODO: For performance measurements, disable debug mode!
-        var debugMode = true;
+        // For performance measurements, disable debug mode!
+        //var debugMode = true;
+        var debugMode = false;
 
         if (debugMode) {
             $('#debugmodewarning').css('display', 'block');
