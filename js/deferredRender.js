@@ -74,10 +74,9 @@
         // * "Use" the program R.progCopy.prog
         gl.useProgram(R.progCopy.prog);
 
-        var m = state.cameraMat.elements;
         // * Upload the camera matrix m to the uniform R.progCopy.u_cameraMat
         //   using gl.uniformMatrix4fv
-        gl.uniformMatrix4fv(R.progCopy.u_cameraMat, false, m);
+        gl.uniformMatrix4fv(R.progCopy.u_cameraMat, false, state.cameraMat.elements);
 
         // * Draw the scene
         drawScene(state);
@@ -85,13 +84,12 @@
 
     var drawScene = function(state) {
         for (var i = 0; i < state.models.length; i++) {
-            var m = state.models[i];
 
             // If you want to render one model many times, note:
             // readyModelForDraw only needs to be called once.
-            readyModelForDraw(R.progCopy, m);
+            readyModelForDraw(R.progCopy, state.models[i]);
             
-            drawReadyModel(m);
+            drawReadyModel(state.models[i]);
         }
     };
 

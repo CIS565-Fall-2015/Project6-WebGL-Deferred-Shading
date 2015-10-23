@@ -17,7 +17,7 @@ var cfg;
 
         var gui = new dat.GUI();
         // TODO: Define any other possible config values
-        gui.add(cfg, 'debugView', {
+        /*gui.add(cfg, 'debugView', {
             'None':             -1,
             '0 Depth':           0,
             '1 Position':        1,
@@ -25,6 +25,14 @@ var cfg;
             '3 Color map':       3,
             '4 Normal map':      4,
             '5 Surface normal':  5
+        });*/
+
+        gui.add(cfg, 'debugView', {
+            'None':             -1,
+            '0 Depth':           0,
+            '1 Position':        1,
+            '2 Surface normal': 2,
+            '3 Color map':       3
         });
         gui.add(cfg, 'debugScissor');
 
