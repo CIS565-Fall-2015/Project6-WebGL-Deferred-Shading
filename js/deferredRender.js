@@ -46,7 +46,12 @@
         } else {
             // * Deferred pass and postprocessing pass(es)
             R.pass_deferred.render(state);
-            //R.pass_post1.render(state);
+            if (!cfg.Bloom){
+                R.pass_post1.directRender(state);
+            } else if (cfg.Bloom){
+                R.pass_post1.render(state);
+                R.pass_post2.render(state);
+            }
 
             // OPTIONAL TODO: call more postprocessing passes, if any
         }
@@ -126,7 +131,7 @@
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
 
-        // TODO: In the lighting loop, use the scissor test optimization
+        // In the lighting loop, use the scissor test optimization
         // Enable gl.SCISSOR_TEST, render all lights, then disable it.
         //
         // getScissorForLight returns null if the scissor is off the screen.
@@ -154,8 +159,8 @@
      */
     R.pass_deferred.render = function(state) {
         // * Bind R.pass_deferred.fbo to write into for later postprocessing
-        //gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         // * Clear depth to 1.0 and color to black
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -166,7 +171,7 @@
         
         // Enable blending and use gl.blendFunc to blend with:
         //   color = 1 * src_color + 1 * dst_color
-        gl.blendFunc(gl.SRC_ALPHA, gl.DST_ALPHA);
+        gl.blendFunc(gl.ONE, gl.ONE);
         gl.enable(gl.BLEND);
 
         // * Bind/setup the ambient pass, and render using fullscreen quad
@@ -180,7 +185,7 @@
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
 
-        // TODO: In the lighting loop, use the scissor test optimization
+        // In the lighting loop, use the scissor test optimization
         // Enable gl.SCISSOR_TEST, render all lights, then disable it.
         //
         // getScissorForLight returns null if the scissor is off the screen.
@@ -192,13 +197,14 @@
         
         for (var i = R.lights.length - 1; i >= 0; i--) {
             var L = R.lights[i];
-            
+
             var sc = getScissorForLight(state.viewMat, state.projMat, L);
             if (sc != null){
                 gl.scissor(sc[0], sc[1], sc[2], sc[3]);
                 gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightPos, L.pos[0], L.pos[1], L.pos[2]);
                 gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightCol, L.col[0], L.col[1], L.col[2]);
                 gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, L.rad);
+                gl.uniform3f(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
                 renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
             }
         };
@@ -224,11 +230,32 @@
     };
 
     /**
+     * 'post0' pass: Direct render
+     */
+    R.pass_post1.directRender = function(state) {
+        // * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.progPostDirect.prog);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        gl.uniform1i(R.progPostDirect.u_color, 0);
+
+        renderFullScreenQuad(R.progPostDirect);
+    };
+
+    /**
      * 'post1' pass: Perform (first) pass of post-processing
      */
     R.pass_post1.render = function(state) {
         // * Unbind any existing framebuffer (if there are no more passes)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_post1.fbo);
 
         // * Clear the framebuffer depth to 1.0
         gl.clearDepth(1.0);
@@ -239,14 +266,52 @@
 
         // * Bind the deferred pass's color output as a texture input
         // Set gl.TEXTURE0 as the gl.activeTexture unit
-        // TODO: ^
+        gl.activeTexture(gl.TEXTURE0);
         // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
-        // TODO: ^
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);
 
+        gl.uniform2f(R.progPost1.u_screen_inv, 1.0/state.screenDim.w, 1.0/state.screenDim.h);
+
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);
+    };
+
+    /**
+     * 'post2' pass: Perform pass of post-processing
+     */
+    R.pass_post2.render = function(state) {
+        // * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.progPost2.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE0);
+        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        // Configure the R.progPost2.u_color uniform to point at texture unit 0
+        gl.uniform1i(R.progPost2.o_color, 0);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE1);
+        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_post1.colorTex);
+        // Configure the R.progPost2.u_color uniform to point at texture unit 0
+        gl.uniform1i(R.progPost2.u_color, 1);
+
+        gl.uniform2f(R.progPost2.u_screen_inv, 1.0/state.screenDim.w, 1.0/state.screenDim.h);
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.progPost2);
     };
 
     var renderFullScreenQuad = (function() {

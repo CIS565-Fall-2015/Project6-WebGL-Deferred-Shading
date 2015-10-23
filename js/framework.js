@@ -17,7 +17,9 @@ var width, height;
             cameraMat: cameraMat,
             projMat: camera.projectionMatrix,
             viewMat: camera.matrixWorldInverse,
-            models: models
+            cameraPos: camera.position,
+            models: models,
+            screenDim: {w: width, h: height}
         });
     };
 

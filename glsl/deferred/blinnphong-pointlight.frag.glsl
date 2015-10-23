@@ -7,6 +7,7 @@ precision highp int;
 uniform vec3 u_lightCol;
 uniform vec3 u_lightPos;
 uniform float u_lightRad;
+uniform vec3 u_camPos;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
 
@@ -47,15 +48,14 @@ void main() {
     }
 
     // Camera at (0,0,0)
-    vec3 V = normalize(-pos);
+    vec3 V = normalize(u_camPos-pos);
     vec3 L = normalize(u_lightPos-pos);
     vec3 H = normalize(L+V);
 
     float specExp = 10.0;
-    float diffIntense = dot(nor, L);
-    float specIntense = pow(dot(nor, H), specExp);
-    // Intensity falloff
-    float falloff = 1.0/pow(dist,1.5);
+    float diffIntense = max(dot(nor, L), 0.0);
+    float specIntense = pow(max(dot(nor, H), 0.0), specExp);
+    float falloff = 1.0/pow(dist, 2.0);
 
     gl_FragColor = vec4(falloff*(diffIntense*colmap*u_lightCol+specIntense*vec3(1.0)), falloff);
 }

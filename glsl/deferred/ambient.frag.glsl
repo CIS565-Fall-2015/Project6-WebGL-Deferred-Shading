@@ -8,7 +8,7 @@ precision highp int;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
 
-const vec4 SKY_COLOR = vec4(0.66, 0.73, 1.0, 0.2);
+const vec4 SKY_COLOR = vec4(0.1, 0.14, 0.22, 0.1)*2.0;
 
 varying vec2 v_uv;
 
