@@ -28,6 +28,12 @@ void main() {
     float depth = texture2D(u_depth, v_uv).x;
     // TODO: Extract needed properties from the g-buffers into local variables
     
+    //TODO:optimize gbuffer structure
+    vec3 pos = gb0.xyz;
+    vec3 geomnor = gb1.xyz;
+    vec3 colmap = gb2.xyz;
+    vec3 normap = gb3.xyz;
+    vec3 nor = applyNormalMap(geomnor, normap);
 
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.
@@ -36,5 +42,8 @@ void main() {
         return;
     }
 
-    gl_FragColor = vec4(0, 0, 1, 1);  // TODO: perform lighting calculations
+    vec3 l = u_lightPos - pos;
+    vec3 diffuse = u_lightRad * u_lightCol * colmap * dot(l,nor);
+    
+    //vec3 v = 
 }

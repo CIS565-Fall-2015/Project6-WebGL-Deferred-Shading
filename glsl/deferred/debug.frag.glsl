@@ -30,7 +30,7 @@ void main() {
     // These definitions are suggested for starting out, but you will probably want to change them.
     vec3 pos = gb0.xyz;     // World-space position
     
-    
+    //TODO:optimize gbuffer structure
     vec3 geomnor = gb1.xyz;  // Normals of the geometry as defined, without normal mapping
     vec3 colmap = gb2.xyz;  // The color map - unlit "albedo" (surface color)
     vec3 normap = gb3.xyz;  // The raw normal map (normals relative to the surface they're on)
