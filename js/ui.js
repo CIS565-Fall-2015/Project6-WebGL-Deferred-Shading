@@ -7,6 +7,7 @@ var cfg;
         // TODO: Define config fields and defaults here
         this.debugView = -1;
         this.debugScissor = false;
+        this.scissoring = true;
         this.effects = -1;
     };
 
@@ -26,6 +27,7 @@ var cfg;
         });
         gui.add(cfg, 'debugScissor');
 
+        gui.add(cfg, 'scissoring');
         gui.add(cfg, 'effects', {
             'None':             -1,
             '0 Bloom':           0,

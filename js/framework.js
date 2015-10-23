@@ -135,6 +135,23 @@ var width, height;
                 loadTexture('models/sponza/normal.png').then(function(tex) {
                     m.normap = tex;
                 });
+                m.specExp = 10.0;
+                m.removeChannel = -1;
+                models.push(m);
+            });
+        });
+
+        loadModel('models/cube.obj', function(o) {
+            scene.add(o);
+            uploadModel(o, function(m) {
+                loadTexture('models/sponza/color.jpg').then(function(tex) {
+                    m.colmap = tex;
+                });
+                loadTexture('models/sponza/normal.png').then(function(tex) {
+                    m.normap = tex;
+                });
+                m.specExp = 100000.0;
+                m.removeChannel = 2;
                 models.push(m);
             });
         });

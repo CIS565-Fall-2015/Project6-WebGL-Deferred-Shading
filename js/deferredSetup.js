@@ -150,6 +150,9 @@
                 p.a_normal    = gl.getAttribLocation(prog, 'a_normal');
                 p.a_uv        = gl.getAttribLocation(prog, 'a_uv');
 
+                p.u_specExp   = gl.getUniformLocation(prog, 'u_specExp');
+                p.u_remove   = gl.getUniformLocation(prog, 'u_remove');
+
                 // Save the object into this variable for access later
                 R.progCopy = p;
             });

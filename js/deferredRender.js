@@ -55,8 +55,6 @@
                 R.pass_postT1.render(state);
                 R.pass_postT2.render(state);
             }
-
-            // OPTIONAL TODO: call more postprocessing passes, if any
         }
     };
 
@@ -92,7 +90,7 @@
             // If you want to render one model many times, note:
             // readyModelForDraw only needs to be called once.
             readyModelForDraw(R.progCopy, m);
-
+            
             drawReadyModel(m);
         }
     };
@@ -196,15 +194,30 @@
         //
         //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
 
-        gl.enable(gl.SCISSOR_TEST);
-        
-        for (var i = R.lights.length - 1; i >= 0; i--) {
-            var L = R.lights[i];
+        if (cfg.scissoring){
+            gl.enable(gl.SCISSOR_TEST);
+            
+            for (var i = R.lights.length - 1; i >= 0; i--) {
+                var L = R.lights[i];
 
-            var sc = getScissorForLight(state.viewMat, state.projMat, L);
-            if (sc != null){
-                gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+                var sc = getScissorForLight(state.viewMat, state.projMat, L);
+                if (sc != null){
+                    gl.scissor(sc[0], sc[1], sc[2], sc[3]);
 
+                    gl.uniform1i(R.prog_BlinnPhong_PointLight.u_toon, cfg.effects);
+
+                    gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightPos, L.pos[0], L.pos[1], L.pos[2]);
+                    gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightCol, L.col[0], L.col[1], L.col[2]);
+                    gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, L.rad);
+                    gl.uniform3f(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
+                    renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+                }
+            };
+
+            gl.disable(gl.SCISSOR_TEST);
+        } else {
+            for (var i = R.lights.length - 1; i >= 0; i--) {
+                var L = R.lights[i];
                 gl.uniform1i(R.prog_BlinnPhong_PointLight.u_toon, cfg.effects);
 
                 gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightPos, L.pos[0], L.pos[1], L.pos[2]);
@@ -212,10 +225,8 @@
                 gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, L.rad);
                 gl.uniform3f(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
                 renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
-            }
-        };
-
-        gl.disable(gl.SCISSOR_TEST);
+            };
+        }
         // Disable blending so that it doesn't affect other code
         gl.disable(gl.BLEND);
     };

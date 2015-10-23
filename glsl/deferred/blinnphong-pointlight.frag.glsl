@@ -35,6 +35,8 @@ void main() {
     vec3 colmap = gb2.xyz;  // The color map - unlit "albedo" (surface color)
     vec3 normap = gb3.xyz;  // The raw normal map (normals relative to the surface they're on)
     vec3 nor = applyNormalMap(geomnor, normap);     // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
+    float specExp = gb1.w;
+    float removeChannel = gb2.w;
 
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.
@@ -54,10 +56,14 @@ void main() {
     vec3 L = normalize(u_lightPos-pos);
     vec3 H = normalize(L+V);
 
-    float specExp = 10.0;
+    //float specExp = 10.0;
     float diffIntense = max(dot(nor, L), 0.0);
     float specIntense = pow(max(dot(nor, H), 0.0), specExp);
     float falloff = 1.0/pow(dist, 2.0);
+
+    if (removeChannel == 0.0) colmap.x = 0.0;
+    if (removeChannel == 1.0) colmap.y = 0.0;
+    if (removeChannel == 2.0) colmap.z = 0.0;
 
     // Toon ramping
     // Concept: http://prideout.net/blog/?p=22#toon
