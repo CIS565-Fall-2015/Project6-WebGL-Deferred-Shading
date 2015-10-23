@@ -28,12 +28,7 @@
         // CHECKITOUT: START HERE! You can even uncomment this:
         //debugger;
 
-        { // TODO: this block should be removed after testing renderFullScreenQuad
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            // TODO: Implement/test renderFullScreenQuad first
-            renderFullScreenQuad(R.progRed);
-            return;
-        }
+        
 
         R.pass_copy.render(state);
 
@@ -44,8 +39,8 @@
         } else {
             // * Deferred pass and postprocessing pass(es)
             // TODO: uncomment these
-            //R.pass_deferred.render(state);
-            //R.pass_post1.render(state);
+            R.pass_deferred.render(state);
+            R.pass_post1.render(state);
 
             // OPTIONAL TODO: call more postprocessing passes, if any
         }
@@ -57,21 +52,26 @@
     R.pass_copy.render = function(state) {
         // * Bind the framebuffer R.pass_copy.fbo
         // TODO: ^
+        gl.bindFramebuffer(gl.FRAMEBUFFER,R.pass_copy.fbo);
 
         // * Clear screen using R.progClear
-        TODO: renderFullScreenQuad(R.progClear);
+        renderFullScreenQuad(R.progClear);
         // * Clear depth buffer to value 1.0 using gl.clearDepth and gl.clear
         // TODO: ^
         // TODO: ^
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
 
         // * "Use" the program R.progCopy.prog
         // TODO: ^
         // TODO: Write glsl/copy.frag.glsl
+        gl.useProgram(R.progCopy.prog);
 
         var m = state.cameraMat.elements;
         // * Upload the camera matrix m to the uniform R.progCopy.u_cameraMat
         //   using gl.uniformMatrix4fv
         // TODO: ^
+        gl.uniformMatrix4fv(R.progCopy.u_cameraMat,false,m);
 
         // * Draw the scene
         drawScene(state);
