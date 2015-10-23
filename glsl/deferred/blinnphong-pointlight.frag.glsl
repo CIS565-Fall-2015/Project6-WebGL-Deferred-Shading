@@ -11,6 +11,8 @@ uniform vec3 u_camPos;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
 
+uniform int u_toon;
+
 varying vec2 v_uv;
 
 vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
@@ -57,5 +59,15 @@ void main() {
     float specIntense = pow(max(dot(nor, H), 0.0), specExp);
     float falloff = 1.0/pow(dist, 2.0);
 
-    gl_FragColor = vec4(falloff*(diffIntense*colmap*u_lightCol+specIntense*vec3(1.0)), falloff);
+    // Toon ramping
+    // Concept: http://prideout.net/blog/?p=22#toon
+    if (u_toon == 1){
+        float steps = 4.0;
+        diffIntense = ceil(diffIntense*steps)/steps;
+        specIntense = ceil(specIntense*steps)/steps;
+        falloff = ceil(falloff*steps)/steps;
+        gl_FragColor = vec4(falloff*(diffIntense*colmap*u_lightCol+specIntense*vec3(1.0)), falloff);
+    } else {
+        gl_FragColor = vec4(falloff*(diffIntense*colmap*u_lightCol+specIntense*vec3(1.0)), falloff);
+    }
 }

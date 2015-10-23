@@ -7,7 +7,7 @@ var cfg;
         // TODO: Define config fields and defaults here
         this.debugView = -1;
         this.debugScissor = false;
-        this.Bloom = false;
+        this.effects = -1;
     };
 
     var init = function() {
@@ -26,8 +26,11 @@ var cfg;
         });
         gui.add(cfg, 'debugScissor');
 
-        var eff0 = gui.addFolder('Effects');
-        eff0.add(cfg, 'Bloom');
+        gui.add(cfg, 'effects', {
+            'None':             -1,
+            '0 Bloom':           0,
+            '1 Toon':        1
+        });
         // TODO: add more effects toggles and parameters here
     };
 
