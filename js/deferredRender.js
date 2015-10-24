@@ -122,6 +122,8 @@
         //   color = 1 * src_color + 1 * dst_color
         // TODO: ^
         gl.enable(gl.BLEND);
+        gl.blendEquation( gl.FUNC_ADD );
+        gl.blendFunc(gl.ONE,gl.ONE);
 
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
@@ -148,10 +150,11 @@
             if(sc != null)
             {
                 gl.scissor(sc[0],sc[1],sc[2],sc[3]);
+                renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
             }
             
             
-            renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+            
         }
         gl.disable(gl.SCISSOR_TEST);
 

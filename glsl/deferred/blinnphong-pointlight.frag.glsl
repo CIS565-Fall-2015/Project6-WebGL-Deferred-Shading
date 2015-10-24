@@ -44,13 +44,18 @@ void main() {
         gl_FragColor = vec4(0, 0, 0, 0);
         return;
     }
-
+    
     vec3 l = u_lightPos - pos;
+    
+    float drop = 1.0/length(l);
+    
+    l = l*drop;
+    
     vec3 diffuse = u_lightRad * max(dot(l,nor),0.0) * u_lightCol * colmap;
     
-    vec3 v = u_cameraPos - pos;
+    vec3 v = normalize(u_cameraPos - pos);
     vec3 r = -l + 2.0 * dot(l,nor) * nor;
     vec3 specular = u_lightRad * pow(max(dot(r,v),0.0), 32.0) * u_lightCol * colmap;
     
-    gl_FragColor = vec4 (clamp( diffuse + specular , 0.0, 1.0 ) , 1.0);
+    gl_FragColor = vec4 (clamp( drop*drop *(diffuse + specular) , 0.0, 1.0 ) , 1.0);
 }
