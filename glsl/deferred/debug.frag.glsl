@@ -26,13 +26,12 @@ void main() {
     vec4 gb2 = texture2D(u_gbufs[2], v_uv);
     vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
-    // TODO: Extract needed properties from the g-buffers into local variables
-    // These definitions are suggested for starting out, but you will probably want to change them.
-    vec3 pos = gb0.xyz;     // World-space position
-    vec3 geomnor = gb1.xyz;  // Normals of the geometry as defined, without normal mapping
-    vec3 colmap;  // The color map - unlit "albedo" (surface color)
-    vec3 normap;  // The raw normal map (normals relative to the surface they're on)
-    vec3 nor;     // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
+
+    vec3 pos = gb0.xyz; // World-space position
+    vec3 geomnor = gb1.xyz; // Normals of the geometry as defined, without normal mapping
+    vec3 colmap = vec3(gb0.w,gb1.w,gb2.w);  // The color map - unlit "albedo" (surface color)
+    vec3 normap = gb2.xyz;  // The raw normal map (normals relative to the surface they're on)
+    vec3 nor = applyNormalMap(geomnor, normap); // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
 
     if (u_debug == 0) {
         gl_FragColor = vec4(vec3(depth), 1.0);

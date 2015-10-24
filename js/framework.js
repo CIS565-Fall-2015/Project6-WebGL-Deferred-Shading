@@ -17,6 +17,7 @@ var width, height;
             cameraMat: cameraMat,
             projMat: camera.projectionMatrix,
             viewMat: camera.matrixWorldInverse,
+            cameraPos: camera.position,
             models: models
         });
     };

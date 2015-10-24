@@ -7,7 +7,7 @@ var cfg;
         // TODO: Define config fields and defaults here
         this.debugView = -1;
         this.debugScissor = false;
-        this.enableEffect0 = false;
+        this.enableToonShading = false;
         this.enableEffect1 = false;
     };
 
@@ -28,7 +28,7 @@ var cfg;
         gui.add(cfg, 'debugScissor');
 
         var eff0 = gui.addFolder('Some Effects');
-        eff0.add(cfg, 'enableEffect0');
+        eff0.add(cfg, 'enableToonShading');
         eff0.add(cfg, 'enableEffect1');
         // TODO: add more effects toggles and parameters here
     };
