@@ -139,11 +139,17 @@
         gl.uniform3f( R.prog_BlinnPhong_PointLight.u_cameraPos,state.cameraPos.x,state.cameraPos.y,state.cameraPos.z );
         for(var i = 0; i < R.NUM_LIGHTS ; i++)
         {
-            gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightCol, R.lights[i].col );
-            gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightPos, R.lights[i].pos );
-            gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, R.lights[i].rad );
+            var light = R.lights[i];
+            gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightCol, light.col );
+            gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightPos, light.pos );
+            gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, light.rad );
             
-            //var sc = getScissorForLight(state.viewMat, state.projMat, light);
+            var sc = getScissorForLight(state.viewMat, state.projMat, light);
+            if(sc != null)
+            {
+                gl.scissor(sc[0],sc[1],sc[2],sc[3]);
+            }
+            
             
             renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
         }
