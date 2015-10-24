@@ -5,7 +5,9 @@
     R.pass_copy = {};
     R.pass_debug = {};
     R.pass_deferred = {};
+    R.pass_post0 = {};
     R.pass_post1 = {};
+    R.pass_post2 = {};
     R.lights = [];
 
     R.NUM_GBUFFERS = 4;
@@ -18,6 +20,8 @@
         loadAllShaderPrograms();
         R.pass_copy.setup();
         R.pass_deferred.setup();
+        R.pass_post0.setup();
+        R.pass_post1.setup();
     };
 
     // TODO: Edit if you want to change the light initial positions
@@ -94,6 +98,37 @@
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
     };
 
+    R.pass_post0.setup = function() {
+        // * Create the FBO
+        R.pass_post0.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_post0.colorTex = createAndBindColorTargetTexture(
+            R.pass_post0.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_post0.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    }
+
+    /**
+     * Bloom shading
+     */
+    R.pass_post1.setup = function() {
+        // * Create the FBO
+        R.pass_post1.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_post1.colorTex = createAndBindColorTargetTexture(
+            R.pass_post1.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_post1.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    }
+
     /**
      * Loads all of the shader programs used in the pipeline.
      */
@@ -146,13 +181,26 @@
             R.prog_Debug = p;
         });
 
+        loadPostProgram('zero', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            // Save the object into this variable for access later
+            R.progPost0 = p;
+        });
+
         loadPostProgram('one', function(p) {
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_screen_inv = gl.getUniformLocation(p.prog, 'u_screen_inv');
             // Save the object into this variable for access later
             R.progPost1 = p;
         });
 
-        // TODO: If you add more passes, load and set up their shader programs.
+        loadPostProgram('two', function(p) {
+            p.u_orig_color = gl.getUniformLocation(p.prog, 'u_orig_color');
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_screen_inv = gl.getUniformLocation(p.prog, 'u_screen_inv');
+            // Save the object into this variable for access later
+            R.progPost2 = p;
+        });
     };
 
     var loadDeferredProgram = function(name, callback) {

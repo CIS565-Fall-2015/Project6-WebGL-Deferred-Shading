@@ -7,6 +7,7 @@ precision highp int;
 uniform vec3 u_lightCol;
 uniform vec3 u_lightPos;
 uniform float u_lightRad;
+uniform vec3 u_cameraPos;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
 
@@ -36,14 +37,22 @@ void main() {
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.
     if (depth == 1.0) {
-        gl_FragColor = vec4(0, 0, 0, 0);
+        gl_FragColor = vec4(0.0);
         return;
     }
 
     vec3 light_difference = u_lightPos - position;
     vec3 light_direction = normalize(light_difference);
+    vec3 camera_direction = normalize(u_cameraPos - position);
     float light_distance = length(light_difference);
+    vec3 H = normalize(light_direction + camera_direction);
 
-    vec3 light = u_lightCol * max(0.0, dot(normal, light_direction)) * max(0.0, u_lightRad - light_distance);
-    gl_FragColor = vec4(color_map * light, 1.0);
+     if (light_distance > u_lightRad){
+         gl_FragColor = vec4(0.0);
+         return;
+     }
+
+    vec3 light = (u_lightCol * max(0.0, dot(normal, light_direction)) * max(0.0, u_lightRad - light_distance) * max(0.0, dot(normal, H)));
+    float falloff = 1.0 / pow(light_distance, 2.0);
+    gl_FragColor = falloff * vec4(color_map * light, 1.0);
 }

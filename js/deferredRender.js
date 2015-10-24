@@ -10,7 +10,9 @@
             !R.prog_Ambient ||
             !R.prog_BlinnPhong_PointLight ||
             !R.prog_Debug ||
-            !R.progPost1)) {
+            !R.progPost0 ||
+            !R.progPost1 ||
+            !R.progPost2)) {
             console.log('waiting for programs to load...');
             return;
         }
@@ -34,10 +36,16 @@
             // Do a debug render instead of a regular render
             // Don't do any post-processing in debug mode
             R.pass_debug.render(state);
-        } else {
-            // * Deferred pass and postprocessing pass(es)
+        }
+        else if(cfg && cfg.bloom) {
             R.pass_deferred.render(state);
             R.pass_post1.render(state);
+            R.pass_post2.render(state);
+        }
+        else {
+            // * Deferred pass and postprocessing pass(es)
+            R.pass_deferred.render(state);
+            R.pass_post0.render(state);
 
             // OPTIONAL TODO: call more postprocessing passes, if any
         }
@@ -130,7 +138,7 @@
           gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, light.pos);
           gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, light.col);
           gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, light.rad);
-
+          gl.uniform3f(R.prog_BlinnPhong_PointLight.u_cameraPos, state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
 
 
           // TODO: In the lighting loop, use the scissor test optimization
@@ -174,12 +182,36 @@
         gl.uniform1i(prog.u_depth, R.NUM_GBUFFERS);
     };
 
+    R.pass_post0.render = function(state) {
+        // * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null); // TODO: should this be like this?
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.progPost0.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE0);
+        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        // Configure the R.progPost0.u_color uniform to point at texture unit 0
+        gl.uniform1i(R.progPost0.u_color, 0);
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.progPost0); // change this
+    };
+
     /**
      * 'post1' pass: Perform (first) pass of post-processing
      */
     R.pass_post1.render = function(state) {
         // * Unbind any existing framebuffer (if there are no more passes)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        // So we don't do this because there are more passes?
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_post1.fbo);
 
         // * Clear the framebuffer depth to 1.0
         gl.clearDepth(1.0);
@@ -196,8 +228,46 @@
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);
 
+        gl.uniform2f(R.progPost1.u_screen_inv, 1.0 / state.screenDim.w, 1.0 / state.screenDim.h);
+
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);
+    };
+
+    /**
+     * 'post2' pass: Perform (second) pass of post-processing
+     */
+    R.pass_post2.render = function(state) {
+        // * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.progPost2.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE0);
+        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        // Configure the R.progPost1.u_color uniform to point at texture unit 0
+        gl.uniform1i(R.progPost2.u_color, 0);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE1);
+        // Bind the TEXTURE_2D, R.pass_post1.colorTex to the active texture unit
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_post1.colorTex);
+        // Configure the R.progPost2.u_color uniform to point at texture unit 1
+        gl.uniform1i(R.progPost2.u_color, 1);
+
+        gl.uniform2f(R.progPost2.u_screen_inv, 1.0 / state.screenDim.w, 1.0 / state.screenDim.h);
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.progPost2);
     };
 
     var renderFullScreenQuad = (function() {
