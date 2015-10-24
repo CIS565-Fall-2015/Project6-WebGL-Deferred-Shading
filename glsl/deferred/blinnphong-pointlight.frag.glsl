@@ -4,6 +4,8 @@ precision highp int;
 
 #define NUM_GBUFFERS 4
 
+uniform vec3 u_cameraPos;
+
 uniform vec3 u_lightCol;
 uniform vec3 u_lightPos;
 uniform float u_lightRad;
@@ -33,6 +35,7 @@ void main() {
     vec3 geomnor = gb1.xyz;
     vec3 colmap = gb2.xyz;
     vec3 normap = gb3.xyz;
+    
     vec3 nor = applyNormalMap(geomnor, normap);
 
     // If nothing was rendered to this pixel, set alpha to 0 so that the
@@ -43,7 +46,11 @@ void main() {
     }
 
     vec3 l = u_lightPos - pos;
-    vec3 diffuse = u_lightRad * u_lightCol * colmap * dot(l,nor);
+    vec3 diffuse = u_lightRad * max(dot(l,nor),0.0) * u_lightCol * colmap;
     
-    //vec3 v = 
+    vec3 v = u_cameraPos - pos;
+    vec3 r = -l + 2.0 * dot(l,nor) * nor;
+    vec3 specular = u_lightRad * pow(max(dot(r,v),0.0), 32.0) * u_lightCol * colmap;
+    
+    gl_FragColor = vec4 (clamp( diffuse + specular , 0.0, 1.0 ) , 1.0);
 }

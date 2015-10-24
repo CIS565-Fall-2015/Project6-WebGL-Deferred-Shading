@@ -108,17 +108,20 @@
     R.pass_deferred.render = function(state) {
         // * Bind R.pass_deferred.fbo to write into for later postprocessing
         gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         // * Clear depth to 1.0 and color to black
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
         gl.clearDepth(1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        
         // * _ADD_ together the result of each lighting pass
 
         // Enable blending and use gl.blendFunc to blend with:
         //   color = 1 * src_color + 1 * dst_color
         // TODO: ^
+        gl.enable(gl.BLEND);
 
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
@@ -130,6 +133,21 @@
         // TODO: add a loop here, over the values in R.lights, which sets the
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
+        
+        gl.enable(gl.SCISSOR_TEST);
+        
+        gl.uniform3f( R.prog_BlinnPhong_PointLight.u_cameraPos,state.cameraPos.x,state.cameraPos.y,state.cameraPos.z );
+        for(var i = 0; i < R.NUM_LIGHTS ; i++)
+        {
+            gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightCol, R.lights[i].col );
+            gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightPos, R.lights[i].pos );
+            gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, R.lights[i].rad );
+            
+            //var sc = getScissorForLight(state.viewMat, state.projMat, light);
+            
+            renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+        }
+        gl.disable(gl.SCISSOR_TEST);
 
         // TODO: In the lighting loop, use the scissor test optimization
         // Enable gl.SCISSOR_TEST, render all lights, then disable it.
@@ -156,6 +174,8 @@
         gl.activeTexture(gl['TEXTURE' + R.NUM_GBUFFERS]);
         gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
         gl.uniform1i(prog.u_depth, R.NUM_GBUFFERS);
+        
+        
     };
 
     /**
@@ -175,8 +195,12 @@
         // * Bind the deferred pass's color output as a texture input
         // Set gl.TEXTURE0 as the gl.activeTexture unit
         // TODO: ^
+        gl.activeTexture(gl.TEXTURE0);
+        
         // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
         // TODO: ^
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);
 
