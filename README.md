@@ -27,7 +27,7 @@ to implementation work. Complete the implementation early to leave time!
 Instructions (delete me)
 ========================
 
-This is due at midnight on the evening of Sunday, October 25.
+This is due at midnight on the evening of Tuesday, October 27.
 
 **Summary:** In this project, you'll be introduced to the basics of deferred
 shading and WebGL. You'll use GLSL and WebGL to implement a deferred shading
@@ -81,8 +81,14 @@ You will need to perform the following tasks:
 
 **Effects:**
 
-* Implement deferred Blinn-Phong shading (diffuse + specular)
+* Implement deferred Blinn-Phong shading (diffuse + specular) for point lights
   * With normal mapping (code provided)
+  * For deferred shading, you want to use a lighting model for the point lights
+    which has a limited radius - so that adding a scissor or proxy geometry
+    will not cause parts of the lighting to disappear. It should look very
+    similar both with and without scissor/proxy optimization. Here is a
+    convenient lighting model, but you can also use others:
+    * `float attenuation = max(0.0, u_lightRad - dist_from_surface_to_light);`
 
 * Implement one of the following effects:
   * Bloom using post-process blur (box or Gaussian) [1]
@@ -93,9 +99,12 @@ You will need to perform the following tasks:
 * Scissor test optimization: when accumulating shading from each point
   light source, only render in a rectangle around the light.
   * Show a debug view for this (showing scissor masks clearly), e.g. by
-    modifying and using `red.frag.glsl` with additive blending.
+    modifying and using `red.frag.glsl` with additive blending and alpha = 0.1.
   * Code is provided to compute this rectangle for you, and there are
     comments at the relevant place in `deferredRender.js` with more guidance.
+    * **NOTE:** The provided scissor function is not very accurate - it is a
+      quick hack which results in some errors (as can be seen in the live
+      demo).
 
 * Optimized g-buffer format - reduce the number and size of g-buffers:
   * Ideas:
@@ -237,11 +246,14 @@ Therefore, it is recommended that you review the comments to understand the
 process, BEFORE starting work in `deferredRender`.
 
 In `deferredRender`, start at the **START HERE!** comment.
-Work through the appropriate **`TODO`s** as you go - most of them are very
+Work through the appropriate `TODO`s as you go - most of them are very
 small. Test incrementally (after implementing each part, instead of testing
 all at once).
+* (The first thing you should be doing is implementing the fullscreen quad!)
+* See the note in the Debugging section on how to test the first part of the
+  pipeline incrementally.
 
-Your first goal should be to get the debug views working.
+Your _next_ first goal should be to get the debug views working.
 Add code in `debug.frag.glsl` to examine your g-buffers before trying to
 render them. (Set the debugView in the UI to show them.)
 
@@ -321,6 +333,13 @@ the renderer will be aborted. To find out where the error came from, look at
 the backtrace of the error (you may need to click the triangle to expand the
 message). The line right below `wrapper @ webgl-debug.js` will point to the
 WebGL call that failed.
+
+When working in the early pipeline (before you have a lit render), it can be
+useful to render WITHOUT post-processing. To do this, you have to make sure
+that there is NO framebuffer bound while rendering to the screen (that is, bind
+null) so that the output will display to the screen instead of saving into a
+texture. Writing to gl_FragData[0] is the same as writing to gl_FragColor, so
+you'll see whatever you were storing into the first g-buffer.
 
 #### Changing the number of g-buffers
 
