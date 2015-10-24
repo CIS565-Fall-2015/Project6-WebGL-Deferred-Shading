@@ -47,15 +47,17 @@ void main() {
     
     vec3 l = u_lightPos - pos;
     
-    float drop = 1.0/length(l);
+    float dist = length(l);
     
-    l = l*drop;
+    l = l / dist;
     
-    vec3 diffuse = u_lightRad * max(dot(l,nor),0.0) * u_lightCol * colmap;
+    float attenuation = clamp(1.0 - dist/u_lightRad, 0.0, 1.0);
+    
+    vec3 diffuse = max(dot(l,nor),0.0) * u_lightCol * colmap;
     
     vec3 v = normalize(u_cameraPos - pos);
     vec3 r = -l + 2.0 * dot(l,nor) * nor;
-    vec3 specular = u_lightRad * pow(max(dot(r,v),0.0), 32.0) * u_lightCol * colmap;
+    vec3 specular = pow(max(dot(r,v),0.0), 32.0) * u_lightCol * colmap;
     
-    gl_FragColor = vec4 (clamp( drop*drop *(diffuse + specular) , 0.0, 1.0 ) , 1.0);
+    gl_FragColor = vec4 (   clamp( attenuation * (diffuse + specular) , 0.0, 1.0 ) , 1.0);
 }

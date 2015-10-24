@@ -150,7 +150,15 @@
             if(sc != null)
             {
                 gl.scissor(sc[0],sc[1],sc[2],sc[3]);
-                renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+                if (cfg.debugScissor) 
+                {
+                    //?
+                    renderFullScreenQuad(R.progRed);
+                } 
+                else 
+                {
+                    renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+                }
             }
             
             
