@@ -20,11 +20,14 @@ WebGL Deferred Shading
 ## Features
 
 ### Deferred Blinn-Phong Shading
+![](img/No Effect.PNG)
 
 * **Overview**
 
 
 ### Bloom Shading with Two-Pass Gaussian Blur
+
+![](img/Bloom.PNG)
 
 * **Overview**: Two-pass Gaussian blur to simulate the bloom glow effect.
 * **Performance Impact**:
@@ -34,6 +37,8 @@ WebGL Deferred Shading
 ![](charts/Bloom Analysis.png)
 
 ### Toon Shading
+
+![](img/Toon.PNG)
 
 * **Overview**: Toon ramp shading using Sobel operator as an edge detector. 
 * **Performance Impact**: No noticable impact. As you can see in the below chart, enabling the toon effect has no impact on performance even with a large number of lights in the scene.
