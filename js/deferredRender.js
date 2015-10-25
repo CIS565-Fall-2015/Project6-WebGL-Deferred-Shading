@@ -76,7 +76,8 @@
         var m = state.cameraMat.elements;
         // * Upload the camera matrix m to the uniform R.progCopy.u_cameraMat
         //   using gl.uniformMatrix4fv
-        gl.uniformMatrix4fv(R.progCopy.u_cameraMat, false, m);
+        //gl.uniformMatrix4fv(R.progCopy.u_cameraMat, false, m);
+        gl.uniformMatrix4fv(R.progCopy.u_cameraMat, false, state.cameraMat.elements);
 
         // * Draw the scene
         drawScene(state);
