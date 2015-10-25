@@ -22,7 +22,7 @@ WebGL Deferred Shading
 ### Deferred Blinn-Phong Shading
 ![](img/No Effect.PNG)
 
-* **Overview**
+* **Overview**: 
 
 
 ### Bloom Shading with Two-Pass Gaussian Blur
