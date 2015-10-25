@@ -46,6 +46,10 @@ WebGL Deferred Shading
 
 ![](charts/Toon Analysis.png)
 
+### G-Buffer Optimization
+
+
+
 ### Scissor
 
 ### Additional Material Property
