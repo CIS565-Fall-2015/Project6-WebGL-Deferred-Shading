@@ -112,10 +112,17 @@
         bindTexturesForLightPass(R.prog_Ambient);
         renderFullScreenQuad(R.prog_Ambient);
 
-        var cam = state.cameraPos;
+        gl.enable(gl.SCISSOR_TEST);
+
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
+        var cam = state.cameraPos;
         for (var i = 0; i < R.lights.length; i++) {
             var light = R.lights[i];
+            var sc = getScissorForLight(state.viewMat, state.projMat, light);
+            if (sc !== null) {
+                gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+            }
+
             bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
             gl.uniform3f(R.prog_BlinnPhong_PointLight.u_cameraPos,
                          cam[0], cam[1], cam[2]);
@@ -128,14 +135,7 @@
 
             renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
         }
-
-        // TODO: In the lighting loop, use the scissor test optimization
-        // Enable gl.SCISSOR_TEST, render all lights, then disable it.
-        //
-        // getScissorForLight returns null if the scissor is off the screen.
-        // Otherwise, it returns an array [xmin, ymin, width, height].
-        //
-        //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
+        gl.disable(gl.SCISSOR_TEST);
 
         // Disable blending so that it doesn't affect other code
         gl.disable(gl.BLEND);
