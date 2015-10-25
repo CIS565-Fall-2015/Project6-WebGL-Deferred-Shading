@@ -59,7 +59,7 @@ WebGL Deferred Shading
 ![](img/improved scissor.PNG)
 
 * **Overview**: In the optimized version of the scissor test, the AABB is calculated at the light's front-facing maximum circle. This minimizes the distortions that result from transformations and give us smaller, more accurately sized bounding boxes to use for the scissor test. This has performance benefits and eliminates minor artifacts caused by the original implementation.
-* **Performance Analysis**: The smaller AABB result in faster scissor test calculations.
+* **Performance Analysis**: The smaller AABB result in faster scissor test calculations. This impact is especially noticable in scenes with many light sources. Below is the recorded frame times for a scene with 4,000 point lights. With the original implementation, we see 75 ms per frame. With the AABB optimizations we see that drop almost 10 ms to 66 ms per frame, a significant increase in performance. If you look at the two images above you'll see squares representing the AABB being used for the scissor test. In the second image, where the AABB improvements have been made, notice that the boxes have less overlap and are smaller.
 
 ![](charts/Scissor Analysis.png)
 
