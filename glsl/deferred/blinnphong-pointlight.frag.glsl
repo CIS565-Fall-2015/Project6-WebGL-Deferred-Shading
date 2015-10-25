@@ -79,7 +79,7 @@ void main() {
         } else {
             fragColor *= max(0.0, 0.4 - diffuse);
         }
-        fragColor *= max(0.0,(u_lightRad - dist));
+        fragColor *= max(0.0,(u_lightRad - 0.1 - dist));
 
     // Toon shading
     } else {
