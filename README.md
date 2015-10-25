@@ -12,7 +12,7 @@ WebGL Deferred Shading
 
 ### Demo Video
 
-[![](img/video.png)](https://vimeo.com/143500915)
+[![](img/video.png)](https://youtu.be/kwzxPAwXkkw)
 
 ### Features and Analysis
 
