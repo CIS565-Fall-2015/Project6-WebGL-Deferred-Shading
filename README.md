@@ -48,6 +48,10 @@ WebGL Deferred Shading
 
 ### Scissor
 
+### Additional Material Property
+TODO: Add picture
+* **Overview**: Specular exponent added as an input to the g-buffers. Passed using the alpha channel of the normal buffer.
+* **Performance Impact**: None.
 
 ## References
 
