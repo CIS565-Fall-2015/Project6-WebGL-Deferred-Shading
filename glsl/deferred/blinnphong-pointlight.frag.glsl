@@ -54,6 +54,6 @@ void main() {
 	
 
 //	vec3 phong_color=vec3(1.0,0.0,0.0);
-    gl_FragColor = vec4(specular_color.xyz, 1);  // TODO: perform lighting calculations
+    gl_FragColor = vec4(phong_color.xyz, 1);  // TODO: perform lighting calculations
    
 	}
