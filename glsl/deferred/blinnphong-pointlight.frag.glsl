@@ -4,6 +4,7 @@ precision highp int;
 
 #define NUM_GBUFFERS 4
 
+uniform vec3 u_cameraPos;
 uniform vec3 u_lightCol;
 uniform vec3 u_lightPos;
 uniform float u_lightRad;
@@ -26,14 +27,38 @@ void main() {
     vec4 gb2 = texture2D(u_gbufs[2], v_uv);
     vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
-    // TODO: Extract needed properties from the g-buffers into local variables
 
-    // If nothing was rendered to this pixel, set alpha to 0 so that the
-    // postprocessing step can render the sky color.
+    // worldspace positions
+    vec3 pos = vec3(gb0);
+    // unlit surface color
+    vec3 color = vec3(gb2);
+
+    // geometry normals
+    vec3 geomnor = vec3(gb1);
+    // normal map
+    vec3 normap = vec3(gb3);
+    // final normals
+    vec3 normal = applyNormalMap(geomnor, normap);
+
     if (depth == 1.0) {
         gl_FragColor = vec4(0, 0, 0, 0);
         return;
     }
 
-    gl_FragColor = vec4(0, 0, 1, 1);  // TODO: perform lighting calculations
+    float dist = length(pos - u_lightPos);
+    if (dist > u_lightRad) {
+        gl_FragColor = vec4(0);
+        return;
+    }
+
+    vec3 camdir   = normalize(u_cameraPos - pos);
+    vec3 lightdir = normalize(u_lightPos  - pos);
+
+    float diffuseTerm = clamp(dot(normal, lightdir), 0.0, 1.0);
+    vec3 H_L = normalize(lightdir + camdir);
+    float specularRV = clamp(dot(normal, H_L), 0.0, 1.0);
+    float specularTerm = pow(specularRV, 10.0);
+
+    vec3 litColor = diffuseTerm * color + u_lightCol * specularTerm;
+    gl_FragColor = vec4(litColor, 1);
 }

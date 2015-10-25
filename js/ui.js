@@ -4,17 +4,16 @@ var cfg;
     'use strict';
 
     var Cfg = function() {
-        // TODO: Define config fields and defaults here
         this.debugView = -1;
         this.debugScissor = false;
         this.enableEffect0 = false;
+        this.disable = false;
     };
 
     var init = function() {
         cfg = new Cfg();
 
         var gui = new dat.GUI();
-        // TODO: Define any other possible config values
         gui.add(cfg, 'debugView', {
             'None':             -1,
             '0 Depth':           0,
@@ -28,7 +27,6 @@ var cfg;
 
         var eff0 = gui.addFolder('EFFECT NAME HERE');
         eff0.add(cfg, 'enableEffect0');
-        // TODO: add more effects toggles and parameters here
     };
 
     window.handle_load.push(init);
