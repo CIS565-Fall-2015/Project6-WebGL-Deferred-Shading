@@ -132,4 +132,4 @@ WebGL Deferred Shading
 * [4] Blinn-Phong: [Blinn–Phong shading model](https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_shading_model)
 
 ### Third-party codes
-* [5] RGBA packing: [Aras Pranckevičius](http://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/) [StackOverflow](http://stackoverflow.com/questions/30242013/glsl-compressing-packing-multiple-0-1-colours-var4-into-a-single-var4-variab)
+* [5] RGBA packing: [Aras Pranckevičius](http://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/) / [StackOverflow](http://stackoverflow.com/questions/30242013/glsl-compressing-packing-multiple-0-1-colours-var4-into-a-single-var4-variab)
