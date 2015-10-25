@@ -3,7 +3,7 @@
 precision highp float;
 precision highp int;
 
-#define NUM_GBUFFERS 4
+#define NUM_GBUFFERS 2
 
 void main() {
     for (int i = 0; i < NUM_GBUFFERS; i++) {
