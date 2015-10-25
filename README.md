@@ -51,6 +51,8 @@ WebGL Deferred Shading
 * **Performance Analysis**: Difficult to objectively analyze, as my frame times are already extremely low. A significant performance increase should be expected though. Removing one g-buffer results in less of a bottle-neck on memory access. Additionally there is computational improvement made by not calculating normals over and over again in the Blinn-Phong shader pass. In practice I saw the frame time drop from 3ms to 2ms in a scene with 1000 lights.
 
 ### Scissor Test with AABB Optimizations
+![](charts/default scissor.PNG)
+![](charts/improved scissor.PNG)
 * **Overview**: 
 * **Performance Analysis**: 
 
