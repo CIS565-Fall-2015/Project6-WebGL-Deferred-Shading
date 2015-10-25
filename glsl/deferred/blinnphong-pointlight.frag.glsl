@@ -10,6 +10,7 @@ uniform float u_lightRad;
 uniform vec3 u_cameraPos;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
+uniform int u_toon;
 
 varying vec2 v_uv;
 
@@ -52,7 +53,17 @@ void main() {
          return;
      }
 
-    vec3 light = (u_lightCol * max(0.0, dot(normal, light_direction)) * max(0.0, u_lightRad - light_distance) * max(0.0, dot(normal, H)));
     float falloff = 1.0 / pow(light_distance, 2.0);
-    gl_FragColor = falloff * vec4(color_map * light, 1.0);
+    float diffuse = max(0.0, dot(normal, light_direction));
+    float specular = max(0.0, dot(normal, H));
+    // Toon ramp shading
+    // http://prideout.net/blog/?p=22
+    if(u_toon == 1) {
+        float steps = 3.0;
+        diffuse = ceil(diffuse * steps) / steps;
+        specular = ceil(specular * steps) / steps;
+        falloff = ceil(falloff * steps) / steps;
+    }
+
+    gl_FragColor = falloff * vec4(u_lightCol * diffuse * specular * color_map * max(0.0, u_lightRad - light_distance), 1.0);
 }

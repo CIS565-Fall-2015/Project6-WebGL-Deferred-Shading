@@ -9,6 +9,8 @@ var cfg;
         this.debugScissor = false;
         this.enableEffect0 = false;
         this.bloom = false;
+        this.toon = false;
+        this.improvedAABB = true;
     };
 
     var init = function() {
@@ -26,9 +28,11 @@ var cfg;
             '5 Surface normal':  5
         });
         gui.add(cfg, 'debugScissor');
+        gui.add(cfg, 'improvedAABB');
 
         var eff0 = gui.addFolder('Effects');
         eff0.add(cfg, 'bloom');
+        eff0.add(cfg, 'toon');
         // TODO: add more effects toggles and parameters here
     };
 

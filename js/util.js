@@ -181,6 +181,55 @@ window.getScissorForLight = (function() {
     };
 })();
 
+/* Improved scissor by minimizing bounding box distortions and box size */
+window.improvedGetScissorForLight = (function() {
+    // Pre-allocate for performance - avoids additional allocation
+    var a = new THREE.Vector4(0, 0, 0, 0);
+    var b = new THREE.Vector4(0, 0, 0, 0);
+    var minpt = new THREE.Vector2(0, 0);
+    var maxpt = new THREE.Vector2(0, 0);
+    var ret = [0, 0, 0, 0];
+
+    return function(view, proj, l) {
+        // front bottom-left corner of sphere's bounding cube
+        a.fromArray(l.pos);
+        a.w = 1;
+        a.applyMatrix4(view);
+        a.x -= l.rad;
+        a.y -= l.rad;
+
+        // front bottom-left corner of sphere's bounding cube
+        b.fromArray(l.pos);
+        b.w = 1;
+        b.x = a.x + l.rad * 2.0;
+        b.y = a.y + l.rad * 2.0;
+        b.z = a.z;
+
+        a.applyMatrix4(proj);
+        a.divideScalar(a.w);
+
+        b.applyMatrix4(proj);
+        b.divideScalar(b.w);
+
+        minpt.set(Math.max(-1, a.x), Math.max(-1, a.y));
+        maxpt.set(Math.min( 1, b.x), Math.min( 1, b.y));
+
+        if (maxpt.x < -1 || 1 < minpt.x ||
+            maxpt.y < -1 || 1 < minpt.y) {
+            return null;
+        }
+
+        minpt.addScalar(1.0); minpt.multiplyScalar(0.5);
+        maxpt.addScalar(1.0); maxpt.multiplyScalar(0.5);
+
+        ret[0] = Math.round(width * minpt.x);
+        ret[1] = Math.round(height * minpt.y);
+        ret[2] = Math.round(width * (maxpt.x - minpt.x));
+        ret[3] = Math.round(height * (maxpt.y - minpt.y));
+        return ret;
+    };
+})();
+
 window.abortIfFramebufferIncomplete = function(fbo) {
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     var fbstatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER);

@@ -2,7 +2,7 @@
 precision highp float;
 precision highp int;
 
-uniform sampler2D u_orig_color; // TODO?
+uniform sampler2D u_orig_color;
 uniform sampler2D u_color;
 uniform vec2 u_screen_inv;
 

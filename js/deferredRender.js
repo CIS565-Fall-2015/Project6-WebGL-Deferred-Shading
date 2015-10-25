@@ -37,10 +37,16 @@
             // Don't do any post-processing in debug mode
             R.pass_debug.render(state);
         }
-        else if(cfg && cfg.bloom) {
+        else if(cfg && cfg.bloom && !cfg.toon) {
             R.pass_deferred.render(state);
             R.pass_bloom_post1.render(state);
             R.pass_bloom_post2.render(state);
+        }
+        else if(cfg && cfg.toon && !cfg.bloom) {
+            // TODO: What do I do about multiple effects being enabled?
+            R.pass_deferred.render(state);
+            R.pass_toon_post1.render(state);
+            R.pass_toon_post2.render(state);
         }
         else {
             // * Deferred pass and postprocessing pass(es)
@@ -135,16 +141,28 @@
           gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, light.col);
           gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, light.rad);
           gl.uniform3f(R.prog_BlinnPhong_PointLight.u_cameraPos, state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
+          if(cfg && cfg.toon) {
+              gl.uniform1i(R.prog_BlinnPhong_PointLight.u_toon, 1);
+          }
+          else {
+              gl.uniform1i(R.prog_BlinnPhong_PointLight.u_toon, 0);
+          }
 
-          var scissor = getScissorForLight(state.viewMat, state.projMat, light);
+          var scissor;
+          if(cfg.improvedAABB) {
+              scissor = improvedGetScissorForLight(state.viewMat, state.projMat, light);
+          }
+          else {
+              scissor = getScissorForLight(state.viewMat, state.projMat, light);
+          }
           if(scissor) {
-            gl.scissor(scissor[0], scissor[1], scissor[2], scissor[3]);
+              gl.scissor(scissor[0], scissor[1], scissor[2], scissor[3]);
 
             if(cfg.debugScissor) {
-              renderFullScreenQuad(R.progRed);
+                renderFullScreenQuad(R.progRed);
             }
             else {
-              renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+                renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
             }
           }
         }
@@ -172,7 +190,7 @@
 
     R.pass_post0.render = function(state) {
         // * Unbind any existing framebuffer (if there are no more passes)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null); // TODO: should this be like this?
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         // * Clear the framebuffer depth to 1.0
         gl.clearDepth(1.0);
@@ -194,7 +212,7 @@
     };
 
     /**
-     * 'post1' pass: Perform (first) pass of post-processing
+     * 'post1' pass: Perform (first) pass of post-processing for bloom shading
      */
     R.pass_bloom_post1.render = function(state) {
         // * Unbind any existing framebuffer (if there are no more passes)
@@ -223,7 +241,7 @@
     };
 
     /**
-     * 'post2' pass: Perform (second) pass of post-processing
+     * 'post2' pass: Perform (second) pass of post-processing for bloom shading
      */
     R.pass_bloom_post2.render = function(state) {
         // * Unbind any existing framebuffer (if there are no more passes)
@@ -256,6 +274,71 @@
 
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progBloomPost2);
+    };
+
+    /**
+     * 'post1' pass: Perform (first) pass of post-processing for toon shading
+     */
+    R.pass_toon_post1.render = function(state) {
+        // * Unbind any existing framebuffer (if there are no more passes)
+        // So we don't do this because there are more passes?
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_toon_post1.fbo);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.progToonPost1.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE0);
+        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        // Configure the R.progToonPost1.u_color uniform to point at texture unit 0
+        gl.uniform1i(R.progToonPost1.u_color, 0);
+
+        gl.uniform2f(R.progToonPost1.u_screen_inv, 1.0 / state.screenDim.w, 1.0 / state.screenDim.h);
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.progToonPost1);
+    };
+
+    /**
+     * 'post2' pass: Perform (second) pass of post-processing for toon shading
+     */
+    R.pass_toon_post2.render = function(state) {
+        // * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.progToonPost2.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE0);
+        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        // Configure the R.progToonPost2.u_color uniform to point at texture unit 0
+        gl.uniform1i(R.progToonPost2.u_color, 0);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE1);
+        // Bind the TEXTURE_2D, R.pass_toon_post1.colorTex to the active texture unit
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_toon_post1.colorTex);
+        // Configure the R.progToonPost2.u_color uniform to point at texture unit 1
+        gl.uniform1i(R.progToonPost2.u_color, 1);
+
+        gl.uniform2f(R.progToonPost2.u_screen_inv, 1.0 / state.screenDim.w, 1.0 / state.screenDim.h);
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.progToonPost2);
     };
 
     var renderFullScreenQuad = (function() {

@@ -8,6 +8,8 @@
     R.pass_post0 = {};
     R.pass_bloom_post1 = {};
     R.pass_bloom_post2 = {};
+    R.pass_toon_post1 = {};
+    R.pass_toon_post2 = {};
     R.lights = [];
 
     R.NUM_GBUFFERS = 4;
@@ -22,6 +24,7 @@
         R.pass_deferred.setup();
         R.pass_post0.setup();
         R.pass_bloom_post1.setup();
+        R.pass_toon_post1.setup();
     };
 
     // TODO: Edit if you want to change the light initial positions
@@ -113,7 +116,7 @@
     }
 
     /**
-     * Bloom shading
+     * first pass bloom shading setup
      */
     R.pass_bloom_post1.setup = function() {
         // * Create the FBO
@@ -124,6 +127,23 @@
 
         // * Check for framebuffer errors
         abortIfFramebufferIncomplete(R.pass_bloom_post1.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    }
+
+    /**
+     * first pass toon shading setup
+     */
+    R.pass_toon_post1.setup = function() {
+        // * Create the FBO
+        R.pass_toon_post1.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_toon_post1.colorTex = createAndBindColorTargetTexture(
+            R.pass_toon_post1.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_toon_post1.fbo);
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
@@ -172,6 +192,7 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+            p.u_toon = gl.getUniformLocation(p.prog, 'u_toon');
             R.prog_BlinnPhong_PointLight = p;
         });
 
@@ -200,6 +221,21 @@
             p.u_screen_inv = gl.getUniformLocation(p.prog, 'u_screen_inv');
             // Save the object into this variable for access later
             R.progBloomPost2 = p;
+        });
+
+        loadPostProgram('toon.one', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_screen_inv = gl.getUniformLocation(p.prog, 'u_screen_inv');
+            // Save the object into this variable for access later
+            R.progToonPost1 = p;
+        });
+
+        loadPostProgram('toon.two', function(p) {
+            p.u_orig_color = gl.getUniformLocation(p.prog, 'u_orig_color');
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_screen_inv = gl.getUniformLocation(p.prog, 'u_screen_inv');
+            // Save the object into this variable for access later
+            R.progToonPost2 = p;
         });
     };
 
