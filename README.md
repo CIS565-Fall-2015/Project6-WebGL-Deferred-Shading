@@ -47,10 +47,11 @@ WebGL Deferred Shading
 ![](charts/Toon Analysis.png)
 
 ### G-Buffer Optimization
-
-
+* **Overview**: Pre-calculate the surface normal by applying the normal map in the copy shader pass. This prevents us from having to copy the geometry normals and normal map through the g-buffers.
+* **Performance Analysis**: Difficult to objectively analyze, as my frame times are already extremely low. A significant performance increase should be expected though. Removing one g-buffer results in less of a bottle-neck on memory access. Additionally there is computational improvement made by not calculating normals over and over again in the Blinn-Phong shader pass. In practice I saw the frame time drop from 3ms to 2ms in a scene with 1000 lights.
 
 ### Scissor
+AABB
 
 ### Additional Material Property
 TODO: Add picture
