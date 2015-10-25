@@ -58,8 +58,8 @@ WebGL Deferred Shading
 #### Optimized AABB Scissor Test
 ![](img/improved scissor.PNG)
 
-* **Overview**: 
-* **Performance Analysis**: 
+* **Overview**: In the optimized version of the scissor test, the AABB is calculated at the light's front-facing maximum circle. This minimizes the distortions that result from transformations and give us smaller, more accurately sized bounding boxes to use for the scissor test. This has performance benefits and eliminates minor artifacts caused by the original implementation.
+* **Performance Analysis**: The smaller AABB result in faster scissor test calculations.
 
 ### Additional Material Property
 TODO: Add picture
