@@ -18,11 +18,12 @@
         loadAllShaderPrograms();
         R.pass_copy.setup();
         R.pass_deferred.setup();
+        console.log('seted up.');
     };
 
     // TODO: Edit if you want to change the light initial positions
-    R.light_min = [-6, 0, -14];
-    R.light_max = [6, 18, 14];
+    R.light_min = [-14, 0, -6];
+    R.light_max = [14, 18, 6];
     R.light_dt = -0.03;
     R.LIGHT_RADIUS = 4.0;
     R.NUM_LIGHTS = 20; // TODO: test with MORE lights!
@@ -34,14 +35,14 @@
             for (var i = 0; i < 3; i++) {
                 var mn = R.light_min[i];
                 var mx = R.light_max[i];
-                r = Math.random() * (mx - mn) + mn;
+                r[i] = Math.random() * (mx - mn) + mn;
             }
             return r;
         };
 
         for (var i = 0; i < R.NUM_LIGHTS; i++) {
             R.lights.push({
-                pos: [posfn(), posfn(), posfn()],
+                pos: posfn(), 
                 col: [
                     1 + Math.random(),
                     1 + Math.random(),
@@ -75,6 +76,8 @@
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL(attachments);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null); 
     };
 
     /**
@@ -92,6 +95,8 @@
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null); 
     };
 
     /**
@@ -105,6 +110,7 @@
 
                 // Retrieve the uniform and attribute locations
                 p.u_cameraMat = gl.getUniformLocation(prog, 'u_cameraMat');
+               
                 p.u_colmap    = gl.getUniformLocation(prog, 'u_colmap');
                 p.u_normap    = gl.getUniformLocation(prog, 'u_normap');
                 p.a_position  = gl.getAttribLocation(prog, 'a_position');
@@ -137,6 +143,7 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+           p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
             R.prog_BlinnPhong_PointLight = p;
         });
 
