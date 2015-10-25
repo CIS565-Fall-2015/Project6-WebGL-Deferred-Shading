@@ -201,6 +201,7 @@
             gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
             gl.uniform1f(prog.u_width, width);
             gl.uniform1f(prog.u_height,height);
+            gl.uniform1i(prog.u_color, 0);
             
             //x
             gl.uniform1i(prog.u_axis, 0);
@@ -208,6 +209,11 @@
             renderFullScreenQuad(prog);
             
             //y
+            gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+            gl.activeTexture(gl['TEXTURE0']);
+            gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.glowTex);
+            
             gl.uniform1i(prog.u_axis, 1);
             
             renderFullScreenQuad(prog);

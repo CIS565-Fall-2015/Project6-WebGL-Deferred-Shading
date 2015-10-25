@@ -19,6 +19,8 @@ void main() {
     }
 
     vec4 glow = texture2D(u_glow, v_uv);
-    gl_FragColor = color + glow;
+    
+    gl_FragColor = color;
+    //gl_FragColor = color + glow;
     //gl_FragColor = glow;
 }

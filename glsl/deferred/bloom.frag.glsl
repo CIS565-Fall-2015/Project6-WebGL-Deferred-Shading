@@ -2,7 +2,7 @@
 precision highp float;
 precision highp int;
 
-#define BLOOM_THRESHOLD 0.9
+#define BLOOM_THRESHOLD 0.8
 
 #define GAUSSIAN_R 3
 
@@ -24,8 +24,17 @@ void main() {
     
     vec2 offset = vec2( u_axis==0 ? 1.0/u_width : 0.0 
                         , u_axis==1 ? 1.0/u_height : 0.0);
-    vec3 color = texture2D(u_color, v_uv).rgb;
+    vec4 color = texture2D(u_color, v_uv).rgba;
+    
+    if(color.a == 0.0)
+    {
+        gl_FragColor = color;
+        return;
+    }
+    
     vec3 bloom = vec3(0.0);
+    
+    
     
     for(int i = -10 ; i <= 10; i++)
     {
@@ -33,7 +42,7 @@ void main() {
         vec3 cur_color = texture2D(u_color, v_uv + float(i) * offset ).rgb;
         
         //bloom += weight[i+1] * ( cur_color - vec3(BLOOM_THRESHOLD) );
-        bloom += 0.5 * ( max(cur_color - vec3(BLOOM_THRESHOLD),0.0) );
+        bloom += 0.2 * ( max(cur_color - vec3(BLOOM_THRESHOLD),0.0) );
     }
     
     

@@ -4,7 +4,7 @@ precision highp int;
 
 
 
-#define TOON_DEPTH_THRESHOLD 0.05
+#define TOON_DEPTH_THRESHOLD 0.02
 
 uniform float u_width;
 uniform float u_height;
