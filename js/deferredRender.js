@@ -141,7 +141,7 @@
         
         gl.enable(gl.SCISSOR_TEST);
         
-        gl.uniform1f(R.prog_BlinnPhong_PointLight.u_toonShading ,true );
+        gl.uniform1f(R.prog_BlinnPhong_PointLight.u_toonShading ,cfg.enableToon );
         gl.uniform3f( R.prog_BlinnPhong_PointLight.u_cameraPos,state.cameraPos.x,state.cameraPos.y,state.cameraPos.z );
         for(var i = 0; i < R.NUM_LIGHTS ; i++)
         {
@@ -182,11 +182,12 @@
         // Disable blending so that it doesn't affect other code
         
         
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        
         
         //Contour shader (part of toon shading)
-        if( true )
+        if( cfg.enableToon )
         {
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             var prog = R.prog_Contour;
             gl.useProgram(prog.prog);
             gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
