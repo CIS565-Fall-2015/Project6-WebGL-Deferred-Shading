@@ -20,13 +20,21 @@ WebGL Deferred Shading
 ## Features
 
 ### Deferred Blinn-Phong Shading
+
 * Overview
-* 
+
+
 ### Bloom Shading with Two-Pass Gaussian Blur
+
 * Overview: Two-pass Gaussian blur to simulate the bloom glow effect.
 * Performance Impact:
 * Further Improvement: 
+* 
+
 ### Toon Shading
+
+* Overview: Toon ramp shading using Sobel operator as an edge detector. 
+* Performance Impact 
 
 ### Scissor
 
