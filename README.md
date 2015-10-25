@@ -30,14 +30,15 @@ WebGL Deferred Shading
 * Performance Impact:
 * Further Improvement: 
 * 
-[![](charts/Bloom Analysis.png)
+
+![](charts/Bloom Analysis.png)
 
 ### Toon Shading
 
 * Overview: Toon ramp shading using Sobel operator as an edge detector. 
 * Performance Impact 
 
-[![](charts/Toon Analysis.png)
+![](charts/Toon Analysis.png)
 ### Scissor
 
 
