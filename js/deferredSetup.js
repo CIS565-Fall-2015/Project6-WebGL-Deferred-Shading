@@ -138,6 +138,8 @@
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
             p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
+            p.u_toonShading = gl.getUniformLocation(p.prog, 'u_toonShading');
+            
             R.prog_BlinnPhong_PointLight = p;
         });
 
@@ -154,6 +156,13 @@
         });
 
         // TODO: If you add more passes, load and set up their shader programs.
+        loadDeferredProgram('contour',function(p){
+            // Save the object into this variable for access later
+            p.u_width = gl.getUniformLocation(p.prog, 'u_width');
+            p.u_height = gl.getUniformLocation(p.prog, 'u_height');
+            
+            R.prog_Contour = p;
+        });
     };
 
     var loadDeferredProgram = function(name, callback) {

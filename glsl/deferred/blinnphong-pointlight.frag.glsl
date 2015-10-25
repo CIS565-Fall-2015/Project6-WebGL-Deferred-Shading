@@ -4,6 +4,11 @@ precision highp int;
 
 #define NUM_GBUFFERS 4
 
+#define TOON_STEP 0.2
+#define TOON_DEPTH_THRESHOLD 1.0
+
+uniform bool u_toonShading;
+
 uniform vec3 u_cameraPos;
 
 uniform vec3 u_lightCol;
@@ -37,13 +42,15 @@ void main() {
     vec3 normap = gb3.xyz;
     
     vec3 nor = applyNormalMap(geomnor, normap);
-
+    
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.
     if (depth == 1.0) {
         gl_FragColor = vec4(0, 0, 0, 0);
         return;
     }
+    
+    
     
     vec3 l = u_lightPos - pos;
     
@@ -53,11 +60,25 @@ void main() {
     
     float attenuation = clamp(1.0 - dist/u_lightRad, 0.0, 1.0);
     
-    vec3 diffuse = max(dot(l,nor),0.0) * u_lightCol * colmap;
+    float diffuse_cos = max(dot(l,nor),0.0);
+    if(u_toonShading)
+    {
+        diffuse_cos = TOON_STEP * float(floor(diffuse_cos/TOON_STEP));
+    }
+    
+    
+    vec3 diffuse = diffuse_cos * u_lightCol * colmap;
     
     vec3 v = normalize(u_cameraPos - pos);
     vec3 r = -l + 2.0 * dot(l,nor) * nor;
-    vec3 specular = pow(max(dot(r,v),0.0), 32.0) * u_lightCol * colmap;
+    float specular_cos = max(dot(r,v),0.0);
+    if(u_toonShading)
+    {
+        specular_cos = TOON_STEP * float(floor(specular_cos/TOON_STEP));
+    }
+    
+    vec3 specular = pow( specular_cos, 32.0) * u_lightCol * colmap;
     
     gl_FragColor = vec4 (   clamp( attenuation * (diffuse + specular) , 0.0, 1.0 ) , 1.0);
+   
 }

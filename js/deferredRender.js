@@ -10,7 +10,10 @@
             !R.prog_Ambient ||
             !R.prog_BlinnPhong_PointLight ||
             !R.prog_Debug ||
-            !R.progPost1)) {
+            !R.progPost1 ||
+            
+            !R.prog_Contour
+            )) {
             console.log('waiting for programs to load...');
             return;
         }
@@ -138,14 +141,11 @@
         
         gl.enable(gl.SCISSOR_TEST);
         
+        gl.uniform1f(R.prog_BlinnPhong_PointLight.u_toonShading ,true );
         gl.uniform3f( R.prog_BlinnPhong_PointLight.u_cameraPos,state.cameraPos.x,state.cameraPos.y,state.cameraPos.z );
         for(var i = 0; i < R.NUM_LIGHTS ; i++)
         {
             var light = R.lights[i];
-            gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightCol, light.col );
-            gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightPos, light.pos );
-            gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, light.rad );
-            
             var sc = getScissorForLight(state.viewMat, state.projMat, light);
             if(sc != null)
             {
@@ -153,10 +153,15 @@
                 if (cfg.debugScissor) 
                 {
                     //?
+                    gl.blendFunc(gl.SRC_ALPHA, gl.DST_ALPHA);
                     renderFullScreenQuad(R.progRed);
                 } 
                 else 
                 {
+                    
+                    gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightCol, light.col );
+                    gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightPos, light.pos );
+                    gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, light.rad );
                     renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
                 }
             }
@@ -175,6 +180,22 @@
         //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
 
         // Disable blending so that it doesn't affect other code
+        
+        
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        
+        //Contour shader (part of toon shading)
+        if( true )
+        {
+            var prog = R.prog_Contour;
+            gl.useProgram(prog.prog);
+            gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
+            gl.uniform1i(prog.u_depth, R.NUM_GBUFFERS);
+            gl.uniform1f(prog.u_width, width);
+            gl.uniform1f(prog.u_height,height);
+            renderFullScreenQuad(R.prog_Contour);
+        }
+        
         gl.disable(gl.BLEND);
     };
 
