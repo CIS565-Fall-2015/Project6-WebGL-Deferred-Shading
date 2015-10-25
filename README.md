@@ -36,9 +36,11 @@ WebGL Deferred Shading
 ### Toon Shading
 
 * Overview: Toon ramp shading using Sobel operator as an edge detector. 
-* Performance Impact 
+* Performance Impact: No noticable impact. As you can see in the below chart, enabling the toon effect has no impact on performance even with a large number of lights in the scene.
+* Further Improvement: With regard to performance, there are no improvements I would make because I'm seeing performance numbers in line with the standard Blinn-Phong shading. There are some changes I'd like to make to the visuals of the effect though. Right now the effect is only impacting the point light sources. I also wish to apply the effect to the ambient light as well, so that the toon look will be across the entire scene.
 
 ![](charts/Toon Analysis.png)
+
 ### Scissor
 
 
