@@ -119,21 +119,31 @@
         for (var i = 0; i < R.lights.length; i++) {
             var light = R.lights[i];
             var sc = getScissorForLight(state.viewMat, state.projMat, light);
-            if (sc !== null) {
+            if (sc !== null && sc[2] > 0 && sc[3] > 0) {
                 gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+            } else {
+                continue;
             }
 
-            bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
-            gl.uniform3f(R.prog_BlinnPhong_PointLight.u_cameraPos,
-                         cam[0], cam[1], cam[2]);
+            var program = R.prog_BlinnPhong_PointLight;
+            if (cfg.debugScissor) {
+                program = R.progScissor;
 
-            gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightCol,
-                         light.col[0], light.col[1], light.col[2]);
-            gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightPos,
-                         light.pos[0], light.pos[1], light.pos[2]);
-            gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, light.rad);
+                gl.uniform3f(program.u_lightCol,
+                            light.col[0], light.col[1], light.col[2]);
+            } else {
+                bindTexturesForLightPass(program);
+                gl.uniform1i(program.u_toon, cfg.toon ? 1 : 0);
+                gl.uniform3f(program.u_cameraPos,
+                            cam[0], cam[1], cam[2]);
 
-            renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+                gl.uniform3f(program.u_lightCol,
+                            light.col[0], light.col[1], light.col[2]);
+                gl.uniform3f(program.u_lightPos,
+                            light.pos[0], light.pos[1], light.pos[2]);
+                gl.uniform1f(program.u_lightRad, light.rad);
+            }
+            renderFullScreenQuad(program);
         }
         gl.disable(gl.SCISSOR_TEST);
 
