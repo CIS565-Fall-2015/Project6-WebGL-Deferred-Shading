@@ -163,6 +163,26 @@
             
             R.prog_Contour = p;
         });
+        
+        
+        loadDeferredProgram('bloom',function(p){
+            // Save the object into this variable for access later
+            p.u_width = gl.getUniformLocation(p.prog, 'u_width');
+            p.u_height = gl.getUniformLocation(p.prog, 'u_height');
+            p.u_axis = gl.getUniformLocation(p.prog, 'u_axis');
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            R.prog_Bloom = p;
+        });
+        
+        /*
+        loadPostProgram('bloom',function(p){
+            // Save the object into this variable for access later
+            p.u_width = gl.getUniformLocation(p.prog, 'u_width');
+            p.u_height = gl.getUniformLocation(p.prog, 'u_height');
+            p.u_axis = gl.getUniformLocation(p.prog, 'u_axis');
+            R.prog_Bloom = p;
+        });
+        */
     };
 
     var loadDeferredProgram = function(name, callback) {

@@ -12,7 +12,8 @@
             !R.prog_Debug ||
             !R.progPost1 ||
             
-            !R.prog_Contour
+            !R.prog_Contour ||
+            !R.prog_Bloom
             )) {
             console.log('waiting for programs to load...');
             return;
@@ -182,7 +183,28 @@
         // Disable blending so that it doesn't affect other code
         
         
-        //
+        //bloom
+        if(true)
+        {
+            gl.blendFunc(gl.ONE,gl.ONE);
+            var prog = R.prog_Bloom;
+            
+            gl.useProgram(prog.prog);
+            gl.activeTexture(gl['TEXTURE0']);
+            gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+            gl.uniform1f(prog.u_width, width);
+            gl.uniform1f(prog.u_height,height);
+            
+            //x
+            gl.uniform1i(prog.u_axis, 0);
+            
+            renderFullScreenQuad(prog);
+            
+            //y
+            gl.uniform1i(prog.u_axis, 1);
+            
+            renderFullScreenQuad(prog);
+        }
         
         
         
@@ -193,7 +215,7 @@
             var prog = R.prog_Contour;
             gl.useProgram(prog.prog);
             gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
-            gl.uniform1i(prog.u_depth, R.NUM_GBUFFERS);
+            gl.uniform1i(prog.u_depth, 0);
             gl.uniform1f(prog.u_width, width);
             gl.uniform1f(prog.u_height,height);
             renderFullScreenQuad(R.prog_Contour);
@@ -247,6 +269,7 @@
 
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);
+        
     };
 
     var renderFullScreenQuad = (function() {

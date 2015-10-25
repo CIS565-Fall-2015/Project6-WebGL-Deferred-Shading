@@ -30,6 +30,7 @@ var cfg;
         eff0.add(cfg, 'enableToon');
         //eff0.add(cfg, 'enableToon');
         // TODO: add more effects toggles and parameters here
+        eff0.add(cfg,'enableBloom');
     };
 
     window.handle_load.push(init);
