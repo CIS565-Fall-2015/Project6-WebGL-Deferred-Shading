@@ -166,6 +166,7 @@
                 p.u_cameraMat = gl.getUniformLocation(prog, 'u_cameraMat');
                 p.u_colmap    = gl.getUniformLocation(prog, 'u_colmap');
                 p.u_normap    = gl.getUniformLocation(prog, 'u_normap');
+                p.u_specular_exp = gl.getUniformLocation(prog, 'u_specular_exp');
                 p.a_position  = gl.getAttribLocation(prog, 'a_position');
                 p.a_normal    = gl.getAttribLocation(prog, 'a_normal');
                 p.a_uv        = gl.getAttribLocation(prog, 'a_uv');

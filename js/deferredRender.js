@@ -155,7 +155,7 @@
           else {
               scissor = getScissorForLight(state.viewMat, state.projMat, light);
           }
-          if(scissor) {
+          if(scissor != null) {
               gl.scissor(scissor[0], scissor[1], scissor[2], scissor[3]);
 
             if(cfg.debugScissor) {

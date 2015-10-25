@@ -126,6 +126,7 @@ window.readyModelForDraw = function(prog, m) {
         gl.vertexAttribPointer(prog.a_uv, 2, gl.FLOAT, false, 0, 0);
     }
 
+    gl.uniform1f(prog.u_specular_exp, m.specular_exp);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.idx);
 };
 

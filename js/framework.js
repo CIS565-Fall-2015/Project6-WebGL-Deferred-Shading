@@ -76,7 +76,7 @@ var width, height;
         gl = renderer.context;
 
         // TODO: For performance measurements, disable debug mode!
-        var debugMode = true;
+        var debugMode = false;
 
         if (debugMode) {
             $('#debugmodewarning').css('display', 'block');
@@ -135,7 +135,23 @@ var width, height;
                 loadTexture('models/sponza/normal.png').then(function(tex) {
                     m.normap = tex;
                 });
+
+                m.specular_exp = 1.0;
                 models.push(m);
+            });
+        });
+
+        loadModel('models/cube.obj', function(o) {
+            scene.add(o);
+            uploadModel(o, function(t) {
+              loadTexture('models/cow/color.jpg').then(function(tex) {
+                  t.colmap = tex;
+              });
+              loadTexture('models/sponza/normal.png').then(function(tex) {
+                  t.normap = tex;
+              });
+                t.specular_exp = 10.0;
+                models.push(t);
             });
         });
 

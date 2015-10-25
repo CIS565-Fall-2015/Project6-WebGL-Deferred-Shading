@@ -19,6 +19,7 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     vec3 up = normalize(vec3(0.001, 1, 0.001));
     vec3 surftan = normalize(cross(geomnor, up));
     vec3 surfbinor = cross(geomnor, surftan);
+
     return normap.y * surftan + normap.x * surfbinor + normap.z * geomnor;
 }
 
@@ -34,6 +35,7 @@ void main() {
     vec3 color_map = gb2.xyz;
     vec3 normal_map = gb3.xyz;
     vec3 normal = applyNormalMap(geom_normal, normal_map);
+    float specular_exp = gb1.w;
 
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.
@@ -55,7 +57,7 @@ void main() {
 
     float falloff = 1.0 / pow(light_distance, 2.0);
     float diffuse = max(0.0, dot(normal, light_direction));
-    float specular = max(0.0, dot(normal, H));
+    float specular = pow(max(0.0, dot(normal, H)), specular_exp);
     // Toon ramp shading
     // http://prideout.net/blog/?p=22
     if(u_toon == 1) {
