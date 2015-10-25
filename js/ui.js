@@ -26,8 +26,9 @@ var cfg;
         });
         gui.add(cfg, 'debugScissor');
 
-        gui.addFolder('Effects');
-        gui.add(cfg, 'enableToon');
+        var eff0 = gui.addFolder('Effects');
+        eff0.add(cfg, 'enableToon');
+        //eff0.add(cfg, 'enableToon');
         // TODO: add more effects toggles and parameters here
     };
 

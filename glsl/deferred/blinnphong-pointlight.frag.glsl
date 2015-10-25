@@ -79,6 +79,6 @@ void main() {
     
     vec3 specular = pow( specular_cos, 32.0) * u_lightCol * colmap;
     
-    gl_FragColor = vec4 (   clamp( attenuation * (diffuse + specular) , 0.0, 1.0 ) , 1.0);
+    gl_FragColor = vec4 (   attenuation * (diffuse + specular) , 1.0);
    
 }
