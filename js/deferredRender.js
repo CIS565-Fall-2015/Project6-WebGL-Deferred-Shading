@@ -184,7 +184,7 @@
         
         
         //bloom
-        if(false)
+        if(cfg.enableBloom)
         {
             gl.blendFunc(gl.ONE,gl.ONE);
             var prog = R.prog_Bloom;

@@ -8,6 +8,8 @@ var cfg;
         this.debugView = -1;
         this.debugScissor = false;
         this.enableToon = false;
+        
+        this.enableBloom = false;
     };
 
     var init = function() {
@@ -30,7 +32,7 @@ var cfg;
         eff0.add(cfg, 'enableToon');
         //eff0.add(cfg, 'enableToon');
         // TODO: add more effects toggles and parameters here
-        gui.add(cfg,'enableBloom');
+        eff0.add(cfg,'enableBloom');
     };
 
     window.handle_load.push(init);
