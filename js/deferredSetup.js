@@ -95,6 +95,24 @@
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        
+        
+        //bloom buffer
+        if(true)
+        {
+            R.pass_deferred.glowbuffer = gl.createFramebuffer();
+            // * Create, bind, and store a single color target texture for the FBO
+            R.pass_deferred.glowTex = createAndBindColorTargetTexture(
+                R.pass_deferred.glowbuffer, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+    
+            // * Check for framebuffer errors
+            abortIfFramebufferIncomplete(R.pass_deferred.glowbuffer);
+            
+            gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            gl.clearDepth(1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        }
+        
     };
 
     /**
@@ -154,6 +172,7 @@
 
         loadPostProgram('one', function(p) {
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_glow = gl.getUniformLocation(p.prog, 'u_glow');
             // Save the object into this variable for access later
             R.progPost1 = p;
         });

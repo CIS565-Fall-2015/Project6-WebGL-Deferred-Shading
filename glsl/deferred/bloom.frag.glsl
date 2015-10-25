@@ -27,13 +27,13 @@ void main() {
     vec3 color = texture2D(u_color, v_uv).rgb;
     vec3 bloom = vec3(0.0);
     
-    for(int i = -1 ; i <= 1; i++)
+    for(int i = -10 ; i <= 10; i++)
     {
         
         vec3 cur_color = texture2D(u_color, v_uv + float(i) * offset ).rgb;
         
         //bloom += weight[i+1] * ( cur_color - vec3(BLOOM_THRESHOLD) );
-        bloom += 0.333333 * ( max(cur_color - vec3(BLOOM_THRESHOLD),0.0) );
+        bloom += 0.5 * ( max(cur_color - vec3(BLOOM_THRESHOLD),0.0) );
     }
     
     
@@ -41,7 +41,7 @@ void main() {
     
     gl_FragColor = vec4(bloom,1.0);
     
-    gl_FragColor = vec4(1.0);
+    //gl_FragColor = vec4(1.0);
     
    
 }

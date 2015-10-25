@@ -186,6 +186,13 @@
         //bloom
         if(cfg.enableBloom)
         {
+            gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.glowbuffer);
+            
+            gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            gl.clearDepth(1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            
             gl.blendFunc(gl.ONE,gl.ONE);
             var prog = R.prog_Bloom;
             
@@ -205,15 +212,25 @@
             
             renderFullScreenQuad(prog);
         }
+        else
+        {
+            gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.glowbuffer);
+            gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            gl.clearDepth(1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        }
         
         
         
         //Contour shader (part of toon shading)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
         if( cfg.enableToon )
         {
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
             var prog = R.prog_Contour;
             gl.useProgram(prog.prog);
+            gl.activeTexture(gl['TEXTURE0']);
             gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
             gl.uniform1i(prog.u_depth, 0);
             gl.uniform1f(prog.u_width, width);
@@ -266,6 +283,15 @@
         
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);
+
+
+        //if(cfg.enableBloom)
+        //{
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.glowTex);
+            gl.uniform1i(R.progPost1.u_glow,1);
+       // }
+
 
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);
