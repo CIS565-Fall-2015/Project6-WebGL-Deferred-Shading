@@ -141,6 +141,7 @@ var width, height;
             });
         });
 
+        /*
         loadModel('models/cube.obj', function(o) {
             scene.add(o);
             uploadModel(o, function(t) {
@@ -154,6 +155,7 @@ var width, height;
                 models.push(t);
             });
         });
+        */
 
         // Render once to get three.js to copy all of the model buffers
         resize();
