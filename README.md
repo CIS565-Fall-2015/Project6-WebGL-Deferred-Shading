@@ -228,10 +228,6 @@ For each *performance* feature (required or extra), please provide:
   * Show debug views when possible.
     * If the debug view correlates with performance, explain how.
 
-**Note:** Be aware that stats.js may give invalid 0-3 millisecond frame
-timings in Chrome - if this happens, you can use the FPS counter and
-convert to milliseconds.
-
 ### Starter Code Tour
 
 You'll be working mainly in `deferredRender.js` using raw WebGL. Three.js is
@@ -385,9 +381,6 @@ Plug-ins:
 
 Libraries:
 * Stats.js (already included)
-  * **Note:** Be aware that stats.js may give invalid 0-3 millisecond frame
-    timings in Chrome - if this happens, you can use the FPS counter and
-    convert to milliseconds.
 
 Firefox can also be useful - it has a canvas inspector, WebGL profiling and a
 shader editor built in.
