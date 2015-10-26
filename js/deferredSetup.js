@@ -5,10 +5,14 @@
     R.pass_copy = {};
     R.pass_debug = {};
     R.pass_deferred = {};
-    R.pass_post1 = {};
+    R.pass_post0 = {};
+    R.pass_bloom_post1 = {};
+    R.pass_bloom_post2 = {};
+    R.pass_toon_post1 = {};
+    R.pass_toon_post2 = {};
     R.lights = [];
 
-    R.NUM_GBUFFERS = 4;
+    R.NUM_GBUFFERS = 3;
 
     /**
      * Set up the deferred pipeline framebuffer objects and textures.
@@ -18,14 +22,16 @@
         loadAllShaderPrograms();
         R.pass_copy.setup();
         R.pass_deferred.setup();
+        R.pass_post0.setup();
+        R.pass_bloom_post1.setup();
+        R.pass_toon_post1.setup();
     };
 
-    // TODO: Edit if you want to change the light initial positions
     R.light_min = [-14, 0, -6];
     R.light_max = [14, 18, 6];
     R.light_dt = -0.03;
     R.LIGHT_RADIUS = 4.0;
-    R.NUM_LIGHTS = 20; // TODO: test with MORE lights!
+    R.NUM_LIGHTS = 50;
     var setupLights = function() {
         Math.seedrandom(0);
 
@@ -98,6 +104,54 @@
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
 
+    R.pass_post0.setup = function() {
+        // * Create the FBO
+        R.pass_post0.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_post0.colorTex = createAndBindColorTargetTexture(
+            R.pass_post0.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_post0.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    }
+
+    /**
+     * first pass bloom shading setup
+     */
+    R.pass_bloom_post1.setup = function() {
+        // * Create the FBO
+        R.pass_bloom_post1.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_bloom_post1.colorTex = createAndBindColorTargetTexture(
+            R.pass_bloom_post1.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_bloom_post1.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    }
+
+    /**
+     * first pass toon shading setup
+     */
+    R.pass_toon_post1.setup = function() {
+        // * Create the FBO
+        R.pass_toon_post1.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_toon_post1.colorTex = createAndBindColorTargetTexture(
+            R.pass_toon_post1.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_toon_post1.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    }
+
     /**
      * Loads all of the shader programs used in the pipeline.
      */
@@ -111,6 +165,7 @@
                 p.u_cameraMat = gl.getUniformLocation(prog, 'u_cameraMat');
                 p.u_colmap    = gl.getUniformLocation(prog, 'u_colmap');
                 p.u_normap    = gl.getUniformLocation(prog, 'u_normap');
+                p.u_specular_exp = gl.getUniformLocation(prog, 'u_specular_exp');
                 p.a_position  = gl.getAttribLocation(prog, 'a_position');
                 p.a_normal    = gl.getAttribLocation(prog, 'a_normal');
                 p.a_uv        = gl.getAttribLocation(prog, 'a_uv');
@@ -141,6 +196,7 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+            p.u_toon = gl.getUniformLocation(p.prog, 'u_toon');
             R.prog_BlinnPhong_PointLight = p;
         });
 
@@ -150,13 +206,41 @@
             R.prog_Debug = p;
         });
 
-        loadPostProgram('one', function(p) {
+        loadPostProgram('zero', function(p) {
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
             // Save the object into this variable for access later
-            R.progPost1 = p;
+            R.progPost0 = p;
         });
 
-        // TODO: If you add more passes, load and set up their shader programs.
+        loadPostProgram('bloom.one', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_screen_inv = gl.getUniformLocation(p.prog, 'u_screen_inv');
+            // Save the object into this variable for access later
+            R.progBloomPost1 = p;
+        });
+
+        loadPostProgram('bloom.two', function(p) {
+            p.u_orig_color = gl.getUniformLocation(p.prog, 'u_orig_color');
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_screen_inv = gl.getUniformLocation(p.prog, 'u_screen_inv');
+            // Save the object into this variable for access later
+            R.progBloomPost2 = p;
+        });
+
+        loadPostProgram('toon.one', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_screen_inv = gl.getUniformLocation(p.prog, 'u_screen_inv');
+            // Save the object into this variable for access later
+            R.progToonPost1 = p;
+        });
+
+        loadPostProgram('toon.two', function(p) {
+            p.u_orig_color = gl.getUniformLocation(p.prog, 'u_orig_color');
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_screen_inv = gl.getUniformLocation(p.prog, 'u_screen_inv');
+            // Save the object into this variable for access later
+            R.progToonPost2 = p;
+        });
     };
 
     var loadDeferredProgram = function(name, callback) {

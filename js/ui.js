@@ -4,31 +4,30 @@ var cfg;
     'use strict';
 
     var Cfg = function() {
-        // TODO: Define config fields and defaults here
         this.debugView = -1;
         this.debugScissor = false;
-        this.enableEffect0 = false;
+        this.improvedAABB = true;
+        this.effects = -1;
     };
 
     var init = function() {
         cfg = new Cfg();
 
         var gui = new dat.GUI();
-        // TODO: Define any other possible config values
         gui.add(cfg, 'debugView', {
             'None':             -1,
             '0 Depth':           0,
             '1 Position':        1,
-            '2 Geometry normal': 2,
-            '3 Color map':       3,
-            '4 Normal map':      4,
-            '5 Surface normal':  5
+            '2 Surface normal': 2,
+            '3 Color map':       3
         });
         gui.add(cfg, 'debugScissor');
-
-        var eff0 = gui.addFolder('EFFECT NAME HERE');
-        eff0.add(cfg, 'enableEffect0');
-        // TODO: add more effects toggles and parameters here
+        gui.add(cfg, 'improvedAABB');
+        gui.add(cfg, 'effects', {
+            'None': -1,
+            '0 Bloom': 0,
+            '1 Toon': 1
+        });
     };
 
     window.handle_load.push(init);

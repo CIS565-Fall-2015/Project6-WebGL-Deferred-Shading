@@ -18,7 +18,8 @@ var width, height;
             projMat: camera.projectionMatrix,
             viewMat: camera.matrixWorldInverse,
             cameraPos: camera.position,
-            models: models
+            models: models,
+            screenDim: { w: width, h: height }
         });
     };
 
@@ -67,15 +68,15 @@ var width, height;
     };
 
     var init = function() {
-        // TODO: For performance measurements, disable debug mode!
-        var debugMode = true;
-
         canvas = document.getElementById('canvas');
         renderer = new THREE.WebGLRenderer({
             canvas: canvas,
             preserveDrawingBuffer: debugMode
         });
         gl = renderer.context;
+
+        // For performance measurements, disable debug mode!
+        var debugMode = false;
 
         if (debugMode) {
             $('#dlbutton button').attr('disabled', false);
@@ -135,9 +136,28 @@ var width, height;
                 loadTexture('models/sponza/normal.png').then(function(tex) {
                     m.normap = tex;
                 });
+
+                m.specular_exp = 1.0;
                 models.push(m);
             });
         });
+
+        /*
+        // Additional model to show specular exponent being configurable
+        loadModel('models/cow/cow.obj', function(o) {
+            scene.add(o);
+            uploadModel(o, function(m) {
+              loadTexture('models/cow/color.png').then(function(tex) {
+                  m.colmap = tex;
+              });
+              loadTexture('models/cow/normal.png').then(function(tex) {
+                  m.normap = tex;
+              });
+                m.specular_exp = 10.0;
+                models.push(m);
+            });
+        });
+        */
 
         // Render once to get three.js to copy all of the model buffers
         resize();
