@@ -64,9 +64,12 @@ WebGL Deferred Shading
 ![](charts/Scissor Analysis.png)
 
 ### Additional Material Property
-TODO: Add picture
+
+#### Multiple Models (Sponza and Cow) with Specular Exponent as a Material Property in G-Buffer
+![](img/cow.png)
+
 * **Overview**: Specular exponent added as an input to the g-buffers. Passed using the alpha channel of the normal buffer.
-* **Performance Impact**: None.
+* **Performance Impact**: None, cause the exponent is simply passed along the alpha channel of the normal buffer.
 
 ## References
 
