@@ -27,11 +27,11 @@ void main() {
     vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
     // TODO: Extract needed properties from the g-buffers into local variables
-    vec3 pos;
-    vec3 geomnor;
-    vec3 colmap;
-    vec3 normap;
-    vec3 nor;
+    vec3 pos = vec3(gb0);
+    vec3 geomnor = vec3(gb1);
+    vec3 colmap = vec3(gb2);
+    vec3 normap = vec3(gb3);
+    vec3 nor = applyNormalMap(geomnor, normap);
 
     if (u_debug == 0) {
         gl_FragColor = vec4(vec3(depth), 1.0);
