@@ -68,7 +68,7 @@ WebGL Deferred Shading
 ![](img/cow.PNG)
 
 * **Overview**: Specular exponent added as an input to the g-buffers. Passed using the alpha channel of the normal buffer.
-* **Performance Impact**: None, cause the exponent is simply passed along the alpha channel of the normal buffer.
+* **Performance Impact**: None, the exponent is simply passed along the alpha channel of the normal buffer.
 
 ## References
 
