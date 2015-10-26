@@ -141,23 +141,33 @@
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
         var numLights = R.lights.length;
+        // blinn phong needs to know camera position
         gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos.toArray());
+        // TODO: In the lighting loop, use the scissor test optimization
+        // Enable gl.SCISSOR_TEST, render all lights, then disable it.
+        //
+        // getScissorForLight returns null if the scissor is off the screen.
+        // Otherwise, it returns an array [xmin, ymin, width, height].
+        //
+        //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
+
+        gl.enable(gl.SCISSOR_TEST);
 
         for (var i = 0; i < numLights; i++) {
+            var sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
+            if (sc == null) {
+                continue;
+            }            
+            gl.scissor(sc[0], sc[1], sc[2], sc[3]);
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, R.lights[i].pos);
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, R.lights[i].col);
             gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, R.lights[i].rad);
 
-            // TODO: In the lighting loop, use the scissor test optimization
-            // Enable gl.SCISSOR_TEST, render all lights, then disable it.
-            //
-            // getScissorForLight returns null if the scissor is off the screen.
-            // Otherwise, it returns an array [xmin, ymin, width, height].
-            //
-            //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
-
             renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
         }
+
+        gl.disable(gl.SCISSOR_TEST);
+
         // Disable blending so that it doesn't affect other code
         gl.disable(gl.BLEND);
     };
