@@ -18,23 +18,25 @@ void main() {
         gl_FragColor = SKY_COLOR;
         return;
     }
-    /*
-    // sample for bloom
+
+    // box blur for bloom
     vec2 sampleUV = v_uv - vec2(bloomStep * (5.0 / 2.0));
+    vec4 bloomColor = vec4(0.0);
     float numPixelSamples = 1.0;
     for (int x = 0; x < bloomRadius; x++) {
     	for (int y = 0; y < bloomRadius; y++) {
-    		vec4 bloomColor = texture2D(u_color, sampleUV);
-		    if (bloomColor.r > 1.0 && bloomColor.g > 1.0 && bloomColor.b > 1.0) {
-		    	color += bloomColor;
-		    	numPixelSamples += 1.0;
+    		vec4 sampleColor = texture2D(u_color, sampleUV);
+		    if (sampleColor.r > 1.0 && sampleColor.g > 1.0 && sampleColor.b > 1.0) {
+		    	bloomColor += sampleColor;
 		    }
+		    numPixelSamples += 1.0;
 		    sampleUV.y += bloomStep;
     	}
     	sampleUV.y = v_uv.y - bloomStep * 5.0 / 2.0;
 		sampleUV.x += bloomStep;    	
     }
-    color /= numPixelSamples;*/
+    // add bloom color
+    color.xyz += bloomColor.xyz / numPixelSamples;
 
     gl_FragColor = color;
 }

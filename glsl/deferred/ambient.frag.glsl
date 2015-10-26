@@ -25,5 +25,5 @@ void main() {
         return;
     }
 
-    gl_FragColor = vec4(colmap / 10.0, 1);  // TODO: replace this
+    gl_FragColor = vec4(colmap / 5.0, 1);  // TODO: replace this
 }
