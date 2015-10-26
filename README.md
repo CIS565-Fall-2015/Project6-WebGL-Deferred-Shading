@@ -27,6 +27,10 @@ WebGL Deferred Shading
 
 ![](img/deferred-render.png)
 
+###### Debug views for deferred lighting
+
+![](img/debugs.png)
+
 * Bloom
   * Post-process Gaussian blur [1] used to simulate glow effect
   * *Optimization*: use two-pass Gaussian blur instead of one single convolution kernel
