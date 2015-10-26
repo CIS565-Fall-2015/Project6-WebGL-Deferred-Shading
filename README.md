@@ -71,24 +71,39 @@ WebGL based deferred lighting, with bloom and toon effects.
 #### Optimizations
 
 * Optimized g-buffer format, reduce the number and size of g-buffers:
-  * `master` branch: surface normal pre-calculation
+  * Surface normal pre-calculation
     * Applying the normal map in the `copy` shader pass instead of copying both geometry normals and normal maps
     * *Performance analysis*
       * Significant improvement over non-optimized g-buffer for the following two reasons:
         * 1 less g-buffer to read/write. This results in overall shorter memory access time
         * Since the Blinn-Phong shader shades fragments in a loop, pre-calculating surface normal avoids recalculating surface normal over and over again inside the loop. This greatly reduces the computation time during deferred lighting
       * Tradeoff: less flexibility inside the shader. The shader won't get geometry normal as input.
-  * `color-packing` branch: RGBA packing (**Chrome only**); code derived from [5]
+  * RGBA packing; code derived from [5]
     * On top of pre-calculating surface normal, packing RGBA information into a single floating point value in g-buffer
+    * Color channels are packed into one single float by simulating bit-shifts with multiplication
     * *Performance analysis*
       * Minor performance improvement, due to one less g-buffer and hence overall faster memory access
       * In general, this provides only marginal performance improvement, while reducing color quality greatly during color reconstruction
       * Tradeoff: significant loss in color quality
-  * The reason why they are in two different branches is that color packing results in significant color quality loss in this implementation
+  * Improved RGBA packing; same code structure of [5], but different packing method
+    * On top of pre-calculating surface normal, packing RGBA information into a single floating point value in g-buffer
+    * Instead of simulating bit-shifts, operate in base 10 and allocate each channel 3 digits in the floating point value
+      * Due to some unknown issue with GLSL on floating point values (either precision or interpretation), more digits per channel is not feasible
+      * This doesn't include alpha channel. Therefore it's a 9-digit integer stored as a floating point value. With alpha, each channel will only get 2 digits
+    * *Performance analysis*
+      * Exact same performance benefit as "old" color-packing method, but without visible color quality loss
+      * Color quality losses do happen. In fact, due to the ordering of the channels during packing, blue channel suffers from greater quality loss than red and green channels.
+      * However compared to the bit-shift method, quality loss is much less visible, if not indistinguishable
+      * Tradeoff: screenshot feature doesn't work (returns black image); Need to press `print screen` on the keyboard for anything to be captured
+  * `master-backup` has the version without color-packing. The render logic differs greatly in fragment shader and other shaders. Therefore they are in separate branches
 
-###### Render with RGBA packing. Notice the reduced color quality of the reconstructed color map
+###### Render with RGBA packing (Old). Notice the reduced color quality of the reconstructed color map
 
 ![](img/packing-demo.png)
+
+###### Quality of improved RGBA packing. Notice the almost identical color quality
+
+![](img/packing-comparison.png)
 
 ###### G-buffer optimization effects
 
