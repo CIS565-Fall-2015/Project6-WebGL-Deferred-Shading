@@ -5,6 +5,7 @@
     R.pass_copy = {};
     R.pass_debug = {};
     R.pass_deferred = {};
+    R.pass_tiled = {};
     R.pass_post1 = {};
     R.lights = [];
 

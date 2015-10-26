@@ -2,6 +2,33 @@
     'use strict';
     // deferredSetup.js must be loaded first
 
+    var drawScene = function(state) {
+        for (var i = 0; i < state.models.length; i++) {
+            var m = state.models[i];
+
+            // If you want to render one model many times, note:
+            // readyModelForDraw only needs to be called once.
+            readyModelForDraw(R.progCopy, m);
+
+            drawReadyModel(m);
+        }
+    };
+
+    var bindTexturesForLightPass = function(prog) {
+        gl.useProgram(prog.prog);
+
+        // * Bind all of the g-buffers and depth buffer as texture uniform
+        //   inputs to the shader
+        for (var i = 0; i < R.NUM_GBUFFERS; i++) {
+            gl.activeTexture(gl['TEXTURE' + i]);
+            gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.gbufs[i]);
+            gl.uniform1i(prog.u_gbufs[i], i);
+        }
+        gl.activeTexture(gl['TEXTURE' + R.NUM_GBUFFERS]);
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
+        gl.uniform1i(prog.u_depth, R.NUM_GBUFFERS);
+    };
+
     R.deferredRender = function(state) {
         if (!aborted && (
             !R.progCopy ||
@@ -32,6 +59,9 @@
             // Do a debug render instead of a regular render
             // Don't do any post-processing in debug mode
             R.pass_debug.render(state);
+        } else if (cfg.optimization === 1) {
+            R.pass_tiled.render(state);
+            R.pass_post1.render(state);
         } else {
             // * Deferred pass and postprocessing pass(es)
             R.pass_deferred.render(state);
@@ -64,18 +94,6 @@
         drawScene(state);
     };
 
-    var drawScene = function(state) {
-        for (var i = 0; i < state.models.length; i++) {
-            var m = state.models[i];
-
-            // If you want to render one model many times, note:
-            // readyModelForDraw only needs to be called once.
-            readyModelForDraw(R.progCopy, m);
-
-            drawReadyModel(m);
-        }
-    };
-
     R.pass_debug.render = function(state) {
         // * Unbind any framebuffer, so we can write to the screen
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -87,6 +105,70 @@
 
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.prog_Debug);
+    };
+
+    /**
+     * 'tiled' pass: Add lighting results for each individual light
+     */
+    R.pass_tiled.render = function(state) {
+        // * Bind R.pass_deferred.fbo to write into for later postprocessing
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+
+        // * Clear depth to 1.0 and color to black
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        gl.clearDepth(1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // * _ADD_ together the result of each lighting pass
+
+        // Enable blending and use gl.blendFunc to blend with:
+        //   color = 1 * src_color + 1 * dst_color
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE);
+
+        // * Bind/setup the ambient pass, and render using fullscreen quad
+        bindTexturesForLightPass(R.prog_Ambient);
+        gl.uniform1f(R.prog_Ambient.u_ambientTerm, cfg.ambient);
+        renderFullScreenQuad(R.prog_Ambient);
+
+        if (cfg.optimization === 0) {
+            gl.enable(gl.SCISSOR_TEST);
+        }
+
+        // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
+        var cam = state.cameraPos;
+        for (var i = 0; i < R.lights.length; i++) {
+            var light = R.lights[i];
+            var sc = getScissorForLight(state.viewMat, state.projMat, light);
+            if (sc !== null && sc[2] > 0 && sc[3] > 0) {
+                gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+            } else {
+                continue;
+            }
+
+            var program = R.prog_BlinnPhong_PointLight;
+            if (cfg.debugScissor) {
+                program = R.progScissor;
+
+                gl.uniform3f(program.u_lightCol,
+                            light.col[0], light.col[1], light.col[2]);
+            } else {
+                bindTexturesForLightPass(program);
+                gl.uniform1i(program.u_toon, cfg.toon ? 1 : 0);
+                gl.uniform3f(program.u_cameraPos,
+                            cam.x, cam.y, cam.z);
+                gl.uniform3f(program.u_lightCol,
+                            light.col[0], light.col[1], light.col[2]);
+                gl.uniform3f(program.u_lightPos,
+                            light.pos[0], light.pos[1], light.pos[2]);
+                gl.uniform1f(program.u_lightRad, cfg.lightRadius);
+            }
+            renderFullScreenQuad(program);
+        }
+        gl.disable(gl.SCISSOR_TEST);
+
+        // Disable blending so that it doesn't affect other code
+        gl.disable(gl.BLEND);
     };
 
     /**
@@ -151,21 +233,6 @@
 
         // Disable blending so that it doesn't affect other code
         gl.disable(gl.BLEND);
-    };
-
-    var bindTexturesForLightPass = function(prog) {
-        gl.useProgram(prog.prog);
-
-        // * Bind all of the g-buffers and depth buffer as texture uniform
-        //   inputs to the shader
-        for (var i = 0; i < R.NUM_GBUFFERS; i++) {
-            gl.activeTexture(gl['TEXTURE' + i]);
-            gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.gbufs[i]);
-            gl.uniform1i(prog.u_gbufs[i], i);
-        }
-        gl.activeTexture(gl['TEXTURE' + R.NUM_GBUFFERS]);
-        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
-        gl.uniform1i(prog.u_depth, R.NUM_GBUFFERS);
     };
 
     /**
