@@ -94,7 +94,9 @@ WebGL based deferred lighting, with bloom and toon effects.
       * Exact same performance benefit as "old" color-packing method, but without visible color quality loss
       * Color quality losses do happen. In fact, due to the ordering of the channels during packing, blue channel suffers from greater quality loss than red and green channels.
       * However compared to the bit-shift method, quality loss is much less visible, if not indistinguishable
-      * Tradeoff: screenshot feature doesn't work (returns black image); Need to press `print screen` on the keyboard for anything to be captured
+      * Tradeoff
+        * Screenshot feature doesn't work (returns black image); Need to press `print screen` on the keyboard for anything to be captured
+        * Alpha channel is excluded
   * `master-backup` has the version without color-packing. The render logic differs greatly in fragment shader and other shaders. Therefore they are in separate branches
 
 ###### Render with RGBA packing (Old). Notice the reduced color quality of the reconstructed color map
