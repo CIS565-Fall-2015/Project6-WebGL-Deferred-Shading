@@ -28,7 +28,7 @@ void main() {
     vec4 gb3 = texture2D(u_gbufs[3], v_uv); // mapped normal
     float depth = texture2D(u_depth, v_uv).x;
     // TODO: Extract needed properties from the g-buffers into local variables
-    vec3 pos = gb1.xyz;     // World-space position
+    vec3 pos = gb1.xyz;     // cam space position
     vec3 colmap = gb0.xyz;  // The color map - unlit "albedo" (surface color)
     vec3 norm = applyNormalMap(gb2.xyz, gb3.xyz);     // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
 
@@ -41,6 +41,7 @@ void main() {
 
     // https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_shading_model
     vec3 lightDir = normalize(u_lightPos - pos);
+    float lightDistance = length(u_lightPos - pos);
     float lambert = max(dot(lightDir, norm), 0.0);
     float specular = 0.0;
     if (lambert > 0.0) {
@@ -52,7 +53,10 @@ void main() {
         specular = pow(specAngle, shininess);
     }
 
+    float attenuation = max(0.0, u_lightRad - lightDistance);
+
     vec3 color = lambert * colmap * u_lightCol + specular * u_lightCol;
+    color *= attenuation;
 
     gl_FragColor = vec4(color, 1); 
 }
