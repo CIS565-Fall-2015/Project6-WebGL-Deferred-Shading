@@ -21,25 +21,25 @@ In this project, a a deferred shading pipeline is implemented using GLSL and Web
 The implemented features include,
 * Effects:
   * Deferred Blinn-Phong shading (diffuse + specular) for point lights
-  [](img/1.png)
+  ![](img/1.png)
 
 * Optimizations:
   * Scissor test optimization
-  [](img/9.png)
+  ![](img/9.png)
 
 * Debug views
   * Depth
-  [](img/3.png)
+  ![](img/3.png)
   * Postiion
-  [](img/4.png)
+  ![](img/4.png)
   * Geometry normal
-  [](img/5.png)
+  ![](img/5.png)
   * Color map
-  [](img/6.png)
+  ![](img/6.png)
   * Normal map
-  [](img/7.png)
+  ![](img/7.png)
   * Surface normal
-  [](img/8.png)
+  ![](img/8.png)
 
 ## Performance & Analysis
 The rendering performance with and without scissor test optimization are,
