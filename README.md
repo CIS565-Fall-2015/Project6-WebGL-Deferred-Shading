@@ -6,6 +6,9 @@ WebGL Deferred Shading
 * Tongbo Sui
 * Tested on: Google Chrome 46.0.2490.71, Firefox 41.0.2, on Windows 10, i5-3320M @ 2.60GHz 8GB, NVS 5400M 2GB (Personal)
 
+### Overview
+WebGL based deferred lighting, with bloom and toon effects.
+
 ### Live Online
 
 [![](img/thumb.png)](http://stonebird.github.io/Project6-WebGL-Deferred-Shading/)
