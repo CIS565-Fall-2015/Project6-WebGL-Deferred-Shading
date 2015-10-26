@@ -17,7 +17,6 @@
 
         // Move the R.lights
         for (var i = 0; i < R.lights.length; i++) {
-            // OPTIONAL TODO: Edit if you want to change how lights move
             var mn = R.light_min[1];
             var mx = R.light_max[1];
             R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
@@ -34,8 +33,6 @@
             // * Deferred pass and postprocessing pass(es)
             R.pass_deferred.render(state);
             R.pass_post1.render(state);
-
-            // OPTIONAL TODO: call more postprocessing passes, if any
         }
     };
 
@@ -135,8 +132,9 @@
                 bindTexturesForLightPass(program);
                 gl.uniform1i(program.u_toon, cfg.toon ? 1 : 0);
                 gl.uniform3f(program.u_cameraPos,
-                            cam[0], cam[1], cam[2]);
-
+                            -15.5, 1, -1);
+                            //cam.x, cam.y, cam.z);
+                            console.log(cam);
                 gl.uniform3f(program.u_lightCol,
                             light.col[0], light.col[1], light.col[2]);
                 gl.uniform3f(program.u_lightPos,

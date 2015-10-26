@@ -8,6 +8,7 @@ var cfg;
         this.debugScissor = false;
         this.enableEffect0 = false;
         this.disable = false;
+        this.toon = false;
     };
 
     var init = function() {
@@ -24,6 +25,7 @@ var cfg;
             '5 Surface normal':  5
         });
         gui.add(cfg, 'debugScissor');
+        gui.add(cfg, 'toon');
 
         var eff0 = gui.addFolder('EFFECT NAME HERE');
         eff0.add(cfg, 'enableEffect0');

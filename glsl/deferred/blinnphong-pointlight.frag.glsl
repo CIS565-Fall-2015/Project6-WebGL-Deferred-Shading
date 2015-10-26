@@ -4,6 +4,8 @@ precision highp int;
 
 #define NUM_GBUFFERS 4
 
+uniform int u_toon;
+
 uniform vec3 u_cameraPos;
 uniform vec3 u_lightCol;
 uniform vec3 u_lightPos;
@@ -12,6 +14,8 @@ uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
 
 varying vec2 v_uv;
+
+const float TOON_STEPS = 4.0;
 
 vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
@@ -41,15 +45,10 @@ void main() {
     vec3 normal = applyNormalMap(geomnor, normap);
 
     if (depth == 1.0) {
-        gl_FragColor = vec4(0, 0, 0, 0);
-        return;
-    }
-
-    float dist = length(pos - u_lightPos);
-    if (dist > u_lightRad) {
         gl_FragColor = vec4(0);
         return;
     }
+
 
     vec3 camdir   = normalize(u_cameraPos - pos);
     vec3 lightdir = normalize(u_lightPos  - pos);
@@ -59,6 +58,20 @@ void main() {
     float specularRV = clamp(dot(normal, H_L), 0.0, 1.0);
     float specularTerm = pow(specularRV, 10.0);
 
-    vec3 litColor = diffuseTerm * color + u_lightCol * specularTerm;
+    if (u_toon == 1) {
+        diffuseTerm = float(int(diffuseTerm * TOON_STEPS)) / TOON_STEPS;
+        float d = abs(dot(camdir, normal));
+        if (d < .5) {
+            gl_FragColor = vec4(0, 0, 0, 1);
+            return;
+        }
+    } else {
+    }
+
+    float lightDist = length(pos - u_lightPos);
+    //float falloff = 1.0 / pow(lightDist / u_lightRad + 1.0, 2.0);
+    float falloff = max(0.0, u_lightRad - lightDist);
+
+    vec3 litColor = falloff * color * u_lightCol * (diffuseTerm + specularTerm);
     gl_FragColor = vec4(litColor, 1);
 }
