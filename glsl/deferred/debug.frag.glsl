@@ -2,7 +2,7 @@
 precision highp float;
 precision highp int;
 
-#define NUM_GBUFFERS 4
+#define NUM_GBUFFERS 2
 
 uniform int u_debug;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
@@ -31,17 +31,17 @@ vec4 EncodeFloatRGBA( float v ) {
 void main() {
     vec4 gb0 = texture2D(u_gbufs[0], v_uv);
     vec4 gb1 = texture2D(u_gbufs[1], v_uv);
-    vec4 gb2 = texture2D(u_gbufs[2], v_uv);
-    vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
+    
     // TODO: Extract needed properties from the g-buffers into local variables
     // These definitions are suggested for starting out, but you will probably want to change them.
     vec3 pos = gb0.xyz;     // World-space position
     
     //TODO:optimize gbuffer structure
-    vec3 geomnor = gb1.xyz;  // Normals of the geometry as defined, without normal mapping
-    vec3 colmap = EncodeFloatRGBA(gb0.w).rgb;
-    vec3 normap = gb3.xyz;  // The raw normal map (normals relative to the surface they're on)
+    vec3 geomnor = gb1.xyy;  // Normals of the geometry as defined, without normal mapping
+    //vec3 colmap = EncodeFloatRGBA(gb0.w).rgb;
+    vec3 colmap = vec3(gb1.z,gb1.w,gb0.w);
+    //vec3 normap = gb3.xyz;  // The raw normal map (normals relative to the surface they're on)
  
     vec3 nor = gb1.xyy;
     nor.z = sqrt(1.0 - nor.x*nor.x - nor.y*nor.y);
@@ -55,7 +55,7 @@ void main() {
     } else if (u_debug == 3) {
         gl_FragColor = vec4(colmap, 1.0);
     } else if (u_debug == 4) {
-        gl_FragColor = vec4(normap, 1.0);
+        //gl_FragColor = vec4(normap, 1.0);
     } else if (u_debug == 5) {
         gl_FragColor = vec4(abs(nor), 1.0);
     } else {

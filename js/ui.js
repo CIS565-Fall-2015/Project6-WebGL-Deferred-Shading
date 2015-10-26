@@ -10,6 +10,8 @@ var cfg;
         this.enableToon = false;
         
         this.enableBloom = false;
+        
+        this.proxy = 1;
     };
 
     var init = function() {
@@ -28,11 +30,20 @@ var cfg;
         });
         gui.add(cfg, 'debugScissor');
 
+        gui.add(cfg, 'proxy', {
+            '0 None':             0,
+            '1 Scissor':           1,
+            '2 Sphere':        2,
+        });
+
         var eff0 = gui.addFolder('Effects');
         eff0.add(cfg, 'enableToon');
         //eff0.add(cfg, 'enableToon');
         // TODO: add more effects toggles and parameters here
         eff0.add(cfg,'enableBloom');
+        
+        
+        
     };
 
     window.handle_load.push(init);

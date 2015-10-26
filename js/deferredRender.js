@@ -147,29 +147,51 @@
         for(var i = 0; i < R.NUM_LIGHTS ; i++)
         {
             var light = R.lights[i];
-            var sc = getScissorForLight(state.viewMat, state.projMat, light);
-            if(sc != null)
+            
+            
+            if(cfg.proxy == 1)
             {
-                gl.scissor(sc[0],sc[1],sc[2],sc[3]);
-                if (cfg.debugScissor) 
+                //Scissor
+                var sc = getScissorForLight(state.viewMat, state.projMat, light);
+                if(sc != null)
                 {
-                    //?
-                    gl.blendFunc(gl.SRC_ALPHA, gl.DST_ALPHA);
-                    renderFullScreenQuad(R.progRed);
-                } 
-                else 
-                {
-                    
-                    gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightCol, light.col );
-                    gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightPos, light.pos );
-                    gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, light.rad );
-                    renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+                    gl.scissor(sc[0],sc[1],sc[2],sc[3]);
+                    if (cfg.debugScissor) 
+                    {
+                        //?
+                        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+                        renderFullScreenQuad(R.progRed);
+                    } 
+                    else 
+                    {
+                        
+                        gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightCol, light.col );
+                        gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightPos, light.pos );
+                        gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, light.rad );
+                        renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+                    }
                 }
+            }
+            else if(cfg.proxy == 2)
+            {
+                //sphere proxy
+            }
+            else
+            {
+                //naive
+                gl.disable(gl.SCISSOR_TEST);
+                
+                gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightCol, light.col );
+                gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightPos, light.pos );
+                gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, light.rad );
+                renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
             }
             
             
             
+            
         }
+        
         gl.disable(gl.SCISSOR_TEST);
 
         // TODO: In the lighting loop, use the scissor test optimization
@@ -190,8 +212,9 @@
             gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.glowbuffer);
             
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
-            gl.clearDepth(1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            //gl.clearDepth(1.0);
+            //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.clear(gl.COLOR_BUFFER_BIT);
             
             gl.blendFunc(gl.ONE,gl.ONE);
             var prog = R.prog_Bloom;
@@ -223,7 +246,7 @@
         
         
         //Contour shader (part of toon shading)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
         if( cfg.enableToon )
         {
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
