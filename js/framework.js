@@ -24,10 +24,9 @@ var width, height;
 
     var update = function() {
         controls.update();
+        stats.end();
         stats.begin();
         render();
-        gl.finish();
-        stats.end();
         if (!aborted) {
             requestAnimationFrame(update);
         }
