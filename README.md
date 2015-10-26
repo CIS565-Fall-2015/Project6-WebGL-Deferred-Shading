@@ -73,16 +73,16 @@ A deferred shader on the GPU using WebGL. Features Blinn-Phong shading, optional
 ### Debug Views
 
 #### Depth
-![](img/depth.PNG)
+![](img/depth.png)
 
 #### Position
-![](img/position.PNG)
+![](img/position.png)
 
 #### Surface Normals
-![](img/Surface Normal.PNG)
+![](img/Surface Normal.png)
 
 #### Color Map
-![](img/color map.PNG)
+![](img/color map.png)
 
 ## References
 
