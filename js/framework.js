@@ -142,13 +142,14 @@ var width, height;
         });
 
         /*
-        loadModel('models/cube.obj', function(o) {
+        // Additional model to show specular exponent being configurable
+        loadModel('models/cow/cow.obj', function(o) {
             scene.add(o);
             uploadModel(o, function(t) {
-              loadTexture('models/cow/color.jpg').then(function(tex) {
+              loadTexture('models/cow/color.png').then(function(tex) {
                   t.colmap = tex;
               });
-              loadTexture('models/sponza/normal.png').then(function(tex) {
+              loadTexture('models/cow/normal.png').then(function(tex) {
                   t.normap = tex;
               });
                 t.specular_exp = 10.0;
