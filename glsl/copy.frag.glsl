@@ -18,7 +18,7 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     return normap.y * surftan + normap.x * surfbinor + normap.z * geomnor;
 }
 
-
+/*
 vec4 EncodeFloatRGBA( float v ) {
     float4 enc = float4(1.0, 255.0, 65025.0, 160581375.0) * v;
     enc = frac(enc);
@@ -28,7 +28,7 @@ vec4 EncodeFloatRGBA( float v ) {
 float DecodeFloatRGBA( vec4 rgba ) {
     return dot( rgba, float4(1.0, 1/255.0, 1/65025.0, 1/160581375.0) );
 }
-
+*/
 
 
 void main() {
