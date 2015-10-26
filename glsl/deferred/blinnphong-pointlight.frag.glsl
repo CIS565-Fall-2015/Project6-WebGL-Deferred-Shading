@@ -15,7 +15,7 @@ uniform sampler2D u_depth;
 
 varying vec2 v_uv;
 
-const float TOON_STEPS = 4.0;
+const float TOON_STEPS = 3.0;
 
 vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
@@ -84,6 +84,6 @@ void main() {
     //float falloff = 1.0 / pow(lightDist / u_lightRad + 1.0, 2.0);
     float falloff = max(0.0, u_lightRad - lightDist);
 
-    vec3 litColor = falloff * color * u_lightCol * (diffuseTerm + specularTerm);
+    vec3 litColor = 0.4 * falloff * color * u_lightCol * (diffuseTerm + specularTerm);
     gl_FragColor = vec4(litColor, 1);
 }

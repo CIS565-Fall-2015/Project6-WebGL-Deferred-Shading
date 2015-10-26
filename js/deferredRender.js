@@ -14,6 +14,10 @@
             return;
         }
 
+        if (cfg.numLights != R.lights.length) {
+            R.setupLights(cfg.numLights);
+        }
+
         // Move the R.lights
         for (var i = 0; i < R.lights.length; i++) {
             var mn = R.light_min[1];
@@ -109,7 +113,9 @@
         gl.uniform1f(R.prog_Ambient.u_ambientTerm, cfg.ambient);
         renderFullScreenQuad(R.prog_Ambient);
 
-        gl.enable(gl.SCISSOR_TEST);
+        if (cfg.enableScissor) {
+            gl.enable(gl.SCISSOR_TEST);
+        }
 
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
         var cam = state.cameraPos;

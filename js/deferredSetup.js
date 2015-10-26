@@ -14,19 +14,19 @@
      * Set up the deferred pipeline framebuffer objects and textures.
      */
     R.deferredSetup = function() {
-        setupLights();
+        R.setupLights(R.NUM_LIGHTS);
         loadAllShaderPrograms();
         R.pass_copy.setup();
         R.pass_deferred.setup();
     };
 
-    // TODO: Edit if you want to change the light initial positions
     R.light_min = [-14, 0, -6];
     R.light_max = [14, 18, 6];
     R.light_dt = -0.03;
     R.LIGHT_RADIUS = 4.0;
-    R.NUM_LIGHTS = 20; // TODO: test with MORE lights!
-    var setupLights = function() {
+    R.NUM_LIGHTS = 20;
+
+    R.setupLights = function(numLights) {
         Math.seedrandom(0);
 
         var posfn = function() {
@@ -39,7 +39,8 @@
             return r;
         };
 
-        for (var i = 0; i < R.NUM_LIGHTS; i++) {
+        // Add more lights if adding lights
+        for (var i = R.lights.length; i < numLights; i++) {
             R.lights.push({
                 pos: posfn(),
                 col: [
@@ -49,6 +50,8 @@
                 rad: R.LIGHT_RADIUS
             });
         }
+        // And slice to size, if you're removing lights
+        R.lights.lights = numLights;
     };
 
     /**
