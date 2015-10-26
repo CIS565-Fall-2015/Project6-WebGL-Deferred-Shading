@@ -49,10 +49,16 @@
             // * Deferred pass and postprocessing pass(es)
             // TODO: uncomment these
             R.pass_deferred.render(state);
-            //R.pass_post1.render(state);
-			R.pass_srcmask.render(state);
-			R.pass_bloomX.render(state);
-			R.pass_bloomY.render(state);
+			if(cfg.bloomEffect)
+			{
+				R.pass_srcmask.render(state);
+				R.pass_bloomX.render(state);
+				R.pass_bloomY.render(state);
+			}
+			else
+			{
+				R.pass_post1.render(state);
+			}
             // OPTIONAL TODO: call more postprocessing passes, if any
         }
     };
@@ -248,6 +254,7 @@
 		gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);		
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progSrcmask.u_color, 0);	
+		gl.uniform1f(R.progSrcmask.u_thresh, 25.0);	
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progSrcmask);
     };
@@ -295,9 +302,16 @@
 		gl.activeTexture(gl.TEXTURE0);
         // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
         // TO_DO: ^
-		gl.bindTexture(gl.TEXTURE_2D, R.pass_bloomX.colorTex);		
+		gl.bindTexture(gl.TEXTURE_2D, R.pass_bloomX.colorTex);	
+		
+		gl.activeTexture(gl.TEXTURE1);
+		gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);	
+		//gl.activeTexture(gl.TEXTURE1);
+		//gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);	
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progBloomY.u_color, 0);
+		gl.uniform1i(R.progBloomY.u_origCol, 1);
+		
 		var tSize = [width,height];	
 		gl.uniform2fv(R.progBloomY.u_texSize,tSize);
         // * Render a fullscreen quad to perform shading on

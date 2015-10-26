@@ -3,6 +3,8 @@ precision highp float;
 precision highp int;
 
 uniform sampler2D u_color;
+uniform sampler2D u_origCol;
+
 uniform vec2 u_texSize;
 
 varying vec2 v_uv;
@@ -27,7 +29,11 @@ void main() {
 	color += texture2D(u_color, v_uv + onePixel * vec2(0, -3))*gauss[3];
 	
 
-    gl_FragColor = color;
-	
-	//gl_FragColor = texture2D(u_color, v_uv);
+    //gl_FragColor = color;
+	vec4 origCol = texture2D(u_origCol, v_uv);
+    if (origCol.a == 0.0) {
+        origCol = SKY_COLOR;
+    }	
+	gl_FragColor = color+origCol;
+
 }

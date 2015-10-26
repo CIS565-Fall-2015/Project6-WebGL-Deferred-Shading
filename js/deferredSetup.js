@@ -197,6 +197,7 @@
 		
         loadPostProgram('srcmask', function(p) {
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+			p.u_thresh    = gl.getUniformLocation(p.prog, 'u_thresh');
 			//p.u_texSize = gl.getUniformLocation(p.prog, 'u_texSize');
             // Save the object into this variable for access later
             R.progSrcmask = p;
@@ -210,6 +211,7 @@
         });
         loadPostProgram('bloomY', function(p) {
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+			p.u_origCol = gl.getUniformLocation(p.prog, 'u_origCol');
 			p.u_texSize = gl.getUniformLocation(p.prog, 'u_texSize');
             // Save the object into this variable for access later
             R.progBloomY = p;
