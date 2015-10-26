@@ -134,6 +134,7 @@
 
         loadDeferredProgram('blinnphong-pointlight', function(p) {
             // Save the object into this variable for access later
+            p.u_camPos = gl.getUniformLocation(p.prog, 'u_camPos');            
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');

@@ -141,6 +141,8 @@
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
         var numLights = R.lights.length;
+        gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos.toArray());
+
         for (var i = 0; i < numLights; i++) {
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, R.lights[i].pos);
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, R.lights[i].col);

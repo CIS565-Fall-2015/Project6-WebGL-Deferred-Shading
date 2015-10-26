@@ -4,6 +4,7 @@ precision highp int;
 
 #define NUM_GBUFFERS 4
 
+uniform vec3 u_camPos; // in world space
 uniform vec3 u_lightCol;
 uniform vec3 u_lightPos;
 uniform float u_lightRad;
@@ -45,7 +46,7 @@ void main() {
     float lambert = max(dot(lightDir, norm), 0.0);
     float specular = 0.0;
     if (lambert > 0.0) {
-        vec3 viewDir = normalize(-pos); // because the vertPos was transformed to camera space
+        vec3 viewDir = normalize(pos - u_camPos);
 
         // "blinn phong"
         vec3 halfDir = normalize(lightDir + viewDir);

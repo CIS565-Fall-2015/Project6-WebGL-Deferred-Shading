@@ -18,7 +18,7 @@ void main() {
         gl_FragColor = SKY_COLOR;
         return;
     }
-
+    /*
     // sample for bloom
     vec2 sampleUV = v_uv - vec2(bloomStep * (5.0 / 2.0));
     float numPixelSamples = 1.0;
@@ -34,7 +34,7 @@ void main() {
     	sampleUV.y = v_uv.y - bloomStep * 5.0 / 2.0;
 		sampleUV.x += bloomStep;    	
     }
-    color /= numPixelSamples;
+    color /= numPixelSamples;*/
 
     gl_FragColor = color;
 }

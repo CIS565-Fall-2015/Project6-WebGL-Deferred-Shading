@@ -13,8 +13,9 @@ BLOOM
 	-yes. probably. hopefully.
 	-which would make profiling later easier.
 -TODO:
+	-add camera position uniform to blinn-phong [done. turns out this was in Kai's updates]
 	-find a better filter
-	-make this a separate post-processing shader
+	-make this a separate post-processing shader -> nahhhh. don't worry about this for now
 
 SCISSOR TEST
 -ok ok ok. so it's restricting the shading to a screen space "box" that gets a lighting computation
