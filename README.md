@@ -25,7 +25,6 @@ WebGL Deferred Shading
 * **Overview**: Standard Blinn-Phong shader with support for normal maps.
 * **Optimization**: Performance was improved by offloading surface normal calculations to the copy shader. See [G-Buffer Optimization](#g-buffer-optimization) for more information.
 
-
 ### Bloom Shading with Two-Pass Gaussian Blur
 
 ![](img/Bloom.PNG)
@@ -73,9 +72,6 @@ WebGL Deferred Shading
 
 ## References
 
-* [1] Bloom:
-  [GPU Gems, Ch. 21](http://http.developer.nvidia.com/GPUGems/gpugems_ch21.html) 
-* [2] Screen-Space Ambient Occlusion:
-  [Floored Article](http://floored.com/blog/2013/ssao-screen-space-ambient-occlusion.html)
-* [3] Post-Process Motion Blur:
-  [GPU Gems 3, Ch. 27](http://http.developer.nvidia.com/GPUGems3/gpugems3_ch27.html)
+* [GPU Gems Chapter 21. Real-Time Glow](http://http.developer.nvidia.com/GPUGems/gpugems_ch21.html)
+* [Antialiased Cel Shading](http://prideout.net/blog/?p=22)
+* [Sobel Operator](https://en.wikipedia.org/wiki/Sobel_operator)
