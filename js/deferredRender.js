@@ -140,7 +140,15 @@
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
         
-        gl.enable(gl.SCISSOR_TEST);
+        if(cfg.proxy==1)
+        {
+            gl.enable(gl.SCISSOR_TEST);
+        }
+        else if(cfg.proxy == 2)
+        {
+            
+        }
+        
         
         gl.uniform1f(R.prog_BlinnPhong_PointLight.u_toonShading ,cfg.enableToon );
         gl.uniform3f( R.prog_BlinnPhong_PointLight.u_cameraPos,state.cameraPos.x,state.cameraPos.y,state.cameraPos.z );
@@ -179,7 +187,6 @@
             else
             {
                 //naive
-                gl.disable(gl.SCISSOR_TEST);
                 
                 gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightCol, light.col );
                 gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightPos, light.pos );
@@ -192,7 +199,10 @@
             
         }
         
-        gl.disable(gl.SCISSOR_TEST);
+        if(cfg.proxy==1)
+        {
+            gl.disable(gl.SCISSOR_TEST);
+        }
 
         // TODO: In the lighting loop, use the scissor test optimization
         // Enable gl.SCISSOR_TEST, render all lights, then disable it.
@@ -384,4 +394,74 @@
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         };
     })();
+    
+    
+    var renderSphere = (function() {
+        // The variables in this function are private to the implementation of
+        // renderFullScreenQuad. They work like static local variables in C++.
+
+        // Create an array of floats, where each set of 3 is a vertex position.
+        // You can render in normalized device coordinates (NDC) so that the
+        // vertex shader doesn't have to do any transformation; draw two
+        // triangles which cover the screen over x = -1..1 and y = -1..1.
+        // This array is set up to use gl.drawArrays with gl.TRIANGLE_STRIP.
+        var positions = new Float32Array([
+            -1.0, -1.0, 0.0,
+             1.0, -1.0, 0.0,
+            -1.0,  1.0, 0.0,
+             1.0,  1.0, 0.0
+        ]);
+
+        var vbo = null;
+
+        var init = function() {
+            // Create a new buffer with gl.createBuffer, and save it as vbo.
+            // TODO: ^
+            vbo = gl.createBuffer();
+
+            // Bind the VBO as the gl.ARRAY_BUFFER
+            // TODO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
+            
+            // Upload the positions array to the currently-bound array buffer
+            // using gl.bufferData in static draw mode.
+            // TODO: ^
+            gl.bufferData(gl.ARRAY_BUFFER,positions,gl.STATIC_DRAW);
+        };
+
+        return function(prog) {
+            if (!vbo) {
+                // If the vbo hasn't been initialized, initialize it.
+                init();
+            }
+
+            // Bind the program to use to draw the quad
+            gl.useProgram(prog.prog);
+
+            // Bind the VBO as the gl.ARRAY_BUFFER
+            // TODO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
+            
+            // Enable the bound buffer as the vertex attrib array for
+            // prog.a_position, using gl.enableVertexAttribArray
+            // TODO: ^
+            gl.enableVertexAttribArray(prog.a_position);
+            
+            // Use gl.vertexAttribPointer to tell WebGL the type/layout for
+            // prog.a_position's access pattern.
+            // TODO: ^
+            gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, gl.FALSE, 0, 0);
+
+            // Use gl.drawArrays (or gl.drawElements) to draw your quad.
+            // TODO: ^
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            // Unbind the array buffer.
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        };
+    })();
+    
+    
+    
+    
 })();
