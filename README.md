@@ -15,7 +15,7 @@ WebGL based deferred lighting, with bloom and toon effects.
 
 ### Demo Video
 
-[![](img/video.png)](https://youtu.be/kwzxPAwXkkw)
+[![](img/video.png)](https://youtu.be/w9zWxD3v8TM)
 
 ### Features and Analysis
 
