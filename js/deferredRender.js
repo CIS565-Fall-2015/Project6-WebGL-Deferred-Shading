@@ -37,7 +37,11 @@
 
         R.pass_copy.render(state);
 
-        if (cfg && cfg.debugView >= 0) {
+        if (cfg && cfg.debugScissor){
+            // do a scissor debug render instead of a regular render.
+            // don't do any post-proccessing in debug mode.
+            R.pass_debug.debugScissor(state);
+        } else if (cfg && cfg.debugView >= 0) {
             // Do a debug render instead of a regular render
             // Don't do any post-processing in debug mode
             R.pass_debug.render(state);
@@ -109,6 +113,33 @@
         renderFullScreenQuad(R.prog_Debug);
     };
 
+    R.pass_debug.debugScissor = function(state) {
+        // * Unbind any framebuffer, so we can write to the screen
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        renderFullScreenQuad(R.progClear);
+        // * Clear depth buffer to value 1.0 using gl.clearDepth and gl.clear
+        gl.clearDepth(1.0);
+        // http://webgl.wikia.com/wiki/Clear
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+        gl.enable(gl.SCISSOR_TEST);
+        var numLights = R.lights.length;
+        for (var i = 0; i < numLights; i++) {
+            var sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
+            if (sc == null) {
+                continue;
+            }
+            gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+            renderFullScreenQuad(R.progRed);
+        }
+        gl.disable(gl.BLEND);
+        gl.disable(gl.SCISSOR_TEST);
+    };    
+
     /**
      * 'deferred' pass: Add lighting results for each individual light
      */
@@ -140,7 +171,6 @@
         // TODO: add a loop here, over the values in R.lights, which sets the
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
-        var numLights = R.lights.length;
         // blinn phong needs to know camera position
         gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos.toArray());
         // TODO: In the lighting loop, use the scissor test optimization
@@ -152,7 +182,7 @@
         //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
 
         gl.enable(gl.SCISSOR_TEST);
-
+        var numLights = R.lights.length;
         for (var i = 0; i < numLights; i++) {
             var sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
             if (sc == null) {

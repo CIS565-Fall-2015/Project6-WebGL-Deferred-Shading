@@ -17,13 +17,13 @@ BLOOM
 	-find a better filter [done]
 	-make this a separate post-processing shader -> nahhhh. don't worry about this for now
 
-SCISSOR TEST
+SCISSOR TEST [done]
 -ok ok ok. so it's restricting the shading to a screen space "box" that gets a lighting computation
 -shouldn't be too bad
 -we'll need to tweak ambient, btw. scene is too dark atm. [done]
 -TODO:
 	-enable and use Kai's primitive scissor test [done]
-	-add scissor test debug mode
+	-add scissor test debug mode [done]
 
 PACKING AND OPTIMIZATION -> all about trying to do this stuff while keeping it toggleable
 -try 2-component normals
