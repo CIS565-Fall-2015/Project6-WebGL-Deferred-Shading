@@ -1,0 +1,14 @@
+BLOOM
+-something's... not so right
+-but the idea of this should work
+
+SCISSOR TEST
+-uh oh
+
+PACKING
+-try 2-component noirmals
+-apply normal map
+-reconstruct world space pos w/cam matrix, x/y/depth -> hmmm.
+
+TILING
+-uhhh.
