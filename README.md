@@ -200,9 +200,8 @@ the mailing list).
 `debugMode` to `false` in `framework.js`. Keep it enabled when developing - it
 helps find WebGL errors *much* more easily.
 
-Optimize your JavaScript and/or GLSL code. Web Tracing Framework
-and Chrome/Firefox's profiling tools (see Resources section) will
-be useful for this. For each change
+Optimize your JavaScript and/or GLSL code. Chrome/Firefox's profiling tools
+(see Resources section) will be useful for this. For each change
 that improves performance, show the before and after render times.
 
 For each new *effect* feature (required or extra), please
@@ -212,6 +211,7 @@ provide the following analysis:
 * Performance change due to adding the feature.
   * If applicable, how do parameters (such as number of lights, etc.)
     affect performance? Show data with simple graphs.
+    * Show timing in milliseconds, not FPS.
 * If you did something to accelerate the feature, what did you do and why?
 * How might this feature be optimized beyond your current implementation?
 
@@ -224,11 +224,13 @@ For each *performance* feature (required or extra), please provide:
   * Are there tradeoffs to this performance feature? Explain briefly.
   * How do parameters (such as number of lights, tile size, etc.) affect
     performance? Show data with graphs.
+    * Show timing in milliseconds, not FPS.
   * Show debug views when possible.
     * If the debug view correlates with performance, explain how.
 
-Note: Be aware that stats.js may give 0 millisecond frame timings in Chrome on
-occasion - if this happens, you can use the FPS counter.
+**Note:** Be aware that stats.js may give invalid 0-3 millisecond frame
+timings in Chrome - if this happens, you can use the FPS counter and
+convert to milliseconds.
 
 ### Starter Code Tour
 
@@ -376,13 +378,19 @@ Built into Chrome:
 * JavaScript debugger and profiler
 
 Plug-ins:
-* (Chrome/Firefox) [Web Tracing Framework](http://google.github.io/tracing-framework/)
+* Web Tracing Framework
+  **Does not currently work with multiple render targets**,
+  which are used in the starter code.
 * (Chrome) [Shader Editor](https://chrome.google.com/webstore/detail/shader-editor/ggeaidddejpbakgafapihjbgdlbbbpob)
 
+Libraries:
+* Stats.js (already included)
+  * **Note:** Be aware that stats.js may give invalid 0-3 millisecond frame
+    timings in Chrome - if this happens, you can use the FPS counter and
+    convert to milliseconds.
 
 Firefox can also be useful - it has a canvas inspector, WebGL profiling and a
 shader editor built in.
-
 
 ## README
 
