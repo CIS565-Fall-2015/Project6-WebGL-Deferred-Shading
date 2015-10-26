@@ -11,7 +11,7 @@ WebGL Deferred Shading
 [![](img/thumb.png)](http://TODO.github.io/Project6-WebGL-Deferred-Shading)
 
 ### Demo Video
-
+<a href="https://youtu.be/Hlxv-cRIXCs" target="_blank"><img src="img/Fake Youtube.png" alt="WebGL Deferred Shader" width="961" height="723" border="0"/></a>
 [![](img/video.png)](TODO)
 
 ## Description
