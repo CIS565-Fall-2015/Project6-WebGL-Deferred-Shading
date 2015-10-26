@@ -41,10 +41,6 @@
             return;
         }
 
-        if (cfg.numLights != R.lights.length) {
-            R.setupLights(cfg.numLights);
-        }
-
         // Move the R.lights
         for (var i = 0; i < R.lights.length; i++) {
             var mn = R.light_min[1];
@@ -161,7 +157,7 @@
                             light.col[0], light.col[1], light.col[2]);
                 gl.uniform3f(program.u_lightPos,
                             light.pos[0], light.pos[1], light.pos[2]);
-                gl.uniform1f(program.u_lightRad, cfg.lightRadius);
+                gl.uniform1f(program.u_lightRad, light.rad);
             }
             renderFullScreenQuad(program);
         }
