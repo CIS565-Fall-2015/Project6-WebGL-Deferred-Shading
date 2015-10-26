@@ -37,7 +37,7 @@ The implemented features include,
   ![](img/8.png)
 
 ## Performance & Analysis
-The rendering performance with and without scissor test optimization are,
+The rendering performance with and without scissor test optimization is,
 * Without scissor test optimization: 17 FPS
 * With scissor test optimization: 35 FPS
 
