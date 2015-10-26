@@ -23,16 +23,12 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
 // http://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/
 // http://stackoverflow.com/questions/30242013/glsl-compressing-packing-multiple-0-1-colours-var4-into-a-single-var4-variab
 vec4 unpackRGBA( float v ) {
-    float a = floor(v*255.0/64.0)*64.0/255.0;
-    v -= a;
-    float b = floor(v*255.0/16.0)*16.0/255.0;
-    v -= b;
-    b *= 4.0;
-    float c = floor(v*255.0/4.0)*4.0/255.0;
-    v -= c;
-    c *= 16.0;
-    float d = v*255.0 * 64.0 / 255.0;
-    return vec4(a,b,c,d);
+    float r = floor(v/1000.0/1000.0);
+    v-=(r*1000.0*1000.0);
+    float g = floor(v/1000.0);
+    v-=(g*1000.0);
+    float b = floor(v);
+    return vec4(r,g,b,v)/100.0;
 }
 
 void main() {
@@ -41,7 +37,7 @@ void main() {
     //vec4 gb2 = texture2D(u_gbufs[2], v_uv);
     //vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
-    // TODO: Extract needed properties from the g-buffers into local variables
+    // Extract needed properties from the g-buffers into local variables
     // These definitions are suggested for starting out, but you will probably want to change them.
     vec3 pos = gb0.xyz;     // World-space position
     //vec3 geomnor = gb1.xyz;  // Normals of the geometry as defined, without normal mapping
