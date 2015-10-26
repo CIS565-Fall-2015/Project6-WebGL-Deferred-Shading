@@ -68,9 +68,6 @@ var width, height;
     };
 
     var init = function() {
-        // TODO: For performance measurements, disable debug mode!
-        var debugMode = true;
-
         canvas = document.getElementById('canvas');
         renderer = new THREE.WebGLRenderer({
             canvas: canvas,
@@ -78,7 +75,7 @@ var width, height;
         });
         gl = renderer.context;
 
-        // TODO: For performance measurements, disable debug mode!
+        // For performance measurements, disable debug mode!
         var debugMode = false;
 
         if (debugMode) {
@@ -149,15 +146,15 @@ var width, height;
         // Additional model to show specular exponent being configurable
         loadModel('models/cow/cow.obj', function(o) {
             scene.add(o);
-            uploadModel(o, function(t) {
+            uploadModel(o, function(m) {
               loadTexture('models/cow/color.png').then(function(tex) {
-                  t.colmap = tex;
+                  m.colmap = tex;
               });
               loadTexture('models/cow/normal.png').then(function(tex) {
-                  t.normap = tex;
+                  m.normap = tex;
               });
-                t.specular_exp = 10.0;
-                models.push(t);
+                m.specular_exp = 10.0;
+                models.push(m);
             });
         });
         */

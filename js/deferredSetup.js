@@ -27,7 +27,6 @@
         R.pass_toon_post1.setup();
     };
 
-    // TODO: Edit if you want to change the light initial positions
     R.light_min = [-14, 0, -6];
     R.light_max = [14, 18, 6];
     R.light_dt = -0.03;

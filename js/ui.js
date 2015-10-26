@@ -11,6 +11,7 @@ var cfg;
         this.bloom = false;
         this.toon = false;
         this.improvedAABB = true;
+        this.effects = -1;
     };
 
     var init = function() {
@@ -27,11 +28,11 @@ var cfg;
         });
         gui.add(cfg, 'debugScissor');
         gui.add(cfg, 'improvedAABB');
-
-        var eff0 = gui.addFolder('Effects');
-        eff0.add(cfg, 'bloom');
-        eff0.add(cfg, 'toon');
-        // TODO: add more effects toggles and parameters here
+        gui.add(cfg, 'effects', {
+            'None': -1,
+            '0 Bloom': 0,
+            '1 Toon': 1
+        });
     };
 
     window.handle_load.push(init);

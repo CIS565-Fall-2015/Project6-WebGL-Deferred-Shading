@@ -37,12 +37,12 @@
             // Don't do any post-processing in debug mode
             R.pass_debug.render(state);
         }
-        else if(cfg && cfg.bloom && !cfg.toon) {
+        else if(cfg && cfg.effects == 0) {
             R.pass_deferred.render(state);
             R.pass_bloom_post1.render(state);
             R.pass_bloom_post2.render(state);
         }
-        else if(cfg && cfg.toon && !cfg.bloom) {
+        else if(cfg && cfg.effects == 1) {
             // TODO: What do I do about multiple effects being enabled?
             R.pass_deferred.render(state);
             R.pass_toon_post1.render(state);
@@ -52,8 +52,6 @@
             // * Deferred pass and postprocessing pass(es)
             R.pass_deferred.render(state);
             R.pass_post0.render(state);
-
-            // OPTIONAL TODO: call more postprocessing passes, if any
         }
     };
 
@@ -189,6 +187,9 @@
         gl.uniform1i(prog.u_depth, R.NUM_GBUFFERS);
     };
 
+    /**
+    * This is just the default post procesing pass (with no effects)
+    */
     R.pass_post0.render = function(state) {
         // * Unbind any existing framebuffer (if there are no more passes)
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
