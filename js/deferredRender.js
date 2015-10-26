@@ -27,14 +27,14 @@
 
         // CHECKITOUT: START HERE! You can even uncomment this:
         //debugger;
-
-        { // TODO: this block should be removed after testing renderFullScreenQuad
+/*
+        { // TO_DO: this block should be removed after testing renderFullScreenQuad
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            // TODO: Implement/test renderFullScreenQuad first
+            // TO_DO: Implement/test renderFullScreenQuad first
             renderFullScreenQuad(R.progRed);
             return;
         }
-
+*/
         R.pass_copy.render(state);
 
         if (cfg && cfg.debugView >= 0) {
@@ -44,7 +44,7 @@
         } else {
             // * Deferred pass and postprocessing pass(es)
             // TODO: uncomment these
-            //R.pass_deferred.render(state);
+            R.pass_deferred.render(state);
             //R.pass_post1.render(state);
 
             // OPTIONAL TODO: call more postprocessing passes, if any
@@ -56,23 +56,26 @@
      */
     R.pass_copy.render = function(state) {
         // * Bind the framebuffer R.pass_copy.fbo
-        // TODO: ^
-
+        // TO_DO: ^
+		gl.bindFramebuffer(gl.FRAMEBUFFER,R.pass_copy.fbo);
         // * Clear screen using R.progClear
-        TODO: renderFullScreenQuad(R.progClear);
+        //TO_DO:
+		renderFullScreenQuad(R.progClear);
         // * Clear depth buffer to value 1.0 using gl.clearDepth and gl.clear
-        // TODO: ^
-        // TODO: ^
-
+        // TO_DO: ^
+		gl.clearDepth(1.0);
+        // TO_DO: ^
+		gl.clear(gl.DEPTH_BUFFER_BIT);
         // * "Use" the program R.progCopy.prog
-        // TODO: ^
+        // TO_DO: ^
         // TODO: Write glsl/copy.frag.glsl
-
+		gl.useProgram(R.progCopy.prog);
+		
         var m = state.cameraMat.elements;
         // * Upload the camera matrix m to the uniform R.progCopy.u_cameraMat
         //   using gl.uniformMatrix4fv
-        // TODO: ^
-
+        // TO_DO: ^
+		gl.uniformMatrix4fv(R.progCopy.u_cameraMat,gl.FALSE,m);
         // * Draw the scene
         drawScene(state);
     };
@@ -107,8 +110,9 @@
      */
     R.pass_deferred.render = function(state) {
         // * Bind R.pass_deferred.fbo to write into for later postprocessing
-        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
-
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		
         // * Clear depth to 1.0 and color to black
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
         gl.clearDepth(1.0);
@@ -118,8 +122,10 @@
 
         // Enable blending and use gl.blendFunc to blend with:
         //   color = 1 * src_color + 1 * dst_color
-        // TODO: ^
-
+		//http://learningwebgl.com/blog/?p=859
+        // TO_DO: ^ ??? dst_color?
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+		gl.enable(gl.BLEND);
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
         renderFullScreenQuad(R.prog_Ambient);
@@ -127,10 +133,20 @@
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
 
-        // TODO: add a loop here, over the values in R.lights, which sets the
+        // TO_DO: add a loop here, over the values in R.lights, which sets the
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
-
+		for (var i = 0; i < R.lights.length; i++)
+		{
+			var l = R.lights[i];
+			var eye = [state.cameraPos.x,state.cameraPos.y,state.cameraPos.z];
+			gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_camPos,eye);
+			//gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_camPos,state.cameraPos);
+			gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, l.pos);
+			gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, l.col);
+			gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad,l.rad);
+			renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+		}
         // TODO: In the lighting loop, use the scissor test optimization
         // Enable gl.SCISSOR_TEST, render all lights, then disable it.
         //
@@ -142,7 +158,7 @@
         // Disable blending so that it doesn't affect other code
         gl.disable(gl.BLEND);
     };
-
+	
     var bindTexturesForLightPass = function(prog) {
         gl.useProgram(prog.prog);
 
@@ -204,13 +220,15 @@
 
         var init = function() {
             // Create a new buffer with gl.createBuffer, and save it as vbo.
-            // TODO: ^
-
+            // TO_DO: ^
+			vbo = gl.createBuffer();
             // Bind the VBO as the gl.ARRAY_BUFFER
-            // TODO: ^
-            // Upload the positions array to the currently-bound array buffer
+            // TO_DO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
+			// Upload the positions array to the currently-bound array buffer
             // using gl.bufferData in static draw mode.
-            // TODO: ^
+            // TO_DO: ^
+			gl.bufferData(gl.ARRAY_BUFFER,positions,gl.STATIC_DRAW);
         };
 
         return function(prog) {
@@ -223,17 +241,19 @@
             gl.useProgram(prog.prog);
 
             // Bind the VBO as the gl.ARRAY_BUFFER
-            // TODO: ^
-            // Enable the bound buffer as the vertex attrib array for
+            // TO_DO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
+			// Enable the bound buffer as the vertex attrib array for
             // prog.a_position, using gl.enableVertexAttribArray
-            // TODO: ^
+            // TO_DO: ^
+			gl.enableVertexAttribArray(prog.a_position);
             // Use gl.vertexAttribPointer to tell WebGL the type/layout for
             // prog.a_position's access pattern.
-            // TODO: ^
-
+            // TO_DO: ^
+			gl.vertexAttribPointer(prog.a_position,3,gl.FLOAT,false,0,0);
             // Use gl.drawArrays (or gl.drawElements) to draw your quad.
-            // TODO: ^
-
+            // TO_DO: ^
+			gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
             // Unbind the array buffer.
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         };

@@ -4,6 +4,7 @@ precision highp int;
 
 #define NUM_GBUFFERS 4
 
+uniform vec3 u_camPos;
 uniform vec3 u_lightCol;
 uniform vec3 u_lightPos;
 uniform float u_lightRad;
@@ -21,19 +22,39 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
 }
 
 void main() {
-    vec4 gb0 = texture2D(u_gbufs[0], v_uv);
-    vec4 gb1 = texture2D(u_gbufs[1], v_uv);
-    vec4 gb2 = texture2D(u_gbufs[2], v_uv);
-    vec4 gb3 = texture2D(u_gbufs[3], v_uv);
+    vec4 gb0 = texture2D(u_gbufs[0], v_uv);	//pos
+    vec4 gb1 = texture2D(u_gbufs[1], v_uv);	//nor
+    vec4 gb2 = texture2D(u_gbufs[2], v_uv);	//colmap
+    vec4 gb3 = texture2D(u_gbufs[3], v_uv);	//normap
     float depth = texture2D(u_depth, v_uv).x;
-    // TODO: Extract needed properties from the g-buffers into local variables
-
+    // TO_DO: Extract needed properties from the g-buffers into local variables
+    vec3 pos = gb0.xyz;
+    vec3 geomnor = gb1.xyz;
+    vec3 diff = gb2.xyz;
+    vec3 normap = gb3.xyz;
+    vec3 nor = applyNormalMap(geomnor,normap); 
+	
+	vec3 lightDir = normalize(u_lightPos - pos);
+	vec3 reflDir = reflect(-lightDir,nor);
+	vec3 viewDir = normalize(u_camPos - pos);
+	
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.
     if (depth == 1.0) {
         gl_FragColor = vec4(0, 0, 0, 0);
         return;
     }
-
-    gl_FragColor = vec4(0, 0, 1, 1);  // TODO: perform lighting calculations
+	//http://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/code/WebGLShaderLightMat/ShaderLightMat.html
+    // TO_DO: perform lighting calculations
+	
+	float attenuation = max(0.0, u_lightRad - length(pos-u_lightPos));
+	
+	float lamb = max(dot(lightDir,nor),0.0);
+	float spec = 0.0;
+	if(lamb>0.0)
+	{
+		float specAngle = max(dot(reflDir,viewDir),0.0);
+		spec = pow(specAngle,4.0);
+	}
+	gl_FragColor = vec4(attenuation*(lamb+spec)*diff*u_lightCol, 1.0);
 }
