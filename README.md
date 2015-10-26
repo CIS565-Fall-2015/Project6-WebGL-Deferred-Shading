@@ -7,6 +7,10 @@ WebGL Deferred Shading
 * Tested on: (TODO) **Google Chrome 222.2** on
   Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
 
+Toon Shading: https://en.wikibooks.org/wiki/GLSL_Programming/Unity/Toon_Shading
+
+Light Attenuation: https://imdoingitwrong.wordpress.com/2011/01/31/light-attenuation/
+
 ### Live Online
 
 [![](img/thumb.png)](http://TODO.github.io/Project6-WebGL-Deferred-Shading)

@@ -49,7 +49,6 @@ void main() {
         return;
     }
 
-
     vec3 camdir   = normalize(u_cameraPos - pos);
     vec3 lightdir = normalize(u_lightPos  - pos);
 
@@ -60,8 +59,21 @@ void main() {
 
     if (u_toon == 1) {
         diffuseTerm = float(int(diffuseTerm * TOON_STEPS)) / TOON_STEPS;
-        float d = abs(dot(camdir, normal));
-        if (d < .5) {
+        float u = v_uv.x;
+        float v = v_uv.y;
+        float d1 = texture2D(u_depth, vec2(u+(1./800.), v)).x;
+        float d2 = texture2D(u_depth, vec2(u-(1./800.), v)).x;
+        float d3 = texture2D(u_depth, vec2(u, (v+1./600.))).x;
+        float d4 = texture2D(u_depth, vec2(u, (v-1./600.))).x;
+        float max_depth = max(
+                            max(
+                                max(
+                                    abs(depth-d1), abs(depth-d2)),
+                                abs(depth-d3)),
+                            abs(depth-d4)
+                        );
+
+        if (max_depth > .001) {
             gl_FragColor = vec4(0, 0, 0, 1);
             return;
         }
