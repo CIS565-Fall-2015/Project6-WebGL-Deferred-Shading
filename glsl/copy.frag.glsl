@@ -21,9 +21,15 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     return normap.y * surftan + normap.x * surfbinor + normap.z * geomnor;
 }
 
+// http://aras-p.info/blog/2009/07/30/encoding-floats-to-rgba-the-final/
+// http://stackoverflow.com/questions/30242013/glsl-compressing-packing-multiple-0-1-colours-var4-into-a-single-var4-variab
+float packRGBA( vec4 rgba ) {
+    return dot( floor(rgba.rgb*100.0), vec3(1000.0*1000.0, 1000.0, 1.0) );
+}
+
 void main() {
     // Copy values into gl_FragData[0], [1], etc.
-    gl_FragData[0] = vec4(v_position, 1.0);
+    gl_FragData[0] = vec4(v_position, packRGBA(texture2D(u_colmap, v_uv)));
     gl_FragData[1] = vec4(applyNormalMap(v_normal, texture2D(u_normap, v_uv).rgb), u_specExp);
-    gl_FragData[2] = vec4(texture2D(u_colmap, v_uv).rgb, u_remove);
+    //gl_FragData[2] = vec4(texture2D(u_colmap, v_uv).rgb, u_remove);
 }
