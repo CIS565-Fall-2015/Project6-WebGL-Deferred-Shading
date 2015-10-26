@@ -23,7 +23,7 @@ WebGL Deferred Shading
 ![](img/No Effect.PNG)
 
 * **Overview**: Standard Blinn-Phong shader with support for normal maps.
-* **Optimization**: Performance was improved by offloading surface normal calculations to the copy shader. See [G-Buffer Optimization](https://github.com/bcrusco/Project6-WebGL-Deferred-Shading#g-buffer-optimization) for more information.
+* **Optimization**: Performance was improved by offloading surface normal calculations to the copy shader. See [G-Buffer Optimization](#g-buffer-optimization) for more information.
 
 
 ### Bloom Shading with Two-Pass Gaussian Blur
