@@ -27,6 +27,11 @@ void main() {
     vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
     // TODO: Extract needed properties from the g-buffers into local variables
+    vec3 pos = gb1.xyz;     // World-space position
+    vec3 geomnor = gb2.xyz;  // Normals of the geometry as defined, without normal mapping
+    vec3 colmap = gb0.xyz;  // The color map - unlit "albedo" (surface color)
+    vec3 normap = gb3.xyz;  // The raw normal map (normals relative to the surface they're on)
+    vec3 nor = applyNormalMap(geomnor, normap);     // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
 
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.

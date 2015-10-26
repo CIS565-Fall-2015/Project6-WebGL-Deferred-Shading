@@ -140,16 +140,22 @@
         // TODO: add a loop here, over the values in R.lights, which sets the
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
-        
+        var numLights = R.lights.length;
+        for (var i = 0; i < numLights; i++) {
+            gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, R.lights[i].pos);
+            gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, R.lights[i].col);
+            gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, R.lights[i].rad);
 
-        // TODO: In the lighting loop, use the scissor test optimization
-        // Enable gl.SCISSOR_TEST, render all lights, then disable it.
-        //
-        // getScissorForLight returns null if the scissor is off the screen.
-        // Otherwise, it returns an array [xmin, ymin, width, height].
-        //
-        //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
+            // TODO: In the lighting loop, use the scissor test optimization
+            // Enable gl.SCISSOR_TEST, render all lights, then disable it.
+            //
+            // getScissorForLight returns null if the scissor is off the screen.
+            // Otherwise, it returns an array [xmin, ymin, width, height].
+            //
+            //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
 
+            renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+        }
         // Disable blending so that it doesn't affect other code
         gl.disable(gl.BLEND);
     };
@@ -186,8 +192,10 @@
         // * Bind the deferred pass's color output as a texture input
         // Set gl.TEXTURE0 as the gl.activeTexture unit
         // TODO: ^
+        gl.activeTexture(gl.TEXTURE0);
         // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
         // TODO: ^
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);
 
