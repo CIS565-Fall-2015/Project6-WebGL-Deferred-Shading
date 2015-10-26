@@ -4,12 +4,8 @@ var cfg;
     'use strict';
 
     var Cfg = function() {
-        // TODO: Define config fields and defaults here
         this.debugView = -1;
         this.debugScissor = false;
-        this.enableEffect0 = false;
-        this.bloom = false;
-        this.toon = false;
         this.improvedAABB = true;
         this.effects = -1;
     };
@@ -18,7 +14,6 @@ var cfg;
         cfg = new Cfg();
 
         var gui = new dat.GUI();
-        // TODO: Define any other possible config values
         gui.add(cfg, 'debugView', {
             'None':             -1,
             '0 Depth':           0,

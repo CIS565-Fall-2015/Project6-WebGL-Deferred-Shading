@@ -19,7 +19,6 @@
 
         // Move the R.lights
         for (var i = 0; i < R.lights.length; i++) {
-            // OPTIONAL TODO: Edit if you want to change how lights move
             var mn = R.light_min[1];
             var mx = R.light_max[1];
             R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
@@ -43,7 +42,6 @@
             R.pass_bloom_post2.render(state);
         }
         else if(cfg && cfg.effects == 1) {
-            // TODO: What do I do about multiple effects being enabled?
             R.pass_deferred.render(state);
             R.pass_toon_post1.render(state);
             R.pass_toon_post2.render(state);
@@ -140,7 +138,7 @@
           gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, light.col);
           gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, light.rad);
           gl.uniform3f(R.prog_BlinnPhong_PointLight.u_cameraPos, state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
-          if(cfg && cfg.toon) {
+          if(cfg && cfg.effects == 1) {
               gl.uniform1i(R.prog_BlinnPhong_PointLight.u_toon, 1);
           }
           else {

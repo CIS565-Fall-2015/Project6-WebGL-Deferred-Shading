@@ -19,6 +19,7 @@ void main() {
     vec4 gb1 = texture2D(u_gbufs[1], v_uv);
     vec4 gb2 = texture2D(u_gbufs[2], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
+    int toon = u_toon;
 
     //Extract needed properties from the g-buffers into local variables
     vec3 position = gb0.xyz;
@@ -49,8 +50,8 @@ void main() {
     float specular = pow(max(0.0, dot(normal, half_way)), specular_exp);
 
     // Toon ramp shading
-    if(u_toon == 1) {
-        float steps = 3.5;
+    if(toon == 1) {
+        float steps = 5.0;
         diffuse = ceil(diffuse * steps) / steps;
         specular = ceil(specular * steps) / steps;
         falloff = ceil(falloff * steps) / steps;
