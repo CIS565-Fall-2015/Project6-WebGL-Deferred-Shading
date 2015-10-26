@@ -31,7 +31,7 @@ WebGL Deferred Shading
 
 * **Overview**: Two-pass Gaussian blur to simulate the bloom glow effect.
 * **Performance Impact**: Minimal on my machine. In the below chart you can see that there is no measurable impact on performance until we hit 2,000 lights in the scene. At this point we see a 1ms increase, still very small considering the number of light sources.
-* **Optimization**: Two-pass Gaussian blur is used instead of a single convolution pass. This helps keep the performance impact minimal. The cost of calculating this blur in a single pass would be d<sup>2</sup>, where d is the diameter of the blur area. By splitting our convolution into two phases the complexity is reduced to 2d.
+* **Optimization**: Two-pass Gaussian blur is used instead of a single convolution pass. This helps keep the performance impact minimal. The cost of calculating this blur in a single pass would be d<sup>2</sup>, where d is the diameter of the blur area. By splitting our convolution into two phases the complexity is reduced to 2d. Unfortunately since this requires an additional render pass there is some added overhead required for memory setup and additional buffer manipulations. Overall the benefit of the two-pass implementation counteracts any negatives.
 
 ![](charts/Bloom Analysis.png)
 
