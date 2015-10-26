@@ -136,17 +136,36 @@
         // TO_DO: add a loop here, over the values in R.lights, which sets the
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
+		
+		gl.enable(gl.SCISSOR_TEST);
+		//scissor: 118ms->52ms, but , hard edge
 		for (var i = 0; i < R.lights.length; i++)
 		{
 			var l = R.lights[i];
 			var eye = [state.cameraPos.x,state.cameraPos.y,state.cameraPos.z];
-			gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_camPos,eye);
-			//gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_camPos,state.cameraPos);
-			gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, l.pos);
-			gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, l.col);
-			gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad,l.rad);
-			renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+			
+			var sc = getScissorForLight(state.viewMat, state.projMat, l);
+			if(sc!=null)
+			{
+				if(cfg && cfg.debugScissor)
+				{
+					gl.scissor(sc[0],sc[1],sc[2],sc[3]);
+					renderFullScreenQuad(R.progRed);
+				}
+				else
+				{
+					gl.scissor(sc[0],sc[1],sc[2],sc[3]);
+			
+					gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_camPos,eye);
+					gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, l.pos);
+					gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, l.col);
+					gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad,l.rad);
+			
+					renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+				}
+			}
 		}
+		gl.disable(gl.SCISSOR_TEST);
         // TODO: In the lighting loop, use the scissor test optimization
         // Enable gl.SCISSOR_TEST, render all lights, then disable it.
         //
@@ -154,7 +173,7 @@
         // Otherwise, it returns an array [xmin, ymin, width, height].
         //
         //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
-
+			
         // Disable blending so that it doesn't affect other code
         gl.disable(gl.BLEND);
     };
@@ -190,10 +209,10 @@
 
         // * Bind the deferred pass's color output as a texture input
         // Set gl.TEXTURE0 as the gl.activeTexture unit
-        // TODO: ^
+        // TO_DO: ^
 		gl.activeTexture(gl.TEXTURE0);
         // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
-        // TODO: ^
+        // TO_DO: ^
 		gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);		
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);

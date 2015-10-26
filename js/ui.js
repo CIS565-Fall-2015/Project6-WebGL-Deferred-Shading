@@ -26,9 +26,10 @@ var cfg;
         });
         gui.add(cfg, 'debugScissor');
 
-        var eff0 = gui.addFolder('EFFECT NAME HERE');
-        eff0.add(cfg, 'enableEffect0');
+        var eff0 = gui.addFolder('EFFECTS');
+        eff0.add(cfg, 'Bloom Effect');
         // TODO: add more effects toggles and parameters here
+		//https://udn.epicgames.com/Three/Bloom.html
     };
 
     window.handle_load.push(init);
