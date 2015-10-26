@@ -1,14 +1,48 @@
+HOW THINGS WORK
+-so deferred shading is all about reducing the number of fragment shadings that need to happen
+-so the deferred shader rasterizes, and then performs lighting computations only for what's visible
+-in webgl apparently this requires writing out buffers of what's visible
+-so these are the "multiple render passes"
+-btw, shader programs can have inputs and outputs bound on init
+
 BLOOM
 -something's... not so right
 -but the idea of this should work
+-just need a better filter system
+-should we make this a separate post processing shader? can we do this without addtl buffers?
+	-yes. probably. hopefully.
+	-which would make profiling later easier.
+-TODO:
+	-find a better filter
+	-make this a separate post-processing shader
 
 SCISSOR TEST
--uh oh
+-ok ok ok. so it's restricting the shading to a screen space "box" that gets a lighting computation
+-shouldn't be too bad
+-we'll need to tweak ambient, btw. scene is too dark atm.
 
-PACKING
--try 2-component noirmals
--apply normal map
--reconstruct world space pos w/cam matrix, x/y/depth -> hmmm.
+PACKING AND OPTIMIZATION -> all about trying to do this stuff while keeping it toggleable
+-try 2-component normals
+	-use length of x and y to get magnitude of z
+	-these are normalized, so no component will be greater than 1 -> use that to pack sign of z
+	-how to do this while making it toggleable? -> probably needs a new shader
+
+-apply normal map and pass it along -> easy, probably. but will interfere with debug -> needs a new shader
+
+-reconstruct world space pos w/cam matrix, x/y/depth -> hmmm. -> needs a new shader
+	-need to invert cam matrix? -> look up how to do this.
+	-we probably already need to add a uniform for cam position, b/c blinn phong is broken without it
+
+SCREEN SPACE MOTION BLUR or TOON SHADING
+-screen space motion blur has a GPU gems article, so this might be more straightforward
+	-would also be post processing
+-but toon shading: -> TOON SHADING IS COOL
+	-need to sample at each frag for depth. if depth change is beyond some threshold, then need to add a line
+	-ramp shading: like cutting up the gradient of blinn-phong for specular. we can probably generate this.
+	-so this has to be an alternate shader to blinn-phong
+
 
 TILING
--uhhh.
+-basically trying to reduce number of light calculations by tiling
+-think about how to do this
+-seems like it could extend from scissor test?
