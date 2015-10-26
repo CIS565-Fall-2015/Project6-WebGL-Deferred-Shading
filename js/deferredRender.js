@@ -54,13 +54,13 @@
     /**
      * 'copy' pass: Render into g-buffers
      */
-    R.pass_copy.render = function(state) {
+    R.pass_copy.render = function(state) { // "pass 1"
         // * Bind the framebuffer R.pass_copy.fbo
         // TODO: ^
         gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_copy.fbo);
 
         // * Clear screen using R.progClear
-        TODO: renderFullScreenQuad(R.progClear);
+        renderFullScreenQuad(R.progClear);
         // * Clear depth buffer to value 1.0 using gl.clearDepth and gl.clear
         // TODO: ^
         gl.clearDepth(1.0);
@@ -112,7 +112,7 @@
     /**
      * 'deferred' pass: Add lighting results for each individual light
      */
-    R.pass_deferred.render = function(state) {
+    R.pass_deferred.render = function(state) { // "pass 2"
         // * Bind R.pass_deferred.fbo to write into for later postprocessing
         gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
 
@@ -125,7 +125,10 @@
 
         // Enable blending and use gl.blendFunc to blend with:
         //   color = 1 * src_color + 1 * dst_color
+        //   goal is to blend each lighting pass into one beautiful frame buffer
         // TODO: ^
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE);
 
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
@@ -137,6 +140,7 @@
         // TODO: add a loop here, over the values in R.lights, which sets the
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
+        
 
         // TODO: In the lighting loop, use the scissor test optimization
         // Enable gl.SCISSOR_TEST, render all lights, then disable it.
