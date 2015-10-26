@@ -218,14 +218,7 @@
             
             renderFullScreenQuad(prog);
         }
-        else
-        {
-            gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.glowbuffer);
-            gl.clearColor(0.0, 0.0, 0.0, 0.0);
-            gl.clearDepth(1.0);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        }
+        
         
         
         
