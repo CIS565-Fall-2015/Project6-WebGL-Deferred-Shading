@@ -28,9 +28,7 @@ void main() {
     // Blend and perform edge ramping
     vec4 blend = -top_color - top_left_color - top_right_color + bottom_color + bottom_left_color + bottom_right_color;
     blend = vec4(vec3(max(max(blend.x, blend.y), blend.z)), 1.0);
-
-    // TODO: Test different values here
-    if(blend.x <= 0.25) {
+    if(blend.x <= 0.2) {
         blend = vec4(0.0, 0.0, 0.0, 1.0);
     }
     else {

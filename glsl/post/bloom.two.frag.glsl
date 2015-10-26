@@ -24,7 +24,6 @@ void main() {
     vec4 bottom0_color = texture2D(u_color, vec2(v_uv.x, v_uv.y + u_screen_inv.y));
     vec4 bottom1_color = texture2D(u_color, vec2(v_uv.x, v_uv.y + u_screen_inv.y * 2.0));
 
-    vec4 blend = orig_color + top1_color * gauss.z + top0_color * gauss.y + color * gauss.x
-        + bottom0_color * gauss.y + bottom1_color * gauss.z;
-    gl_FragColor = 0.65 * blend;
+    gl_FragColor = 0.65 * (orig_color + top1_color * gauss.z + top0_color * gauss.y + color * gauss.x
+        + bottom0_color * gauss.y + bottom1_color * gauss.z);
 }

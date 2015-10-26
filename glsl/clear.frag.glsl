@@ -1,5 +1,6 @@
 #version 100
 #extension GL_EXT_draw_buffers: enable
+
 precision highp float;
 precision highp int;
 

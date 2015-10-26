@@ -19,7 +19,8 @@ void main() {
     vec4 gb1 = texture2D(u_gbufs[1], v_uv);
     vec4 gb2 = texture2D(u_gbufs[2], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
-    // TODO: Extract needed properties from the g-buffers into local variables
+
+    //Extract needed properties from the g-buffers into local variables
     vec3 position = gb0.xyz;
     vec3 normal = normalize(gb1.xyz);
     vec3 color_map = gb2.xyz;
@@ -36,7 +37,7 @@ void main() {
     vec3 light_direction = normalize(light_difference);
     vec3 camera_direction = normalize(u_cameraPos - position);
     float light_distance = length(light_difference);
-    vec3 H = normalize(light_direction + camera_direction);
+    vec3 half_way = normalize(light_direction + camera_direction);
 
      if (light_distance > u_lightRad){
          gl_FragColor = vec4(0.0);
@@ -45,11 +46,11 @@ void main() {
 
     float falloff = 1.0 / pow(light_distance, 2.0);
     float diffuse = max(0.0, dot(normal, light_direction));
-    float specular = pow(max(0.0, dot(normal, H)), specular_exp);
+    float specular = pow(max(0.0, dot(normal, half_way)), specular_exp);
+
     // Toon ramp shading
-    // http://prideout.net/blog/?p=22
     if(u_toon == 1) {
-        float steps = 3.0;
+        float steps = 3.5;
         diffuse = ceil(diffuse * steps) / steps;
         specular = ceil(specular * steps) / steps;
         falloff = ceil(falloff * steps) / steps;
