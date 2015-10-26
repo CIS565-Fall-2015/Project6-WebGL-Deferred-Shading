@@ -11,7 +11,7 @@ WebGL Deferred Shading
 [![](img/thumb.png)](http://TODO.github.io/Project6-WebGL-Deferred-Shading)
 
 ### Demo Video
-<a href="https://youtu.be/Hlxv-cRIXCs" target="_blank"><img src="img/Fake Youtube.PNG" alt="WebGL Deferred Shader" width="960" height="720" border="0"/></a>
+<a href="https://youtu.be/Hlxv-cRIXCs" target="_blank"><img src="img/Fake Youtube.PNG" alt="WebGL Deferred Shader" width="640" height="480" border="0"/></a>
 
 ## Description
 
@@ -69,6 +69,20 @@ A deferred shader on the GPU using WebGL. Features Blinn-Phong shading, optional
 
 * **Overview**: Specular exponent added as an input to the g-buffers. Passed using the alpha channel of the normal buffer.
 * **Performance Impact**: None, the exponent is simply passed along the alpha channel of the normal buffer.
+
+### Debug Views
+
+#### Depth
+![](img/depth.PNG)
+
+#### Position
+![](img/position.PNG)
+
+#### Surface Normals
+![](img/Surface Normal.PNG)
+
+#### Color Map
+![](img/color map.PNG)
 
 ## References
 
