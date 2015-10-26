@@ -9,8 +9,7 @@
             !R.progClear ||
             !R.prog_Ambient ||
             !R.prog_BlinnPhong_PointLight ||
-            !R.prog_Debug ||
-            !R.progPost1)) {
+            !R.prog_Debug || !R.progPost1)) {
             console.log('waiting for programs to load...');
             return;
         }
@@ -107,6 +106,7 @@
 
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
+        gl.uniform1f(R.prog_Ambient.u_ambientTerm, cfg.ambient);
         renderFullScreenQuad(R.prog_Ambient);
 
         gl.enable(gl.SCISSOR_TEST);
@@ -132,14 +132,12 @@
                 bindTexturesForLightPass(program);
                 gl.uniform1i(program.u_toon, cfg.toon ? 1 : 0);
                 gl.uniform3f(program.u_cameraPos,
-                            -15.5, 1, -1);
-                            //cam.x, cam.y, cam.z);
-                            console.log(cam);
+                            cam.x, cam.y, cam.z);
                 gl.uniform3f(program.u_lightCol,
                             light.col[0], light.col[1], light.col[2]);
                 gl.uniform3f(program.u_lightPos,
                             light.pos[0], light.pos[1], light.pos[2]);
-                gl.uniform1f(program.u_lightRad, light.rad);
+                gl.uniform1f(program.u_lightRad, cfg.lightRadius);
             }
             renderFullScreenQuad(program);
         }

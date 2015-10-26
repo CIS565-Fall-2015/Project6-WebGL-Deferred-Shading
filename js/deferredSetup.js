@@ -129,6 +129,7 @@
 
         loadDeferredProgram('ambient', function(p) {
             // Save the object into this variable for access later
+            p.u_ambientTerm = gl.getUniformLocation(p.prog, 'u_ambientTerm');
             R.prog_Ambient = p;
         });
 

@@ -9,6 +9,8 @@ var cfg;
         this.enableEffect0 = false;
         this.disable = false;
         this.toon = false;
+        this.ambient = 0.4;
+        this.lightRadius = 4.0;
     };
 
     var init = function() {
@@ -27,8 +29,9 @@ var cfg;
         gui.add(cfg, 'debugScissor');
         gui.add(cfg, 'toon');
 
-        var eff0 = gui.addFolder('EFFECT NAME HERE');
-        eff0.add(cfg, 'enableEffect0');
+        var consts = gui.addFolder('Constants');
+        consts.add(cfg, 'ambient', 0.1, 1.0);
+        consts.add(cfg, 'lightRadius', 0.5, 10.0);
     };
 
     window.handle_load.push(init);
