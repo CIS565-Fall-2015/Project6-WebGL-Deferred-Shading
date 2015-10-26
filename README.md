@@ -9,12 +9,7 @@ WebGL Deferred Shading
 
 ### Live Online
 
-[![](img/1.png)](http://TODO.github.io/Project6-WebGL-Deferred-Shading)
-
-### Demo Video
-
-[![](img/2.png)](TODO)
-
+[![](img/1.png)](http://github.com/Pontusun/Project6-WebGL-Deferred-Shading)
 
 ## Project Description:
 In this project, a a deferred shading pipeline is implemented using GLSL and WebGL.
