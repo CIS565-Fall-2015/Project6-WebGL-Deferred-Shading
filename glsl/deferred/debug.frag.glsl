@@ -20,6 +20,14 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     return normap.y * surftan + normap.x * surfbinor + normap.z * geomnor;
 }
 
+vec4 EncodeFloatRGBA( float v ) {
+    vec4 enc = vec4(1.0, 255.0, 65025.0, 160581375.0) * v;
+    enc = fract(enc);
+    enc -= enc.yzww * vec4(1.0/255.0,1.0/255.0,1.0/255.0,0.0);
+    return enc;
+}
+
+
 void main() {
     vec4 gb0 = texture2D(u_gbufs[0], v_uv);
     vec4 gb1 = texture2D(u_gbufs[1], v_uv);
@@ -32,9 +40,11 @@ void main() {
     
     //TODO:optimize gbuffer structure
     vec3 geomnor = gb1.xyz;  // Normals of the geometry as defined, without normal mapping
-    vec3 colmap = gb2.xyz;  // The color map - unlit "albedo" (surface color)
+    vec3 colmap = EncodeFloatRGBA(gb0.w).rgb;
     vec3 normap = gb3.xyz;  // The raw normal map (normals relative to the surface they're on)
-    vec3 nor = applyNormalMap (geomnor, normap);     // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
+ 
+    vec3 nor = gb1.xyy;
+    nor.z = sqrt(1.0 - nor.x*nor.x - nor.y*nor.y);
 
     if (u_debug == 0) {
         gl_FragColor = vec4(vec3(depth), 1.0);

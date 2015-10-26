@@ -18,37 +18,34 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     return normap.y * surftan + normap.x * surfbinor + normap.z * geomnor;
 }
 
-/*
-vec4 EncodeFloatRGBA( float v ) {
-    float4 enc = float4(1.0, 255.0, 65025.0, 160581375.0) * v;
-    enc = frac(enc);
-    enc -= enc.yzww * float4(1.0/255.0,1.0/255.0,1.0/255.0,0.0);
-    return enc;
-}
+
+
 float DecodeFloatRGBA( vec4 rgba ) {
-    return dot( rgba, float4(1.0, 1/255.0, 1/65025.0, 1/160581375.0) );
+    return dot( rgba, vec4(1.0, 1.0/255.0, 1.0/65025.0, 1.0/160581375.0) );
 }
-*/
+
 
 
 void main() {
     // TODO: copy values into gl_FragData[0], [1], etc.
     
-    /*
-    vec3 nor = applyNormalMap (v_normal, texture2D(u_normap,v_uv).rgb);
+    
+    vec3 nor = normalize(applyNormalMap (v_normal, texture2D(u_normap,v_uv).rgb));
     vec4 col = texture2D(u_colmap, v_uv);
     
     
-    gl_FragData[0] = vec4( v_position,  Decode(col));
-    gl_FragData[1] = vec4( nor.xyz, 1.0);
-    */
+    //gl_FragData[0] = vec4( v_position,  DecodeFloatRGBA(col));
+    //gl_FragData[1] = vec4( nor.xy, 1.0, 1.0);
+    
+    gl_FragData[0] = vec4( v_position,  col.b);
+    gl_FragData[1] = vec4( nor.xy, col.rg);
     
     
-    
+    /*
     // naive 4 gbuffers
     gl_FragData[0] = vec4( v_position,1.0 );
     gl_FragData[1] = vec4( v_normal.xyz,1.0);
     gl_FragData[2] = texture2D(u_colmap, v_uv);
     gl_FragData[3] = texture2D(u_normap,v_uv);
-    
+    */
 }
