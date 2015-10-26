@@ -16,7 +16,7 @@ WebGL Deferred Shading
 
 ## Description
 
-A deffered shader on the GPU using WebGL. Features Blinn-Phong shading, optional bloom and toon shader effects, scissor test culling for point lights, and material defined specular exponents.
+A deferred shader on the GPU using WebGL. Features Blinn-Phong shading, optional bloom and toon shader effects, scissor test culling for point lights, and material defined specular exponents.
 
 ## Features
 
