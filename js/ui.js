@@ -8,6 +8,8 @@ var cfg;
         this.debugView = -1;
         this.debugScissor = false;
         this.enableEffect0 = false;
+		this.bloomEffect = false;
+		this.scissor_test_optimization = true;
     };
 
     var init = function() {
@@ -25,11 +27,18 @@ var cfg;
             '5 Surface normal':  5
         });
         gui.add(cfg, 'debugScissor');
-
-        var eff0 = gui.addFolder('EFFECTS');
-        eff0.add(cfg, 'Bloom Effect');
+		
+		var opt0 = gui.addFolder('OPTIMIZATIONS');
+		opt0.add(cfg,'scissor_test_optimization');
+		
+        var eff0 = gui.addFolder('EFFECT NAME HERE');
+        eff0.add(cfg, 'enableEffect0');
+		eff0.add(cfg, 'bloomEffect');
+		//http://http.developer.nvidia.com/GPUGems/gpugems_ch21.html
+		//https://docs.webplatform.org/wiki/tutorials/post-processing_with_webgl
+		//http://webglfundamentals.org/webgl/lessons/webgl-image-processing.html
+		//http://webglfundamentals.org/webgl/lessons/webgl-image-processing-continued.html
         // TODO: add more effects toggles and parameters here
-		//https://udn.epicgames.com/Three/Bloom.html
     };
 
     window.handle_load.push(init);

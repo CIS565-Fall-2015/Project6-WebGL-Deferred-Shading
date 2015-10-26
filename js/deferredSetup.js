@@ -5,7 +5,10 @@
     R.pass_copy = {};
     R.pass_debug = {};
     R.pass_deferred = {};
+	R.pass_srcmask = {};
     R.pass_post1 = {};
+	R.pass_bloomX = {};
+	R.pass_bloomY = {};
     R.lights = [];
 
     R.NUM_GBUFFERS = 4;
@@ -18,6 +21,8 @@
         loadAllShaderPrograms();
         R.pass_copy.setup();
         R.pass_deferred.setup();
+		R.pass_srcmask.setup();
+		R.pass_bloomX.setup();
     };
 
     // TODO: Edit if you want to change the light initial positions
@@ -88,7 +93,7 @@
         // * Create, bind, and store a single color target texture for the FBO
         R.pass_deferred.colorTex = createAndBindColorTargetTexture(
             R.pass_deferred.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
-
+	    		
         // * Check for framebuffer errors
         abortIfFramebufferIncomplete(R.pass_deferred.fbo);
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
@@ -97,6 +102,40 @@
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
+
+    R.pass_srcmask.setup = function() {
+        // * Create the FBO
+        R.pass_srcmask.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_srcmask.colorTex = createAndBindColorTargetTexture(
+            R.pass_srcmask.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+	    		
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_srcmask.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    };
+
+    R.pass_bloomX.setup = function() {
+        // * Create the FBO
+        R.pass_bloomX.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_bloomX.colorTex = createAndBindColorTargetTexture(
+            R.pass_bloomX.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+	    		
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_bloomX.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    };
+
+
 
     /**
      * Loads all of the shader programs used in the pipeline.
@@ -155,7 +194,26 @@
             // Save the object into this variable for access later
             R.progPost1 = p;
         });
-
+		
+        loadPostProgram('srcmask', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+			//p.u_texSize = gl.getUniformLocation(p.prog, 'u_texSize');
+            // Save the object into this variable for access later
+            R.progSrcmask = p;
+        });
+		
+        loadPostProgram('bloomX', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+			p.u_texSize = gl.getUniformLocation(p.prog, 'u_texSize');
+            // Save the object into this variable for access later
+            R.progBloomX = p;
+        });
+        loadPostProgram('bloomY', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+			p.u_texSize = gl.getUniformLocation(p.prog, 'u_texSize');
+            // Save the object into this variable for access later
+            R.progBloomY = p;
+        });
         // TODO: If you add more passes, load and set up their shader programs.
     };
 
