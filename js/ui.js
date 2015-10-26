@@ -8,7 +8,8 @@ var cfg;
         this.debugView = -1;
         this.debugScissor = false;
         this.enableToonShading = false;
-        this.enableEffect1 = false;
+        this.enableToonWithRampShading = false;
+        this.enableBloom = false;
     };
 
     var init = function() {
@@ -29,7 +30,8 @@ var cfg;
 
         var eff0 = gui.addFolder('Some Effects');
         eff0.add(cfg, 'enableToonShading');
-        eff0.add(cfg, 'enableEffect1');
+        eff0.add(cfg, 'enableToonWithRampShading');
+        eff0.add(cfg, 'enableBloom');
         // TODO: add more effects toggles and parameters here
     };
 

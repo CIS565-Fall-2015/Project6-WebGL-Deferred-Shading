@@ -118,8 +118,11 @@
         // Enable blending and use gl.blendFunc to blend with:
         //   color = 1 * src_color + 1 * dst_color
         gl.enable(gl.BLEND);
-        gl.blendFunc(gl.ONE, gl.ONE);
-        //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        if (cfg && cfg.debugScissor){
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        } else {
+            gl.blendFunc(gl.ONE, gl.ONE);
+        }
 
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
@@ -132,14 +135,15 @@
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
         var cameraPos = [state.cameraPos.x, state.cameraPos.y, state.cameraPos.z];
-        var settings = [cfg.enableToonShading, 0, 0, 0];
+        var settings = [cfg.enableToonShading, cfg.enableToonWithRampShading, 0, 0];
         gl.enable(gl.SCISSOR_TEST);
 
         for(var i = 0; i < R.lights.length; i++){
             var sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
-            if (sc == null){
+            if (sc == null || sc[2] < 0 || sc[3] < 0){
                 continue;
             }
+
             gl.scissor(sc[0],sc[1],sc[2],sc[3]);
 
             if (cfg && cfg.debugScissor){
@@ -210,6 +214,7 @@
 
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);
+        gl.uniform4fv(R.progPost1.u_settings, [cfg.enableBloom, 0.0, 0.0, 0.0]);
 
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);

@@ -40,6 +40,9 @@ void main() {
     vec3 normap = gb2.xyz;  // The raw normal map (normals relative to the surface they're on)
     vec3 nor = applyNormalMap(geomnor, normap); // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
 
+    float toonShading = u_settings[0];
+    float rampShading = u_settings[1];
+
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.
     if (depth == 1.0) {
@@ -47,7 +50,7 @@ void main() {
         return;
     }
 
-    if (u_settings[0] == 1.0){
+    if (toonShading == 1.0){
         float depthNeighbor = texture2D(u_depth, v_uv + 1.0/u_camera_width).x;
         float depthNeighbor2 = texture2D(u_depth, v_uv + 1.0/u_camera_height).x;
 
@@ -70,18 +73,18 @@ void main() {
 
     vec3 fragColor = color.rgb;
 
-    // Normal shading
-    if (u_settings[0] == 1.0){
+    // Toon shading
+    if (toonShading == 1.0){
         if (diffuse > 0.6){
             fragColor *= 0.6;
         } else if (diffuse > 0.3) {
             fragColor *= 0.3;
         } else {
-            fragColor *= max(0.0, 0.4 - diffuse);
+            fragColor *= (1.0-rampShading)*0.1 + (rampShading)*diffuse;
         }
-        fragColor *= max(0.0,(u_lightRad - 0.1 - dist));
+        fragColor *= max(0.0,(u_lightRad - dist));
 
-    // Toon shading
+    // Normal shading
     } else {
         fragColor *= diffuse * max(0.0,(u_lightRad - dist)) * 0.5;
         fragColor += color.rgb * specular * max(0.0,(u_lightRad - dist)) * 0.5;
