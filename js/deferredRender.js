@@ -95,7 +95,7 @@
         gl.uniformMatrix4fv(R.progCopy.u_cameraMat, gl.FALSE, m);
 
         // * Draw the scene
-        drawScene(state);
+        drawScene(state, R.progCopy);
     };
 
     /**
@@ -110,7 +110,7 @@
         // * Clear depth buffer to value 1.0 using gl.clearDepth and gl.clear
         gl.clearDepth(1.0);
         // http://webgl.wikia.com/wiki/Clear
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
 
         // * "Use" the program R.progCopyCompressed.prog
         gl.useProgram(R.progCopyCompressed.prog);
@@ -121,16 +121,16 @@
         gl.uniformMatrix4fv(R.progCopyCompressed.u_cameraMat, gl.FALSE, m);
 
         // * Draw the scene
-        drawScene(state);
+        drawScene(state, R.progCopyCompressed);
     };
 
-    var drawScene = function(state) {
+    var drawScene = function(state, prog) {
         for (var i = 0; i < state.models.length; i++) {
             var m = state.models[i];
 
             // If you want to render one model many times, note:
             // readyModelForDraw only needs to be called once.
-            readyModelForDraw(R.progCopy, m);
+            readyModelForDraw(prog, m);
 
             drawReadyModel(m);
         }
