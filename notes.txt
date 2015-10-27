@@ -66,3 +66,14 @@ TILING
 -basically trying to reduce number of light calculations by tiling
 -think about how to do this
 -seems like it could extend from scissor test?
+
+TODO before seeing Kai:
+-make bloom toggleable
+-make scissor test toggleable
+-add a toon shader. make it toggleable. should theoretically be very similar to blinnphong in the js
+
+Seeing Kai:
+-so I'm trying to have a separate pipeline that I can toggle
+-this pipeline has copy stuff that produces fewer gbuffers
+-my understanding is that each framebuffer can have its own gbuffers
+-but the gbuffers here seem to be wrong. what's up?

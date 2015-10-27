@@ -193,6 +193,7 @@
 
         loadPostProgram('one', function(p) {
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_bloom = gl.getUniformLocation(p.prog, 'u_bloom');
             // Save the object into this variable for access later
             R.progPost1 = p;
         });

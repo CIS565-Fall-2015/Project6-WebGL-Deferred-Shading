@@ -310,6 +310,7 @@
         gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);
+        gl.uniform1i(R.progPost1.u_bloom, cfg.enableBloom);
 
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);

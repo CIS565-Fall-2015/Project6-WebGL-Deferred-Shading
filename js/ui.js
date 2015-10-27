@@ -7,7 +7,7 @@ var cfg;
         // TODO: Define config fields and defaults here
         this.debugView = -1;
         this.debugScissor = false;
-        this.enableEffect0 = false;
+        this.enableBloom = false;
         this.compressedGbuffers = false;
     };
 
@@ -27,8 +27,8 @@ var cfg;
         });
         gui.add(cfg, 'debugScissor');
 
-        var eff0 = gui.addFolder('EFFECT NAME HERE');
-        eff0.add(cfg, 'enableEffect0');
+        var eff0 = gui.addFolder('Bloom');
+        eff0.add(cfg, 'enableBloom');
         gui.add(cfg, 'compressedGbuffers');
     };
 
