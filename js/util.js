@@ -125,7 +125,8 @@ window.readyModelForDraw = function(prog, m) {
         gl.bindBuffer(gl.ARRAY_BUFFER, m.uv);
         gl.vertexAttribPointer(prog.a_uv, 2, gl.FLOAT, false, 0, 0);
     }
-
+    
+	
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.idx);
 };
 

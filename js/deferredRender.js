@@ -48,18 +48,18 @@
 			R.pass_post1.render(state);
 			// call postprocessing pass, more could be added later 
 			//console.log("cfg.enableEffect is "+cfg.enableEffect);
-			// switch (cfg.enableEffect){
-			    // case '2': // Toon
-				    // R.pass_post2.render(state);
-				    // break;
-				// case '3': // Bloom
-				    // R.pass_post3.render(state);
-				    // break;
-				// default:
-					// R.pass_post1.render(state);
-				    // break;
+			switch (cfg.enableEffect){
+			    case '2': // Toon
+				    R.pass_toon.render(state);
+				    break;
+				case '3': // Bloom
+				    R.pass_bloom.render(state);
+				    break;
+				default:
+					R.pass_post1.render(state);
+				    break;
 			
-			// }
+			}
 			
             
 
@@ -168,7 +168,10 @@
         //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
 		
 		// set up effect, enableEffect0...
-		gl.uniform1i(R.prog_BlinnPhong_PointLight.u_toon, cfg.effects);
+		if(cfg.enableEffect == '2'){
+			gl.uniform1i(R.prog_BlinnPhong_PointLight.u_toon, 1);
+		}
+			
 		// set up camera position 
         gl.uniform3f(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
 		    
@@ -268,18 +271,86 @@
     // /**
      // * 'post2'  Toon
      // */
-    // R.pass_post2.render = function(state) {
-	    // console.log("I'm in post 2 \n"); 
-	// }
+    R.pass_toon.render = function(state) {
+	    console.log("I'm in post 2, Toon \n"); 
+		// * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_toon.fbo);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.progPostToon.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE0);
+        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        // Configure the R.progPost1.u_color uniform to point at texture unit 0
+        gl.uniform1i(R.progPostToon.u_color, 0);
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.progPostToon);
+		
+		
+		// * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.progPostToon2.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE0);
+        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        // Configure the R.progPostToon2.u_color uniform to point at texture unit 0
+        gl.uniform1i(R.progPostToon2.u_color_1, 0);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE1);
+        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_toon.colorTex);
+        // Configure the R.progPostToon2.u_color uniform to point at texture unit 1
+        gl.uniform1i(R.progPostToon2.u_color, 1);
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.progPostToon2);
+	
+	}
 	/**
      * 'post3' : Bloom 
      */
-    // R.pass_post3.render = function(state) {
-	
-	    
+    R.pass_bloom.render = function(state) {
+	     console.log("I'm in post 3, Bloom \n"); 
+	     // * Unbind any existing framebuffer (if there are no more passes)
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_bloom.fbo);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.progPostBloom.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE0);
+        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        // Configure the R.progPost1.u_color uniform to point at texture unit 0
+        gl.uniform1i(R.progPostBloom.u_color, 0);
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.progPostBloom);
         
-	// }
+	}
 	
 	
     var renderFullScreenQuad = (function() {

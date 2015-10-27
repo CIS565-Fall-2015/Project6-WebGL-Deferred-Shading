@@ -6,6 +6,11 @@
     R.pass_debug = {};
     R.pass_deferred = {};
     R.pass_post1 = {};
+	// for toon
+	R.pass_toon = {};
+	R.pass_toon1 = {};
+	// for bloom
+	R.pass_bloom = {};
     R.lights = [];
 
     R.NUM_GBUFFERS = 4;
@@ -18,6 +23,11 @@
         loadAllShaderPrograms();
         R.pass_copy.setup();
         R.pass_deferred.setup();
+		// set up framebuffer for toon and bloom
+		R.pass_toon.setup();
+		R.pass_bloom.setup();
+		
+		
     };
 
     // TODO: Edit if you want to change the light initial positions
@@ -75,8 +85,9 @@
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL(attachments);
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+         
+		// Maybe disabled??????
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
 
     /**
@@ -94,9 +105,46 @@
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		
+		// Maybe disabled??????
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
+	
+	/**
+     * Create/configure framebuffer between "deferred" and "post2" stages/ Toon
+     */
+	R.pass_toon.setup = function() {
+        // * Create the FBO
+        R.pass_toon.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_toon.colorTex = createAndBindColorTargetTexture(
+            R.pass_toon.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_toon.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    };
+	
+	 /**
+     * Create/configure framebuffer between "deferred" and "post3" stages/ Bloom
+     */
+	R.pass_bloom.setup = function() {
+        // * Create the FBO
+        R.pass_bloom.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_bloom.colorTex = createAndBindColorTargetTexture(
+            R.pass_bloom.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_bloom.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    };
+	
+	
 
     /**
      * Loads all of the shader programs used in the pipeline.
@@ -114,6 +162,8 @@
                 p.a_position  = gl.getAttribLocation(prog, 'a_position');
                 p.a_normal    = gl.getAttribLocation(prog, 'a_normal');
                 p.a_uv        = gl.getAttribLocation(prog, 'a_uv');
+				
+				
 
                 // Save the object into this variable for access later
                 R.progCopy = p;
@@ -141,6 +191,7 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+			p.u_toon = gl.getUniformLocation(p.prog, 'u_toon');
             R.prog_BlinnPhong_PointLight = p;
         });
 
@@ -157,6 +208,26 @@
         });
 
         // TODO: If you add more passes, load and set up their shader programs.
+		loadPostProgram('bloom', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            // Save the object into this variable for access later
+            R.progPostBloom = p;
+        });
+		
+		loadPostProgram('toon', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            // Save the object into this variable for access later
+            R.progPostToon = p;
+        });
+		
+		loadPostProgram('toon2', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+			p.u_color_1 = gl.getUniformLocation(p.prog, 'u_color_1');
+            //Save the object into this variable for access later
+            R.progPostToon2 = p;
+        });
+		
+		
     };
 
     var loadDeferredProgram = function(name, callback) {

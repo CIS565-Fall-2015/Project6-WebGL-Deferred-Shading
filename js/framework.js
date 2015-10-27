@@ -18,7 +18,9 @@ var width, height;
             projMat: camera.projectionMatrix,
             viewMat: camera.matrixWorldInverse,
             cameraPos: camera.position,
-            models: models
+            models: models,
+			// change it later 
+			screenDim: {w: width, h: height}
         });
     };
 
@@ -67,12 +69,7 @@ var width, height;
     };
 
     var init = function() {
-        canvas = document.getElementById('canvas');
-        renderer = new THREE.WebGLRenderer({
-            canvas: canvas,
-            preserveDrawingBuffer: debugMode
-        });
-        gl = renderer.context;
+        
 
         // TODO: For performance measurements, disable debug mode!
         var debugMode = true;
@@ -85,6 +82,12 @@ var width, height;
             };
             gl = WebGLDebugUtils.makeDebugContext(gl, throwOnGLError);
         }
+		canvas = document.getElementById('canvas');
+        renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            preserveDrawingBuffer: debugMode
+        });
+        gl = renderer.context;
 
         initExtensions();
 
@@ -134,6 +137,10 @@ var width, height;
                 loadTexture('models/sponza/normal.png').then(function(tex) {
                     m.normap = tex;
                 });
+				//maybe change later 
+				 m.specExp = 10.0;	
+                 m.removeChannel = -1;
+				//
                 models.push(m);
             });
         });

@@ -9,7 +9,7 @@ WebGL Deferred Shading
 
 ### Live Online
 
-[![](img/1.png)](http://github.com/Pontusun/Project6-WebGL-Deferred-Shading)
+[![](img/1.png)](http://pontusun.github.io/Project6-WebGL-Deferred-Shading/)
 
 ## Project Description:
 In this project, a a deferred shading pipeline is implemented using GLSL and WebGL.
@@ -17,6 +17,10 @@ The implemented features include,
 * Effects:
   * Deferred Blinn-Phong shading (diffuse + specular) for point lights
   ![](img/1.png)
+  * Bloom using post-process blur
+  ![](img/11.png)
+  * Toon shading (with ramp shading + simple depth-edge detection for outlines)
+  ![](img/10.png)
 
 * Optimizations:
   * Scissor test optimization

@@ -9,6 +9,7 @@ uniform vec3 u_lightPos;
 uniform float u_lightRad;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
+uniform int u_toon;
 uniform vec3 u_cameraPos;
 
 varying vec2 v_uv;
@@ -50,12 +51,16 @@ void main() {
     
     float att = clamp(1.0 - dist/u_lightRad, 0.0, 1.0);
     
-    float diff_c = max(dot(light, nor), 0.0);
-    vec3 diff = colmap * u_lightCol * diff_c;
-    
-    float spec_c = max(dot(-light + 2.0 * dot(light,nor) * nor, cam), 0.0);
-    vec3 spec = colmap * u_lightCol * pow( spec_c, 32.0);
-    gl_FragColor = vec4( clamp((diff+spec)*att, 0.0, 1.0), 1.0);
+    float diff = max(dot(light, nor), 0.0);   
+    float spec = max(dot(-light + 2.0 * dot(light,nor) * nor, cam), 0.0);
+	spec = pow(spec, 50.0);
+	
+	if(u_toon == 1){
+		diff = float(floor(diff/0.2)) * 0.2;
+		spec = float(floor(spec/0.2)) * 0.2;
+	}
+
+    gl_FragColor = vec4( clamp((diff+spec)*att*colmap*u_lightCol, 0.0, 1.0), 1.0);
 
     //gl_FragColor = vec4(0, 0, 1, 1);  // TODO: perform lighting calculations
 }
