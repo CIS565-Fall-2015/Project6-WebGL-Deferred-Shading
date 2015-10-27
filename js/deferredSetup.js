@@ -6,6 +6,12 @@
     R.pass_debug = {};
     R.pass_deferred = {};
     R.pass_post1 = {};
+    //**********
+    R.pass_bloom_w = {};
+    R.pass_bloom_h = {};
+    R.light_pass ={};
+    R.pass_wall={};
+    //**********
     R.lights = [];
 
     R.NUM_GBUFFERS = 4;
@@ -18,6 +24,10 @@
         loadAllShaderPrograms();
         R.pass_copy.setup();
         R.pass_deferred.setup();
+        //******bloom.fbo******//
+        R.pass_bloom_w.setup();
+        R.light_pass.setup();
+        //*************
         console.log('seted up.');
     };
 
@@ -58,6 +68,7 @@
     R.pass_copy.setup = function() {
         // * Create the FBO
         R.pass_copy.fbo = gl.createFramebuffer();
+    
         // * Create, bind, and store a depth target texture for the FBO
         R.pass_copy.depthTex = createAndBindDepthTargetTexture(R.pass_copy.fbo);
 
@@ -83,13 +94,32 @@
     /**
      * Create/configure framebuffer between "deferred" and "post1" stages
      */
+    R.pass_bloom_w.setup =  function() {
+       
+        R.pass_bloom_w.fbo = gl.createFramebuffer();
+        R.pass_bloom_w.colorTex = createAndBindColorTargetTexture(
+                     R.pass_bloom_w.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+        abortIfFramebufferIncomplete(R.pass_bloom_w.fbo);
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null); 
+    };
+   R.light_pass.setup =  function() {
+       
+        R.light_pass.fbo = gl.createFramebuffer();
+        R.light_pass.colorTex = createAndBindColorTargetTexture(
+                     R.light_pass.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+        abortIfFramebufferIncomplete(R.light_pass.fbo);
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null); 
+    };
     R.pass_deferred.setup = function() {
         // * Create the FBO
         R.pass_deferred.fbo = gl.createFramebuffer();
+     
         // * Create, bind, and store a single color target texture for the FBO
         R.pass_deferred.colorTex = createAndBindColorTargetTexture(
-            R.pass_deferred.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
-
+                     R.pass_deferred.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+        
         // * Check for framebuffer errors
         abortIfFramebufferIncomplete(R.pass_deferred.fbo);
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
@@ -143,10 +173,22 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
-           p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
+            p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
+            p.u_toon= gl.getUniformLocation(p.prog, 'u_toon');
             R.prog_BlinnPhong_PointLight = p;
         });
-
+       loadDeferredProgram('bloom_w', function(p) {
+            p.u_color = gl.getUniformLocation(p.prog, 'u_color');
+            R.prog_bloom_w = p;
+        });
+         loadDeferredProgram('bloom_h', function(p) {
+            p.u_color = gl.getUniformLocation(p.prog, 'u_color');
+            R.prog_bloom_h = p;
+        });
+       loadDeferredProgram('toon', function(p) {
+            p.u_color = gl.getUniformLocation(p.prog, 'u_color');
+            R.prog_toon = p;
+        });
         loadDeferredProgram('debug', function(p) {
             p.u_debug = gl.getUniformLocation(p.prog, 'u_debug');
             // Save the object into this variable for access later

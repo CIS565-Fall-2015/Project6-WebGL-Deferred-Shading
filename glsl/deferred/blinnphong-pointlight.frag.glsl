@@ -10,9 +10,12 @@ uniform float u_lightRad;
 uniform vec3 u_cameraPos;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
+uniform int u_toon;
 
 varying vec2 v_uv;
-
+const vec3 offset = vec3( 0.0, 2.0, 4.0);
+const float width=800.0;
+const float height=600.0;
 vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
     vec3 up = normalize(vec3(0.001, 1, 0.001));
@@ -20,7 +23,35 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     vec3 surfbinor = cross(geomnor, surftan);
     return normap.y * surftan + normap.x * surfbinor + normap.z * geomnor;
 }
-
+vec3 _clamp(vec3 t)
+{
+  if(t.x>1.0)t.x=1.0;
+  if(t.y>1.0)t.y=1.0;
+  if(t.z>1.0)t.z=1.0;
+  
+  if(t.x<0.0)t.x=0.0;
+  if(t.y<0.0)t.y=0.0;
+  if(t.z<0.0)t.z=0.0;
+  return t;
+}
+float _clampf(float t)
+{
+if(t>1.0)t=1.0;
+if(t<0.0)t=0.0;
+return t;
+}
+float getcorclor(float diffuse){
+   float a=0.2;
+	float b=0.5;
+	float c=0.9;
+	float d=1.0;
+if(diffuse<a){diffuse=0.0;}
+	else if(diffuse<b) {diffuse=a;}
+	else if(diffuse<c) {diffuse=b;}
+	
+	else {diffuse=d;}
+	return diffuse;
+	}
 void main() {
     vec4 gb0 = texture2D(u_gbufs[0], v_uv);
     vec4 gb1 = texture2D(u_gbufs[1], v_uv);
@@ -28,10 +59,7 @@ void main() {
     vec4 gb3 = texture2D(u_gbufs[3], v_uv);
 	
     float depth = texture2D(u_depth, v_uv).x;
-    // TODO: Extract needed properties from the g-buffers into local variables
-
-    // If nothing was rendered to this pixel, set alpha to 0 so that the
-    // postprocessing step can render the sky color.
+  
     if (depth == 1.0) {
         gl_FragColor = vec4(0, 0, 0, 0);
         return;
@@ -39,21 +67,30 @@ void main() {
 
     vec3 std_normal=applyNormalMap(gb1.xyz, gb3.xyz);
 	
-	vec3 I = normalize(u_lightPos-gb0.xyz);
-	vec3 outray =normalize(u_cameraPos-gb0.xyz);
-    vec3 H=normalize(I+outray);
-
-    float hdot=dot(H,std_normal);
-    vec3 specular_color = max(pow(hdot,u_lightRad),0.0)* u_lightCol;
-	float diffuse= dot(std_normal, I);//0-1;
-	vec3 diffuse_color=vec3(diffuse);
-
-    vec3 phong_color= 0.6*specular_color+0.4*diffuse_color;//where is ambient light?
-    phong_color = phong_color;//* u_lightCol;//clamp(0,1.0);
- 
+	vec3 lightray = normalize(u_lightPos-gb0.xyz);
+	vec3 basec=gb2.xyz;
+	float dis=length(u_lightPos-gb0.xyz);
+	vec3 eyeray =normalize(u_cameraPos-gb0.xyz);
+    vec3 H=normalize(lightray+ eyeray);
+    float attenuation = max(0.0, u_lightRad - dis);
+	vec3 light;
+	float diffuse= _clampf(dot(lightray,std_normal));
+	float specular= _clampf(pow(max(0.0, dot(lightray,H)), 50.0));
+	//https://en.wikibooks.org/wiki/GLSL_Programming/Unity/Toon_Shading
+    if(u_toon>0)
+	{//ramp
+	float a=0.2;
+	float b=0.5;
+	float c=0.9;
+	float d=1.0;
 	
-
-//	vec3 phong_color=vec3(1.0,0.0,0.0);
-    gl_FragColor = vec4(phong_color.xyz, 1);  // TODO: perform lighting calculations
-   
+	if(diffuse<a){diffuse=0.0;specular=0.0;}
+	else if(diffuse<b) {diffuse=a;specular=a;}
+	else if(diffuse<c) {diffuse=b;specular=d;}
+	else {diffuse=d;specular=d;}
+    basec=vec3(1.0,1.0,1.0);
 	}
+    vec3 phong_color= (diffuse+specular)*u_lightCol*attenuation*basec;
+    gl_FragColor = vec4(phong_color,1.0);
+	
+}
