@@ -10,6 +10,7 @@ var cfg;
         this.enableToonShading = false;
         this.enableToonWithRampShading = false;
         this.enableBloom = false;
+        this.enablePost2 = false;
     };
 
     var init = function() {
@@ -32,6 +33,7 @@ var cfg;
         eff0.add(cfg, 'enableToonShading');
         eff0.add(cfg, 'enableToonWithRampShading');
         eff0.add(cfg, 'enableBloom');
+        eff0.add(cfg, 'enablePost2');
         // TODO: add more effects toggles and parameters here
     };
 

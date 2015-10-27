@@ -6,7 +6,7 @@
     R.pass_debug = {};
     R.pass_deferred = {};
     R.pass_post1 = {};
-    R.pass_post2 = {}:
+    R.pass_post2 = {};
     R.lights = [];
 
     R.NUM_GBUFFERS = 4;
@@ -100,8 +100,8 @@
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
 
-        /**
-     * Create/configure framebuffer between "deferred" and "post1" stages
+    /**
+     * Create/configure framebuffer between "post1" and "post2" stages
      */
     R.pass_post1.setup = function() {
         // * Create the FBO
@@ -178,12 +178,17 @@
         loadPostProgram('one', function(p) {
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
             p.u_settings = gl.getUniformLocation(p.prog, 'u_settings');
+            p.u_kernel = gl.getUniformLocation(p.prog, 'u_kernel');
+            p.u_block_kernel = gl.getUniformLocation(p.prog, 'u_block_kernel');
             // Save the object into this variable for access later
             R.progPost1 = p;
         });
 
-        loadPost2Program('two', function(p) {
+        loadPostProgram('two', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
             p.u_settings = gl.getUniformLocation(p.prog, 'u_settings');
+            p.u_kernel = gl.getUniformLocation(p.prog, 'u_kernel');
+
             R.progPost2 = p;
         });
 
@@ -211,20 +216,6 @@
 
     var loadPostProgram = function(name, callback) {
         loadShaderProgram(gl, 'glsl/quad.vert.glsl',
-                          'glsl/post/' + name + '.frag.glsl',
-            function(prog) {
-                // Create an object to hold info about this shader program
-                var p = { prog: prog };
-
-                // Retrieve the uniform and attribute locations
-                p.a_position = gl.getAttribLocation(prog, 'a_position');
-
-                callback(p);
-            });
-    };
-
-    var loadPost2Program = function(name, callback) {
-        loadShaderProgram(gl, 'glsl/post/one.frag.glsl',
                           'glsl/post/' + name + '.frag.glsl',
             function(prog) {
                 // Create an object to hold info about this shader program
