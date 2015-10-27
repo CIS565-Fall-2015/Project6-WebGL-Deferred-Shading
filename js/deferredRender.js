@@ -12,7 +12,8 @@
             !R.prog_Debug ||
             !R.progPost1 ||
             !R.progCopyCompressed ||
-            !R.prog_DebugCompressed)) {
+            !R.prog_DebugCompressed ||
+            !R.progClearCompressed)) {
             console.log('waiting for programs to load...');
             return;
         }
@@ -141,7 +142,7 @@
 
         // * Bind/setup the debug "lighting" pass
         // * Tell shader which debug view to use
-        bindTexturesForLightPass(R.prog_DebugCompressed);
+        bindTexturesForLightPassCompressed(R.prog_DebugCompressed);
         gl.uniform1i(R.prog_DebugCompressed.u_debug, cfg.debugView);
 
         // upload the inverse camera matrix
@@ -270,6 +271,21 @@
         gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
         gl.uniform1i(prog.u_depth, R.NUM_GBUFFERS);
     };
+
+    var bindTexturesForLightPassCompressed = function(prog) {
+        gl.useProgram(prog.prog);
+
+        // * Bind all of the g-buffers and depth buffer as texture uniform
+        //   inputs to the shader
+        for (var i = 0; i < R.NUM_GBUFFERS_COMPRESSED; i++) {
+            gl.activeTexture(gl['TEXTURE' + i]);
+            gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_compressed.gbufs[i]);
+            gl.uniform1i(prog.u_gbufs[i], i);
+        }
+        gl.activeTexture(gl['TEXTURE' + R.NUM_GBUFFERS_COMPRESSED]);
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_compressed.depthTex);
+        gl.uniform1i(prog.u_depth, R.NUM_GBUFFERS_COMPRESSED);
+    };    
 
     /**
      * 'post1' pass: Perform (first) pass of post-processing

@@ -26,6 +26,7 @@
         R.pass_deferred.setup(); // allocate
 
         R.pass_copy_compressed.setup(); // allocate
+        console.log("setup complete");
     };
 
     // TODO: Edit if you want to change the light initial positions
@@ -122,6 +123,8 @@
             // don't want to use the same draw buffers over again?
             var attachment = gl_draw_buffers['COLOR_ATTACHMENT' + i + '_WEBGL'];
             var tex = createAndBindColorTargetTexture(R.pass_copy_compressed.fbo, attachment);
+            console.log(attachment);
+
             R.pass_copy_compressed.gbufs.push(tex);
             attachments.push(attachment);
         }
@@ -302,7 +305,6 @@
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, tex, 0);
-        console.log(attachment);
 
         return tex;
     };

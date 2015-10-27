@@ -67,6 +67,13 @@ var width, height;
     };
 
     var init = function() {
+        canvas = document.getElementById('canvas');
+        renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            preserveDrawingBuffer: debugMode
+        });
+        gl = renderer.context;
+
         // TODO: For performance measurements, disable debug mode!
         var debugMode = true;
 
@@ -78,13 +85,6 @@ var width, height;
             };
             gl = WebGLDebugUtils.makeDebugContext(gl, throwOnGLError);
         }
-
-        canvas = document.getElementById('canvas');
-        renderer = new THREE.WebGLRenderer({
-            canvas: canvas,
-            preserveDrawingBuffer: debugMode
-        });
-        gl = renderer.context;
 
         initExtensions();
 
