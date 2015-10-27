@@ -33,7 +33,7 @@ void main() {
     vec3 geomnor = gb1.xyz;
     vec3 diff = gb2.xyz;
     vec3 normap = gb3.xyz;
-    vec3 nor = applyNormalMap(geomnor,normap); 
+    vec3 nor = normalize(applyNormalMap(geomnor,normap)); 
 	
 	vec3 lightDir = normalize(u_lightPos - pos);
 	vec3 reflDir = reflect(-lightDir,nor);
@@ -49,7 +49,8 @@ void main() {
     // TO_DO: perform lighting calculations
 	
 	float attenuation = max(0.0, u_lightRad - length(pos-u_lightPos));
-	attenuation*=attenuation;
+	attenuation/=u_lightRad;
+ 	//attenuation*=attenuation;
 	float lamb = max(dot(lightDir,nor),0.0);
 	float spec = 0.0;
 	if(lamb>0.0)

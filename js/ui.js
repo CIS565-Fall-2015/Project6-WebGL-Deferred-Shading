@@ -10,6 +10,7 @@ var cfg;
         this.enableEffect0 = false;
 		this.bloomEffect = false;
 		this.toonEffect = false;
+		this.motionBlurEffect = false;
 		this.scissor_test_optimization = true;
     };
 
@@ -40,6 +41,8 @@ var cfg;
 		//https://docs.webplatform.org/wiki/tutorials/post-processing_with_webgl
 		//http://webglfundamentals.org/webgl/lessons/webgl-image-processing.html
 		//http://webglfundamentals.org/webgl/lessons/webgl-image-processing-continued.html
+		eff0.add(cfg, 'motionBlurEffect');
+		//http://http.developer.nvidia.com/GPUGems3/gpugems3_ch27.html
         // TODO: add more effects toggles and parameters here
     };
 

@@ -8,12 +8,13 @@ var width, height;
     var models = [];
 
     var cameraMat = new THREE.Matrix4();
-
+	var camPreMat = new THREE.Matrix4();
     var render = function() {
         camera.updateMatrixWorld();
         camera.matrixWorldInverse.getInverse(camera.matrixWorld);
         cameraMat.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
         R.deferredRender({
+			prevCamMat: camera.projectionMatrix,
             cameraMat: cameraMat,
             projMat: camera.projectionMatrix,
             viewMat: camera.matrixWorldInverse,
@@ -31,6 +32,7 @@ var width, height;
         if (!aborted) {
             requestAnimationFrame(update);
         }
+		//camPreMat = cameraMat;
     };
 
     var resize = function() {
@@ -38,6 +40,7 @@ var width, height;
         camera.updateProjectionMatrix();
         renderer.setSize(width, height);
         render();
+		
     };
 
     var initExtensions = function() {

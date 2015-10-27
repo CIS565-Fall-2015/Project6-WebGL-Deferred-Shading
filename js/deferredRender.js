@@ -1,7 +1,13 @@
 (function() {
     'use strict';
     // deferredSetup.js must be loaded first
-
+	var statePrevMat = new Float32Array([
+            1.0,1.0,1.0,1.0,
+			1.0,1.0,1.0,1.0,
+			1.0,1.0,1.0,1.0,
+			1.0,1.0,1.0,1.0
+        ]);
+	var prevEye = new Float32Array([0.0,0.0,0.0]);
     R.deferredRender = function(state) {
         if (!aborted && (
             !R.progCopy ||
@@ -15,7 +21,7 @@
 			!R.progBloomX||
 			!R.progBloomY||
 			!R.progToon||
-			!R.progKernel
+			!R.progMotion
 		)) {
             console.log('waiting for programs to load...');
             return;
@@ -43,7 +49,7 @@
 */
         R.pass_copy.render(state);
 
-        if (cfg && cfg.debugView >= 0) {
+        if (cfg && cfg.debugView >= 0 && cfg.debugView<=5) {
             // Do a debug render instead of a regular render
             // Don't do any post-processing in debug mode
             R.pass_debug.render(state);
@@ -59,12 +65,15 @@
 				R.pass_bloomY.render(state);
 				finalRender = R.pass_bloomY.colorTex;
 			}
-			else if(cfg.toonEffect)//later if
+			else if(cfg.toonEffect)//TODO:later if
 			{
-				//R.pass_kernel.render(state);
-				//finalRender = R.pass_kernel.colorTex;
 				R.pass_toon.render(state);
 				finalRender = R.pass_toon.colorTex;
+			}
+			else if(cfg.motionBlurEffect)
+			{
+				R.pass_motion.render(state);
+				finalRender = R.pass_motion.colorTex;
 			}
 			R.pass_post1.render(state,finalRender);
             // OPTIONAL TODO: call more postprocessing passes, if any
@@ -205,7 +214,7 @@
     var bindTexturesForLightPass = function(prog) {
         gl.useProgram(prog.prog);
 
-        // * Bind all of the g-buffers and depth buffer as texture uniform
+        // * Bind all xof the g-buffers and depth buffer as texture uniform
         //   inputs to the shader
         for (var i = 0; i < R.NUM_GBUFFERS; i++) {
             gl.activeTexture(gl['TEXTURE' + i]);
@@ -266,7 +275,7 @@
 		gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);		
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progSrcmask.u_color, 0);	
-		gl.uniform1f(R.progSrcmask.u_thresh, 25.0);	
+		gl.uniform1f(R.progSrcmask.u_thresh, 15.0);	
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progSrcmask);
     };
@@ -312,16 +321,12 @@
         // Set gl.TEXTURE0 as the gl.activeTexture unit
         // TO_DO: ^
 		gl.activeTexture(gl.TEXTURE0);
-        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
-        // TO_DO: ^
 		gl.bindTexture(gl.TEXTURE_2D, R.pass_bloomX.colorTex);	
 		
 		gl.activeTexture(gl.TEXTURE1);
 		gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);	
-		//gl.activeTexture(gl.TEXTURE1);
-		//gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);	
-        // Configure the R.progPost1.u_color uniform to point at texture unit 0
-        gl.uniform1i(R.progBloomY.u_color, 0);
+		
+		gl.uniform1i(R.progBloomY.u_color, 0);
 		gl.uniform1i(R.progBloomY.u_origCol, 1);
 		
 		var tSize = [width,height];	
@@ -345,17 +350,15 @@
         // Set gl.TEXTURE0 as the gl.activeTexture unit
         // TO_DO: ^
 		gl.activeTexture(gl.TEXTURE0);
-        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
-        // TO_DO: ^
 		gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);		
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
 		gl.activeTexture(gl.TEXTURE1);
 		gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
 		
         gl.uniform1i(R.progToon.u_color, 0);	
-		gl.uniform1f(R.progToon.u_thresh, 25.0);	
         // * Render a fullscreen quad to perform shading on
 		gl.uniform1i(R.progToon.u_depthTex, 1);
+		gl.uniform1f(R.progToon.u_thresh, 25.0);
 		
 		var tSize = [width,height];	
 		gl.uniform2fv(R.progToon.u_texSize,tSize);
@@ -363,37 +366,48 @@
         renderFullScreenQuad(R.progToon);
     };
 
-    R.pass_kernel.render = function(state) {
+    R.pass_motion.render = function(state) {
         // * Unbind any existing framebuffer (if there are no more passes)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_kernel.fbo);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_motion.fbo);
 
         // * Clear the framebuffer depth to 1.0
         gl.clearDepth(1.0);
         gl.clear(gl.DEPTH_BUFFER_BIT);
 
         // * Bind the postprocessing shader program
-        gl.useProgram(R.progKernel.prog);
+        gl.useProgram(R.progMotion.prog);
 
         // * Bind the deferred pass's color output as a texture input
         // Set gl.TEXTURE0 as the gl.activeTexture unit
         // TO_DO: ^
 		gl.activeTexture(gl.TEXTURE0);
-        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
-        // TO_DO: ^
-		gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);	
+		gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);	
+		//gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.gbufs[0]);	
 		
-		//gl.activeTexture(gl.TEXTURE1);
-		//gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);	
-		//gl.activeTexture(gl.TEXTURE1);
-		//gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);	
-        // Configure the R.progPost1.u_color uniform to point at texture unit 0
-        gl.uniform1i(R.progKernel.u_color, 0);
+		gl.activeTexture(gl.TEXTURE1);
+		gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.gbufs[0]);	
+		//gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.gbufs[0]);	
+		
+		gl.uniform1i(R.progMotion.u_color, 0);
+		gl.uniform1i(R.progMotion.u_pos, 1);
 		//gl.uniform1i(R.progBloomY.u_origCol, 1);
 		
 		var tSize = [width,height];	
-		gl.uniform2fv(R.progKernel.u_texSize,tSize);
+		gl.uniform2fv(R.progMotion.u_texSize,tSize);
+        var m = state.prevCamMat.elements;//state.cameraMat.elements;
+		gl.uniformMatrix4fv(R.progMotion.u_cameraMat,gl.FALSE,m);
+		//var prevM = state.prevCamMat.elements;
+		gl.uniformMatrix4fv(R.progMotion.u_prevMat,gl.FALSE,statePrevMat);
         // * Render a fullscreen quad to perform shading on
-        renderFullScreenQuad(R.progKernel);
+		var eye = [state.cameraPos.x,state.cameraPos.y,state.cameraPos.z];
+		gl.uniform3fv(R.progMotion.u_crntEye,eye);
+		
+		gl.uniform3fv(R.progMotion.u_prevEye,prevEye);
+		
+        renderFullScreenQuad(R.progMotion);
+		//if(statePrevMat)
+		prevEye = [state.cameraPos.x,state.cameraPos.y,state.cameraPos.z];
+		statePrevMat = m;
     };
 	
 	

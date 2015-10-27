@@ -25,5 +25,6 @@ void main() {
     }
 
     // TODO: replace this
+	colmap = clamp(colmap,0.0,1.0);
 	gl_FragColor = vec4(0.2*colmap,1.0);//vec4(0.1, 0.1, 0.1, 1); 
 }

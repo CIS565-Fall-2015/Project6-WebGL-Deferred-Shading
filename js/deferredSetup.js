@@ -10,7 +10,7 @@
 	R.pass_bloomX = {};
 	R.pass_bloomY = {};
 	R.pass_toon = {};
-	R.pass_kernel = {};
+	R.pass_motion = {};
     R.lights = [];
 
     R.NUM_GBUFFERS = 4;
@@ -27,7 +27,7 @@
 		R.pass_bloomX.setup();
 		R.pass_bloomY.setup();
 		R.pass_toon.setup();
-		R.pass_kernel.setup();
+		R.pass_motion.setup();
     };
 
     // TODO: Edit if you want to change the light initial positions
@@ -172,15 +172,15 @@
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
 
-    R.pass_kernel.setup = function() {
+    R.pass_motion.setup = function() {
         // * Create the FBO
-        R.pass_kernel.fbo = gl.createFramebuffer();
+        R.pass_motion.fbo = gl.createFramebuffer();
         // * Create, bind, and store a single color target texture for the FBO
-        R.pass_kernel.colorTex = createAndBindColorTargetTexture(
-            R.pass_kernel.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+        R.pass_motion.colorTex = createAndBindColorTargetTexture(
+            R.pass_motion.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
 	    		
         // * Check for framebuffer errors
-        abortIfFramebufferIncomplete(R.pass_kernel.fbo);
+        abortIfFramebufferIncomplete(R.pass_motion.fbo);
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
@@ -279,12 +279,18 @@
             // Save the object into this variable for access later
             R.progToon = p;
         });
-        loadPostProgram('kernel', function(p) {
+        loadPostProgram('motion', function(p) {
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+			p.u_pos    = gl.getUniformLocation(p.prog, 'u_pos');
 			//p.u_origCol = gl.getUniformLocation(p.prog, 'u_origCol');
 			p.u_texSize = gl.getUniformLocation(p.prog, 'u_texSize');
+			p.u_cameraMat = gl.getUniformLocation(p.prog, 'u_cameraMat');
+			p.u_prevMat = gl.getUniformLocation(p.prog, 'u_prevMat');
+			
+			p.u_crntEye = gl.getUniformLocation(p.prog, 'u_crntEye');
+			p.u_prevEye = gl.getUniformLocation(p.prog, 'u_prevEye');
             // Save the object into this variable for access later
-            R.progKernel = p;
+            R.progMotion = p;
         });
         // TODO: If you add more passes, load and set up their shader programs.
     };

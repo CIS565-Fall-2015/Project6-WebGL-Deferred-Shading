@@ -33,9 +33,10 @@ vec4 applyKernel(vec2 onePixel,mat3 kern)
 float discrete(float inCol,int level)
 {
 	inCol = clamp(inCol,0.0,1.0);
-	if(inCol>=0.9) return 0.9;
-	if(inCol>=0.6) return 0.6;
-	if(inCol>=0.1) return 0.1;
+	if(inCol>=0.2) return inCol;
+	if(inCol>=0.1) return 0.15;
+	if(inCol>=0.05) return 0.10;
+	else return 0.0;
 	return inCol;
 	/*
 	int temp = int(inCol*float(level));
@@ -68,11 +69,11 @@ void main() {
 	
     vec4 color = texture2D(u_color, v_uv);
 	
-	//color.r = discrete(color.r,3);	
-	//color.g = discrete(color.g,3);
-	//color.b = discrete(color.b,3);
+	color.r = discrete(color.r,3);	
+	color.g = discrete(color.g,3);
+	color.b = discrete(color.b,3);
 	//color.a = 1.0;//discrete(color.a,3);
-
+	//if(length(color.rgb)<=0.3) color = vec4(0.1);
 	gl_FragColor = edgeCol*color;
 	
 }
