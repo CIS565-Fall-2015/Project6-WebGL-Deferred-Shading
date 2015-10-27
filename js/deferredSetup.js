@@ -15,9 +15,9 @@
      */
     R.deferredSetup = function() {
         setupLights();
-        loadAllShaderPrograms();
-        R.pass_copy.setup();
-        R.pass_deferred.setup();
+        loadAllShaderPrograms(); // load all the shader programs and get attribute/uniform positions
+        R.pass_copy.setup(); // allocate
+        R.pass_deferred.setup(); // allocate
     };
 
     // TODO: Edit if you want to change the light initial positions
@@ -61,6 +61,7 @@
         R.pass_copy.depthTex = createAndBindDepthTargetTexture(R.pass_copy.fbo);
 
         // * Create, bind, and store "color" target textures for the FBO
+        // these are the g buffers
         R.pass_copy.gbufs = [];
         var attachments = [];
         for (var i = 0; i < R.NUM_GBUFFERS; i++) {
@@ -69,6 +70,8 @@
             R.pass_copy.gbufs.push(tex);
             attachments.push(attachment);
         }
+
+        // this basically attaches a bunch of draw_buffers to the fbo?
 
         // * Check for framebuffer errors
         abortIfFramebufferIncomplete(R.pass_copy.fbo);

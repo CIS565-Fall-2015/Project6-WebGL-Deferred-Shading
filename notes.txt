@@ -15,7 +15,7 @@ BLOOM
 -TODO:
 	-add camera position uniform to blinn-phong [done. turns out this was in Kai's updates]
 	-find a better filter [done]
-	-make this a separate post-processing shader -> nahhhh. don't worry about this for now
+	-make this a separate post-processing shader
 
 SCISSOR TEST [done]
 -ok ok ok. so it's restricting the shading to a screen space "box" that gets a lighting computation
@@ -37,7 +37,23 @@ PACKING AND OPTIMIZATION -> all about trying to do this stuff while keeping it t
 	-need to invert cam matrix? -> look up how to do this.
 	-we probably already need to add a uniform for cam position, b/c blinn phong is broken without it
 
-SCREEN SPACE MOTION BLUR or TOON SHADING
+2 COMPONENT NORMALS and WORLD SPACE RECONSTRUCT
+-so we don't want to change from buffers of vec4s
+-which means if we're packing, we want to pack both 2-comp normals and world space pos into one buffer
+
+-so we'll need a new copy.frag.glsl and a new copy.vert.glsl
+	-new copy.vert.glsl will need to push screen space position over
+	-new copy.frag.glsl will only do 2 buffers: texture2D and compacted position/normal
+	-new copy.frag.glsl will also need to apply surface normal internally
+
+-we'll need to add a new blinnphong-pointlight.frag.glsl and ambient.frag.glsl as well
+	-just need to add position/normal reconstruction
+
+-which means we'll need to add setup for all of these in deferredSetup.js
+-might as well add a new debug.frag.glsl as well to help debug reconstruction
+-so we're basically duplicating a huge chunk of the project. ok.
+
+SCREEN SPACE MOTION BLUR and/or TOON SHADING
 -screen space motion blur has a GPU gems article, so this might be more straightforward
 	-would also be post processing
 -but toon shading: -> TOON SHADING IS COOL
