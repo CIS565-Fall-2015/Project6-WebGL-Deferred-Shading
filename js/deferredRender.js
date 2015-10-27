@@ -10,7 +10,9 @@
             !R.prog_Ambient ||
             !R.prog_BlinnPhong_PointLight ||
             !R.prog_Debug ||
-            !R.progPost1)) {
+            !R.progPost1 ||
+            !R.progCopyCompressed ||
+            !R.prog_DebugCompressed)) {
             console.log('waiting for programs to load...');
             return;
         }
@@ -34,10 +36,17 @@
             renderFullScreenQuad(R.progRed);
             return;
         } */
+        if (cfg.compressedGbuffers) {
+            R.pass_copy_compressed.render(state);
+        } else {
+            R.pass_copy.render(state);
+        }
 
-        R.pass_copy.render(state);
+        if (cfg.compressedGbuffers && cfg.debugView >= 0) {
+            R.pass_debug_compressed.render(state);
+        } else if (cfg.compressedGbuffers) {
 
-        if (cfg && cfg.debugScissor){
+        } else if (cfg && cfg.debugScissor){
             // do a scissor debug render instead of a regular render.
             // don't do any post-proccessing in debug mode.
             R.pass_debug.debugScissor(state);
@@ -88,6 +97,32 @@
         drawScene(state);
     };
 
+    /**
+     * 'copy' pass: Render into compressed g-buffers
+     */
+    R.pass_copy_compressed.render = function(state) { // "pass 1"
+        // * Bind the framebuffer R.pass_copy.fbo
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_copy_compressed.fbo);
+
+        // * Clear screen using R.progClear
+        renderFullScreenQuad(R.progClearCompressed);
+        // * Clear depth buffer to value 1.0 using gl.clearDepth and gl.clear
+        gl.clearDepth(1.0);
+        // http://webgl.wikia.com/wiki/Clear
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // * "Use" the program R.progCopyCompressed.prog
+        gl.useProgram(R.progCopyCompressed.prog);
+
+        var m = state.cameraMat.elements;
+        // * Upload the camera matrix m to the uniform R.progCopyCompressed.u_cameraMat
+        //   using gl.uniformMatrix4fv
+        gl.uniformMatrix4fv(R.progCopyCompressed.u_cameraMat, gl.FALSE, m);
+
+        // * Draw the scene
+        drawScene(state);
+    };
+
     var drawScene = function(state) {
         for (var i = 0; i < state.models.length; i++) {
             var m = state.models[i];
@@ -98,6 +133,25 @@
 
             drawReadyModel(m);
         }
+    };
+
+    R.pass_debug_compressed.render = function(state) {
+        // * Unbind any framebuffer, so we can write to the screen
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Bind/setup the debug "lighting" pass
+        // * Tell shader which debug view to use
+        bindTexturesForLightPass(R.prog_DebugCompressed);
+        gl.uniform1i(R.prog_DebugCompressed.u_debug, cfg.debugView);
+
+        // upload the inverse camera matrix
+        var invThreejsMat = state.cameraMat;
+        invThreejsMat.getInverse(invThreejsMat);
+        var m = invThreejsMat.elements;     
+        gl.uniformMatrix4fv(R.prog_DebugCompressed.u_invCameraMat, gl.FALSE, m);
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.prog_DebugCompressed);
     };
 
     R.pass_debug.render = function(state) {
@@ -111,7 +165,7 @@
 
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.prog_Debug);
-    };
+    };    
 
     R.pass_debug.debugScissor = function(state) {
         // * Unbind any framebuffer, so we can write to the screen

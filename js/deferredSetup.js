@@ -10,6 +10,12 @@
 
     R.NUM_GBUFFERS = 4;
 
+    // workflow using compressed g buffers
+    R.pass_copy_compressed = {};
+    R.pass_debug_compressed = {};
+
+    R.NUM_GBUFFERS_COMPRESSED = 2;
+
     /**
      * Set up the deferred pipeline framebuffer objects and textures.
      */
@@ -18,6 +24,8 @@
         loadAllShaderPrograms(); // load all the shader programs and get attribute/uniform positions
         R.pass_copy.setup(); // allocate
         R.pass_deferred.setup(); // allocate
+
+        R.pass_copy_compressed.setup(); // allocate
     };
 
     // TODO: Edit if you want to change the light initial positions
@@ -98,6 +106,36 @@
     };
 
     /**
+     * Create/configure framebuffer between "copy" and "deferred" stages for compressed workflow
+     */
+    R.pass_copy_compressed.setup = function() {
+        // * Create the FBO
+        R.pass_copy_compressed.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a depth target texture for the FBO
+        R.pass_copy_compressed.depthTex = createAndBindDepthTargetTexture(R.pass_copy_compressed.fbo);
+
+        // * Create, bind, and store "color" target textures for the FBO
+        // these are the g buffers
+        R.pass_copy_compressed.gbufs = [];
+        var attachments = [];
+        for (var i = 0; i < R.NUM_GBUFFERS_COMPRESSED; i++) {
+            // don't want to use the same draw buffers over again?
+            var attachment = gl_draw_buffers['COLOR_ATTACHMENT' + i + '_WEBGL'];
+            var tex = createAndBindColorTargetTexture(R.pass_copy_compressed.fbo, attachment);
+            R.pass_copy_compressed.gbufs.push(tex);
+            attachments.push(attachment);
+        }
+
+        // this basically attaches a bunch of draw_buffers to the fbo?
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_copy_compressed.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL(attachments);
+    };
+
+    /**
      * Loads all of the shader programs used in the pipeline.
      */
     var loadAllShaderPrograms = function() {
@@ -157,6 +195,47 @@
         });
 
         // TODO: If you add more passes, load and set up their shader programs.
+        // compressed position/normal workflow
+        loadShaderProgram(gl, 'glsl/packing/copyPack.vert.glsl', 'glsl/packing/copyPack.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                var p = { prog: prog };
+
+                // Retrieve the uniform and attribute locations
+                p.u_cameraMat = gl.getUniformLocation(prog, 'u_cameraMat');
+                p.u_colmap    = gl.getUniformLocation(prog, 'u_colmap');
+                p.u_normap    = gl.getUniformLocation(prog, 'u_normap');
+                p.a_position  = gl.getAttribLocation(prog, 'a_position');
+                p.a_normal    = gl.getAttribLocation(prog, 'a_normal');
+                p.a_uv        = gl.getAttribLocation(prog, 'a_uv');
+
+                // Save the object into this variable for access later
+                R.progCopyCompressed = p;
+            }); 
+
+        loadShaderProgram(gl, 'glsl/quad.vert.glsl', 'glsl/packing/debugPack.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                var p = { prog: prog };
+
+                // Retrieve the uniform and attribute locations
+                p.u_gbufs = [];
+                for (var i = 0; i < R.NUM_GBUFFERS_COMPRESSED; i++) {
+                    p.u_gbufs[i] = gl.getUniformLocation(prog, 'u_gbufs[' + i + ']');
+                }
+                p.u_depth    = gl.getUniformLocation(prog, 'u_depth');
+                p.a_position = gl.getAttribLocation(prog, 'a_position');
+                p.u_debug = gl.getUniformLocation(p.prog, 'u_debug');
+                p.u_invCameraMat = gl.getUniformLocation(prog, 'u_invCameraMat');
+
+                R.prog_DebugCompressed = p;
+            });
+
+        loadShaderProgram(gl, 'glsl/quad.vert.glsl', 'glsl/packing/clearPack.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                R.progClearCompressed = { prog: prog };
+            });
     };
 
     var loadDeferredProgram = function(name, callback) {
@@ -223,6 +302,7 @@
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, tex, 0);
+        console.log(attachment);
 
         return tex;
     };

@@ -24,7 +24,7 @@ void main() {
     // reconstruct screen space position
     // https://mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/
     screenPos.x = screenPos.x * 2.0 - 1.0;
-    screenPos.y = (1.0 - screenPos.y) * 2 - 1.0;
+    screenPos.y = (1.0 - screenPos.y) * 2.0 - 1.0;
 
     vec4 worldPos = u_invCameraMat * screenPos;
 
@@ -32,12 +32,14 @@ void main() {
     // reconstruct normal
     vec3 norm;
     norm.xy = gb1.zw;
-    norm.z = 1.0;
-    if (abs(norm.x) >= 1.0) {
-        norm.z = -1.0;
-        norm.x -= norm.x / abs(norm.x);
+    if (norm.x != 0.0 || norm.y != 0.0) {
+        norm.z = 1.0;
+        if (abs(norm.x) >= 1.0) {
+            norm.z = -1.0;
+            norm.x -= norm.x / abs(norm.x);
+        }
+        norm.z *= sqrt(1.0 - norm.x * norm.x - norm.y * norm.y);
     }
-    norm.z *= sqrt(1.0 - norm.x * norm.x - norm.y * norm.y);
 
     if (u_debug == 0) {
         gl_FragColor = vec4(vec3(depth), 1.0);
@@ -46,7 +48,7 @@ void main() {
     } else if (u_debug == 2) {
         gl_FragColor = vec4(abs(norm), 1.0);
     } else if (u_debug == 3) {
-        gl_FragColor = vec4(gb0, 1.0);
+        gl_FragColor = vec4(gb0.rgb, 1.0);
     } else if (u_debug == 4) {
         gl_FragColor = vec4(norm, 1.0);
     } else if (u_debug == 5) {

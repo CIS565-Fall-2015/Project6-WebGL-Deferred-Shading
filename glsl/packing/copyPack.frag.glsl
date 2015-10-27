@@ -22,12 +22,16 @@ void main() {
     // TODO: copy values into gl_FragData[0], [1], etc.
     gl_FragData[0] = texture2D(u_colmap, v_uv);
     gl_FragData[1].xy = v_position;
+    vec4 mappedNormal = texture2D(u_normap, v_uv);
 
     // compress the normal
-    vec3 mappedNormal = normalize(applyNormalMap(v_normal, texture2D(u_normap, v_uv)));
-    // the normal is normalized, which means no element has magnitude greater than 1
-    // the fact that it's normalized also means given x and y we can compute z: x ^ 2 + y ^ 2 = 1.0 - z ^ 2
-    // so we'll introduce a new invariant: if abs(x) > 1.0, z is negative. else, z is positive.
-    if (mappedNormal.z < 0.0) mappedNormal.x += mappedNormal.x / abs(mappedNormal.x);
-    gl_FragData[1].zw = mappedNormal.xy;
+    if (length(v_normal) > 0.0) {
+    	vec3 finalNormal = normalize(applyNormalMap(v_normal, mappedNormal.xyz));
+	    // the normal is normalized, which means no element has magnitude greater than 1
+	    // the fact that it's normalized also means given x and y we can compute z: x ^ 2 + y ^ 2 = 1.0 - z ^ 2
+	    // so we'll introduce a new invariant: if abs(x) > 1.0, z is negative. else, z is positive.
+	    if (finalNormal.z < 0.0) finalNormal.x += finalNormal.x / abs(finalNormal.x);
+	    gl_FragData[1].zw = finalNormal.xy;
+    }
+
 }

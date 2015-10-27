@@ -8,6 +8,7 @@ var cfg;
         this.debugView = -1;
         this.debugScissor = false;
         this.enableEffect0 = false;
+        this.compressedGbuffers = false;
     };
 
     var init = function() {
@@ -28,7 +29,7 @@ var cfg;
 
         var eff0 = gui.addFolder('EFFECT NAME HERE');
         eff0.add(cfg, 'enableEffect0');
-        // TODO: add more effects toggles and parameters here
+        gui.add(cfg, 'compressedGbuffers');
     };
 
     window.handle_load.push(init);
