@@ -48,7 +48,7 @@ void main() {
     // TO_DO: perform lighting calculations
 	
 	float attenuation = max(0.0, u_lightRad - length(pos-u_lightPos));
-	
+	attenuation*=attenuation;
 	float lamb = max(dot(lightDir,nor),0.0);
 	float spec = 0.0;
 	if(lamb>0.0)

@@ -9,6 +9,8 @@
     R.pass_post1 = {};
 	R.pass_bloomX = {};
 	R.pass_bloomY = {};
+	R.pass_toon = {};
+	R.pass_kernel = {};
     R.lights = [];
 
     R.NUM_GBUFFERS = 4;
@@ -23,6 +25,9 @@
         R.pass_deferred.setup();
 		R.pass_srcmask.setup();
 		R.pass_bloomX.setup();
+		R.pass_bloomY.setup();
+		R.pass_toon.setup();
+		R.pass_kernel.setup();
     };
 
     // TODO: Edit if you want to change the light initial positions
@@ -135,6 +140,53 @@
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
 
+    R.pass_bloomY.setup = function() {
+        // * Create the FBO
+        R.pass_bloomY.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_bloomY.colorTex = createAndBindColorTargetTexture(
+            R.pass_bloomY.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+	    		
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_bloomY.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    };
+
+    R.pass_toon.setup = function() {
+        // * Create the FBO
+        R.pass_toon.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_toon.colorTex = createAndBindColorTargetTexture(
+            R.pass_toon.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+	    		
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_toon.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    };
+
+    R.pass_kernel.setup = function() {
+        // * Create the FBO
+        R.pass_kernel.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_kernel.colorTex = createAndBindColorTargetTexture(
+            R.pass_kernel.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+	    		
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_kernel.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    };
 
 
     /**
@@ -180,6 +232,7 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+			p.u_camPos = gl.getUniformLocation(p.prog, 'u_camPos');
             R.prog_BlinnPhong_PointLight = p;
         });
 
@@ -215,6 +268,22 @@
 			p.u_texSize = gl.getUniformLocation(p.prog, 'u_texSize');
             // Save the object into this variable for access later
             R.progBloomY = p;
+        });
+		
+        loadPostProgram('toon', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+			p.u_depthTex = gl.getUniformLocation(p.prog, 'u_depthTex');
+			//p.u_origCol = gl.getUniformLocation(p.prog, 'u_origCol');
+			p.u_texSize = gl.getUniformLocation(p.prog, 'u_texSize');
+            // Save the object into this variable for access later
+            R.progToon = p;
+        });
+        loadPostProgram('kernel', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+			//p.u_origCol = gl.getUniformLocation(p.prog, 'u_origCol');
+			p.u_texSize = gl.getUniformLocation(p.prog, 'u_texSize');
+            // Save the object into this variable for access later
+            R.progKernel = p;
         });
         // TODO: If you add more passes, load and set up their shader programs.
     };

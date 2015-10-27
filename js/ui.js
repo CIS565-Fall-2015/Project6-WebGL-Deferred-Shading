@@ -9,6 +9,7 @@ var cfg;
         this.debugScissor = false;
         this.enableEffect0 = false;
 		this.bloomEffect = false;
+		this.toonEffect = false;
 		this.scissor_test_optimization = true;
     };
 
@@ -34,6 +35,7 @@ var cfg;
         var eff0 = gui.addFolder('EFFECT NAME HERE');
         eff0.add(cfg, 'enableEffect0');
 		eff0.add(cfg, 'bloomEffect');
+		eff0.add(cfg, 'toonEffect');
 		//http://http.developer.nvidia.com/GPUGems/gpugems_ch21.html
 		//https://docs.webplatform.org/wiki/tutorials/post-processing_with_webgl
 		//http://webglfundamentals.org/webgl/lessons/webgl-image-processing.html
