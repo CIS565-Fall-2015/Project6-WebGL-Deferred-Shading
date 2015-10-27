@@ -6,6 +6,7 @@
     R.pass_debug = {};
     R.pass_deferred = {};
     R.pass_post1 = {};
+    R.pass_post2 = {}:
     R.lights = [];
 
     R.NUM_GBUFFERS = 4;
@@ -18,6 +19,7 @@
         loadAllShaderPrograms();
         R.pass_copy.setup();
         R.pass_deferred.setup();
+        R.pass_post1.setup();
     };
 
     // TODO: Edit if you want to change the light initial positions
@@ -98,6 +100,25 @@
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
 
+        /**
+     * Create/configure framebuffer between "deferred" and "post1" stages
+     */
+    R.pass_post1.setup = function() {
+        // * Create the FBO
+        R.pass_post1.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_post1.colorTex = createAndBindColorTargetTexture(
+            R.pass_post1.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_post1.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    };
+
     /**
      * Loads all of the shader programs used in the pipeline.
      */
@@ -161,6 +182,11 @@
             R.progPost1 = p;
         });
 
+        loadPost2Program('two', function(p) {
+            p.u_settings = gl.getUniformLocation(p.prog, 'u_settings');
+            R.progPost2 = p;
+        });
+
         // TODO: If you add more passes, load and set up their shader programs.
     };
 
@@ -185,6 +211,20 @@
 
     var loadPostProgram = function(name, callback) {
         loadShaderProgram(gl, 'glsl/quad.vert.glsl',
+                          'glsl/post/' + name + '.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                var p = { prog: prog };
+
+                // Retrieve the uniform and attribute locations
+                p.a_position = gl.getAttribLocation(prog, 'a_position');
+
+                callback(p);
+            });
+    };
+
+    var loadPost2Program = function(name, callback) {
+        loadShaderProgram(gl, 'glsl/post/one.frag.glsl',
                           'glsl/post/' + name + '.frag.glsl',
             function(prog) {
                 // Create an object to hold info about this shader program

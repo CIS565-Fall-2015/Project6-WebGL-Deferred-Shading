@@ -47,7 +47,7 @@
             // * Deferred pass and postprocessing pass(es)
             R.pass_deferred.render(state);
             R.pass_post1.render(state);
-
+            R.pass_post2.render(state);
             // OPTIONAL TODO: call more postprocessing passes, if any
         }
     };

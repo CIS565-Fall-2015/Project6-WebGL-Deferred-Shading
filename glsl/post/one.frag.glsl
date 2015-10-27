@@ -12,6 +12,8 @@ uniform float u_width;
 uniform float u_height;
 uniform vec4 u_settings;
 
+uniform float u_kernel[5];
+
 void main() {
     vec4 color = texture2D(u_color, v_uv);
 
@@ -20,6 +22,7 @@ void main() {
         return;
     }
 
+    // Naive 1-pass bloom filter
     if (u_settings.x==1.0){
 	    vec2 n_uv;
 	    vec4 n_color;
