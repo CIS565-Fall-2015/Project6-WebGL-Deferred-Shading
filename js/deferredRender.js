@@ -13,7 +13,10 @@
             !R.progPost1 ||
             
             !R.prog_Contour ||
-            !R.prog_Bloom
+            !R.prog_Bloom   ||
+            
+            !R.prog_BlinnPhong_PointLight_SphereProxy ||
+            !R.progRedSphere
             )) {
             console.log('waiting for programs to load...');
             return;
@@ -146,12 +149,16 @@
         }
         else if(cfg.proxy == 2)
         {
-            
+            readyModelForDraw(R.prog_BlinnPhong_PointLight_SphereProxy, R.sphereModel);
+        }
+        
+        if(cfg.proxy==1 || cfg.proxy==0)
+        {
+            gl.uniform1f(R.prog_BlinnPhong_PointLight.u_toonShading ,cfg.enableToon );
+            gl.uniform3f( R.prog_BlinnPhong_PointLight.u_cameraPos,state.cameraPos.x,state.cameraPos.y,state.cameraPos.z );
         }
         
         
-        gl.uniform1f(R.prog_BlinnPhong_PointLight.u_toonShading ,cfg.enableToon );
-        gl.uniform3f( R.prog_BlinnPhong_PointLight.u_cameraPos,state.cameraPos.x,state.cameraPos.y,state.cameraPos.z );
         for(var i = 0; i < R.NUM_LIGHTS ; i++)
         {
             var light = R.lights[i];
@@ -183,6 +190,40 @@
             else if(cfg.proxy == 2)
             {
                 //sphere proxy
+                
+                //debugger;
+                var S = new THREE.Matrix4();
+                S.makeScale(light.rad,light.rad,light.rad);
+                var T = new THREE.Matrix4();
+                T.makeTranslation(light.pos[0],light.pos[1],light.pos[2]);
+                var M = new THREE.Matrix4();
+                M.multiplyMatrices(T,S);
+                
+                
+                
+                
+                if (cfg.debugScissor) 
+                {
+                    gl.uniformMatrix4fv(R.progRedSphere.u_cameraMat,false,state.cameraMat.elements);
+                    gl.uniformMatrix4fv(R.progRedSphere.u_transformMat,false,M.elements);
+                    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+                    renderFullScreenQuad(R.progRedSphere);
+                } 
+                else 
+                {
+                    gl.uniformMatrix4fv(R.prog_BlinnPhong_PointLight_SphereProxy.u_cameraMat,false,state.cameraMat.elements);
+                    gl.uniformMatrix4fv(R.prog_BlinnPhong_PointLight_SphereProxy.u_transformMat,false,M.elements);
+                    
+                    gl.uniform3fv( R.prog_BlinnPhong_PointLight_SphereProxy.u_lightCol, light.col );
+                    gl.uniform3fv( R.prog_BlinnPhong_PointLight_SphereProxy.u_lightPos, light.pos );
+                    gl.uniform1f( R.prog_BlinnPhong_PointLight_SphereProxy.u_lightRad, light.rad );
+                    
+                    //readyModelForDraw(R.prog_BlinnPhong_PointLight_SphereProxy, R.sphereModel);
+                    drawReadyModel(R.sphereModel);
+                    //renderFullScreenQuad(R.prog_BlinnPhong_PointLight_SphereProxy);
+                }
+                
+                
             }
             else
             {

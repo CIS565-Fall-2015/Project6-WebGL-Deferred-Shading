@@ -142,6 +142,18 @@
                 // Create an object to hold info about this shader program
                 R.progRed = { prog: prog };
             });
+            
+            
+        loadShaderProgram(gl, 'glsl/sphere.vert.glsl', 'glsl/red.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                R.progRedSphere = { prog: prog };
+                R.progRedSphere.a_position = gl.getAttribLocation(prog, 'a_position');
+                
+                
+                R.progRedSphere.u_cameraMat = gl.getUniformLocation(prog, 'u_cameraMat');
+                R.progRedSphere.u_transformMat = gl.getUniformLocation(prog, 'u_transformMat');
+            });
 
         loadShaderProgram(gl, 'glsl/quad.vert.glsl', 'glsl/clear.frag.glsl',
             function(prog) {
@@ -197,6 +209,19 @@
             R.prog_Bloom = p;
         });
         
+        
+        
+        loadDeferredProgramSphereProxy('blinnphong-pointlight', function(p) {
+            // Save the object into this variable for access later
+            p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
+            p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
+            p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+            p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
+            p.u_toonShading = gl.getUniformLocation(p.prog, 'u_toonShading');
+            
+            R.prog_BlinnPhong_PointLight_SphereProxy = p;
+        });
+        
         /*
         loadPostProgram('bloom',function(p){
             // Save the object into this variable for access later
@@ -207,6 +232,31 @@
         });
         */
     };
+
+    var loadDeferredProgramSphereProxy = function(name, callback) {
+        loadShaderProgram(gl, 'glsl/sphere.vert.glsl',
+                          'glsl/deferred/' + name + '.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                var p = { prog: prog };
+
+                // Retrieve the uniform and attribute locations
+                p.u_gbufs = [];
+                for (var i = 0; i < R.NUM_GBUFFERS; i++) {
+                    p.u_gbufs[i] = gl.getUniformLocation(prog, 'u_gbufs[' + i + ']');
+                }
+                p.u_depth    = gl.getUniformLocation(prog, 'u_depth');
+                p.a_position = gl.getAttribLocation(prog, 'a_position');
+                
+                
+                p.u_cameraMat = gl.getUniformLocation(prog, 'u_cameraMat');
+                p.u_transformMat = gl.getUniformLocation(prog, 'u_transformMat');
+                
+
+                callback(p);
+            });
+    };
+
 
     var loadDeferredProgram = function(name, callback) {
         loadShaderProgram(gl, 'glsl/quad.vert.glsl',
