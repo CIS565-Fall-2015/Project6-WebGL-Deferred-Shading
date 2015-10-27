@@ -51,12 +51,19 @@ void main() {
     }
 
     if (toonShading == 1.0){
-        float depthNeighbor = texture2D(u_depth, v_uv + 1.0/u_camera_width).x;
-        float depthNeighbor2 = texture2D(u_depth, v_uv + 1.0/u_camera_height).x;
+        float thresh = 0.005;
+        float neighbor;
 
-        if (abs(depth - depthNeighbor) > 0.005 || abs(depth - depthNeighbor2) > 0.005){
-            gl_FragColor = vec4(1.0);
-            return;
+        for (int i = -1; i <= 1; i++){
+            for (int j = -1; j <= 1; j++){
+                if (i == 0 && j == 0) continue;
+                neighbor = texture2D(u_depth, v_uv + vec2(float(i)/u_camera_width, float(j)/u_camera_height)).x;
+
+                if (abs(depth - neighbor) > thresh){
+                    gl_FragColor = vec4(1.0);
+                    return;
+                }
+            }
         }
     }
 
@@ -82,7 +89,7 @@ void main() {
         } else {
             fragColor *= (1.0-rampShading)*0.1 + (rampShading)*diffuse;
         }
-        fragColor *= max(0.0,(u_lightRad - dist));
+        fragColor *= max(0.0,(u_lightRad - dist)) * 0.3;
 
     // Normal shading
     } else {

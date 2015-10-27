@@ -10,7 +10,8 @@
             !R.prog_Ambient ||
             !R.prog_BlinnPhong_PointLight ||
             !R.prog_Debug ||
-            !R.progPost1)) {
+            !R.progPost1 ||
+            !R.progPost2)) {
             console.log('waiting for programs to load...');
             return;
         }

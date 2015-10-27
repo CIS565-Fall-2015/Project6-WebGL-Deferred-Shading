@@ -75,7 +75,7 @@ var width, height;
         gl = renderer.context;
 
         // TODO: For performance measurements, disable debug mode!
-        var debugMode = true;
+        var debugMode = false;
 
         if (debugMode) {
             $('#debugmodewarning').css('display', 'block');
