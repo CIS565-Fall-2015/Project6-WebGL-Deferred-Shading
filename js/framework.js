@@ -24,10 +24,9 @@ var width, height;
 
     var update = function() {
         controls.update();
+        stats.end();
         stats.begin();
         render();
-        gl.finish();
-        stats.end();
         if (!aborted) {
             requestAnimationFrame(update);
         }
@@ -67,6 +66,9 @@ var width, height;
     };
 
     var init = function() {
+        // TODO: For performance measurements, disable debug mode!
+        var debugMode = true;
+
         canvas = document.getElementById('canvas');
         renderer = new THREE.WebGLRenderer({
             canvas: canvas,
@@ -78,6 +80,7 @@ var width, height;
         var debugMode = false;
 
         if (debugMode) {
+            $('#dlbutton button').attr('disabled', false);
             $('#debugmodewarning').css('display', 'block');
             var throwOnGLError = function(err, funcName, args) {
                 abort(WebGLDebugUtils.glEnumToString(err) +

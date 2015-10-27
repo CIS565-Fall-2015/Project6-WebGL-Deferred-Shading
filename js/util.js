@@ -115,12 +115,12 @@ window.readyModelForDraw = function(prog, m) {
     gl.bindBuffer(gl.ARRAY_BUFFER, m.position);
     gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, false, 0, 0);
 
-    if (prog.a_normal !== -1 && m.normal) {
+    if (prog.a_normal >= 0 && m.normal) {
         gl.enableVertexAttribArray(prog.a_normal);
         gl.bindBuffer(gl.ARRAY_BUFFER, m.normal);
         gl.vertexAttribPointer(prog.a_normal, 3, gl.FLOAT, false, 0, 0);
     }
-    if (prog.a_uv !== -1 && m.uv) {
+    if (prog.a_uv >= 0 && m.uv) {
         gl.enableVertexAttribArray(prog.a_uv);
         gl.bindBuffer(gl.ARRAY_BUFFER, m.uv);
         gl.vertexAttribPointer(prog.a_uv, 2, gl.FLOAT, false, 0, 0);
