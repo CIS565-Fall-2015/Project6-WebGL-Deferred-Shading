@@ -136,8 +136,16 @@
         bindTexturesForLightPass(R.prog_Ambient);
         renderFullScreenQuad(R.prog_Ambient);
 
+
+        
+        
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
-        bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
+        var phongProg = R.prog_BlinnPhong_PointLight;
+        if(cfg.proxy == 2)
+        {
+            phongProg = R.prog_BlinnPhong_PointLight_SphereProxy;
+        }
+        bindTexturesForLightPass(phongProg);
 
         // TODO: add a loop here, over the values in R.lights, which sets the
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
@@ -149,14 +157,30 @@
         }
         else if(cfg.proxy == 2)
         {
-            readyModelForDraw(R.prog_BlinnPhong_PointLight_SphereProxy, R.sphereModel);
+            //readyModelForDraw(R.prog_BlinnPhong_PointLight_SphereProxy, R.sphereModel);
+            var m = R.sphereModel;
+            var prog;
+            if(cfg.debugScissor)
+            {
+                prog = R.progRedSphere;
+            }
+            else
+            {
+                prog = phongProg;
+            }
+            
+            gl.useProgram(prog.prog);
+            gl.enableVertexAttribArray(prog.a_position);
+            gl.bindBuffer(gl.ARRAY_BUFFER, m.position);
+            gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, false, 0, 0);
         }
         
-        if(cfg.proxy==1 || cfg.proxy==0)
-        {
-            gl.uniform1f(R.prog_BlinnPhong_PointLight.u_toonShading ,cfg.enableToon );
-            gl.uniform3f( R.prog_BlinnPhong_PointLight.u_cameraPos,state.cameraPos.x,state.cameraPos.y,state.cameraPos.z );
-        }
+        
+        //if(cfg.proxy==1 || cfg.proxy==0)
+        //{
+        gl.uniform1f(phongProg.u_toonShading ,cfg.enableToon );
+        gl.uniform3f( phongProg.u_cameraPos,state.cameraPos.x,state.cameraPos.y,state.cameraPos.z );
+        //}
         
         
         for(var i = 0; i < R.NUM_LIGHTS ; i++)
@@ -180,10 +204,10 @@
                     else 
                     {
                         
-                        gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightCol, light.col );
-                        gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightPos, light.pos );
-                        gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, light.rad );
-                        renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+                        gl.uniform3fv( phongProg.u_lightCol, light.col );
+                        gl.uniform3fv( phongProg.u_lightPos, light.pos );
+                        gl.uniform1f( phongProg.u_lightRad, light.rad );
+                        renderFullScreenQuad(phongProg);
                     }
                 }
             }
@@ -198,7 +222,7 @@
                 T.makeTranslation(light.pos[0],light.pos[1],light.pos[2]);
                 var M = new THREE.Matrix4();
                 M.multiplyMatrices(T,S);
-                
+                //M.multiplyMatrices(S,T);
                 
                 
                 
@@ -207,16 +231,16 @@
                     gl.uniformMatrix4fv(R.progRedSphere.u_cameraMat,false,state.cameraMat.elements);
                     gl.uniformMatrix4fv(R.progRedSphere.u_transformMat,false,M.elements);
                     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-                    renderFullScreenQuad(R.progRedSphere);
+                    drawReadyModel(R.sphereModel);
                 } 
                 else 
                 {
-                    gl.uniformMatrix4fv(R.prog_BlinnPhong_PointLight_SphereProxy.u_cameraMat,false,state.cameraMat.elements);
-                    gl.uniformMatrix4fv(R.prog_BlinnPhong_PointLight_SphereProxy.u_transformMat,false,M.elements);
+                    gl.uniformMatrix4fv(phongProg.u_cameraMat,false,state.cameraMat.elements);
+                    gl.uniformMatrix4fv(phongProg.u_transformMat,false,M.elements);
                     
-                    gl.uniform3fv( R.prog_BlinnPhong_PointLight_SphereProxy.u_lightCol, light.col );
-                    gl.uniform3fv( R.prog_BlinnPhong_PointLight_SphereProxy.u_lightPos, light.pos );
-                    gl.uniform1f( R.prog_BlinnPhong_PointLight_SphereProxy.u_lightRad, light.rad );
+                    gl.uniform3fv( phongProg.u_lightCol, light.col );
+                    gl.uniform3fv( phongProg.u_lightPos, light.pos );
+                    gl.uniform1f( phongProg.u_lightRad, light.rad );
                     
                     //readyModelForDraw(R.prog_BlinnPhong_PointLight_SphereProxy, R.sphereModel);
                     drawReadyModel(R.sphereModel);
