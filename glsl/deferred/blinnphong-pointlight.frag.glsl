@@ -91,5 +91,5 @@ void main() {
 	vec3 color;
     vec3 phong_color= (diffuse+specular)*u_lightCol*attenuation*basec;
   
-	gl_FragColor = vec4(color,1.0);
+	gl_FragColor = vec4(phong_color,1.0);
 }
