@@ -46,7 +46,7 @@
             renderFullScreenQuad(R.progRed);
             return;
         }
-*/
+//*/
         R.pass_copy.render(state);
 
         if (cfg && cfg.debugView >= 0 && cfg.debugView<=5) {
@@ -405,13 +405,84 @@
 		gl.uniform3fv(R.progMotion.u_prevEye,prevEye);
 		
         renderFullScreenQuad(R.progMotion);
-		//if(statePrevMat)
+		
 		prevEye = [state.cameraPos.x,state.cameraPos.y,state.cameraPos.z];
 		statePrevMat = m;
     };
 	
-	
 
+    var renderSphereProxy = (function() {
+        // The variables in this function are private to the implementation of
+        // renderFullScreenQuad. They work like static local variables in C++.
+
+        // Create an array of floats, where each set of 3 is a vertex position.
+        // You can render in normalized device coordinates (NDC) so that the
+        // vertex shader doesn't have to do any transformation; draw two
+        // triangles which cover the screen over x = -1..1 and y = -1..1.
+        // This array is set up to use gl.drawArrays with gl.TRIANGLE_STRIP.
+        var positions = new Float32Array([
+			 0.0,    1.0, 0.0,
+             0.0,    0.0, 0.0,
+           0.707,  0.707, 0.0,
+		
+             1.0,    0.0, 0.0,
+		   0.707, -0.707, 0.0,
+			 0.0,    0.0, 0.0,
+			
+			 0.0,   -1.0, 0.0,
+		  -0.707, -0.707, 0.0,
+			-1.0,    0.0, 0.0,
+			
+			 0.0,    0.0, 0.0,
+			-0.707,0.707,0.0,
+			0.0,1.0,0.0
+			
+			//0.0,0.0,0.0
+        ]);
+
+        var vbo = null;
+
+        var init = function() {
+            // Create a new buffer with gl.createBuffer, and save it as vbo.
+            // TO_DO: ^
+			vbo = gl.createBuffer();
+            // Bind the VBO as the gl.ARRAY_BUFFER
+            // TO_DO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
+			// Upload the positions array to the currently-bound array buffer
+            // using gl.bufferData in static draw mode.
+            // TO_DO: ^
+			gl.bufferData(gl.ARRAY_BUFFER,positions,gl.STATIC_DRAW);
+        };
+
+        return function(prog) {
+            if (!vbo) {
+                // If the vbo hasn't been initialized, initialize it.
+                init();
+            }
+
+            // Bind the program to use to draw the quad
+            gl.useProgram(prog.prog);
+
+            // Bind the VBO as the gl.ARRAY_BUFFER
+            // TO_DO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
+			// Enable the bound buffer as the vertex attrib array for
+            // prog.a_position, using gl.enableVertexAttribArray
+            // TO_DO: ^
+			gl.enableVertexAttribArray(prog.a_position);
+            // Use gl.vertexAttribPointer to tell WebGL the type/layout for
+            // prog.a_position's access pattern.
+            // TO_DO: ^
+			gl.vertexAttribPointer(prog.a_position,3,gl.FLOAT,false,0,0);
+            // Use gl.drawArrays (or gl.drawElements) to draw your quad.
+            // TO_DO: ^
+			gl.drawArrays(gl.TRIANGLE_STRIP,0,12);
+            // Unbind the array buffer.
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        };
+    })();	
+//*
     var renderFullScreenQuad = (function() {
         // The variables in this function are private to the implementation of
         // renderFullScreenQuad. They work like static local variables in C++.
@@ -470,4 +541,5 @@
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         };
     })();
+//*/
 })();

@@ -14,7 +14,7 @@ var width, height;
         camera.matrixWorldInverse.getInverse(camera.matrixWorld);
         cameraMat.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
         R.deferredRender({
-			prevCamMat: camera.projectionMatrix,
+			prevCamMat: cameraMat,//camera.projectionMatrix,
             cameraMat: cameraMat,
             projMat: camera.projectionMatrix,
             viewMat: camera.matrixWorldInverse,
