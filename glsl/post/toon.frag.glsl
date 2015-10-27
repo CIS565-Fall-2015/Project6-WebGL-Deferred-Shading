@@ -35,7 +35,7 @@ float discrete(float inCol,int level)
 	inCol = clamp(inCol,0.0,1.0);
 	if(inCol>=0.9) return 0.9;
 	if(inCol>=0.6) return 0.6;
-	if(inCol>=0.2) return 0.2;
+	if(inCol>=0.1) return 0.1;
 	return inCol;
 	/*
 	int temp = int(inCol*float(level));
@@ -68,10 +68,10 @@ void main() {
 	
     vec4 color = texture2D(u_color, v_uv);
 	
-	color.r = discrete(color.r,3);	
-	color.g = discrete(color.g,3);
-	color.b = discrete(color.b,3);
-	color.a = discrete(color.a,3);
+	//color.r = discrete(color.r,3);	
+	//color.g = discrete(color.g,3);
+	//color.b = discrete(color.b,3);
+	//color.a = 1.0;//discrete(color.a,3);
 
 	gl_FragColor = edgeCol*color;
 	

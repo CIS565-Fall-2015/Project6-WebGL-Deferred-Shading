@@ -4,6 +4,7 @@ precision highp int;
 
 #define NUM_GBUFFERS 4
 
+uniform bool u_toon;
 uniform vec3 u_camPos;
 uniform vec3 u_lightCol;
 uniform vec3 u_lightPos;
@@ -55,6 +56,14 @@ void main() {
 	{
 		float specAngle = max(dot(reflDir,viewDir),0.0);
 		spec = pow(specAngle,4.0);
+	}
+	if(u_toon)//toon
+	{
+		//lamb = lamb>0.5?1.0:0.0;
+		if(lamb<0.1) lamb = 0.0;
+		else if(lamb<0.6) lamb = 0.6;
+		else lamb = 1.0;
+		spec = spec>0.5?1.0:0.0;
 	}
 	gl_FragColor = vec4(attenuation*(lamb+spec)*diff*u_lightCol, 1.0);
 }
