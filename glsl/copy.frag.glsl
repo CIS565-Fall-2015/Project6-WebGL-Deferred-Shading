@@ -10,7 +10,7 @@ varying vec3 v_position;
 varying vec3 v_normal;
 varying vec2 v_uv;
 
-#define NUM_GBUFFERS 4
+#define NUM_GBUFFERS 3
 
 void main() {
     vec3 normap = texture2D(u_normap, v_uv).xyz;
