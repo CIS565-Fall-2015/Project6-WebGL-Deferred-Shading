@@ -23,20 +23,6 @@
             R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
         }
 
-        // Execute deferred shading pipeline
-        //console.log("I'm here!");
-        
-        // CHECKITOUT: START HERE! You can even uncomment this:
-        //debugger;
-
-        /*
-        { // TODO: this block should be removed after testing renderFullScreenQuad
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            // TODO: Implement/test renderFullScreenQuad first
-            renderFullScreenQuad(R.progRed);
-            return;
-        }*/
-
         R.pass_copy.render(state);
 
         if (cfg && cfg.debugView >= 0) {
@@ -47,7 +33,7 @@
             // * Deferred pass and postprocessing pass(es)
             R.pass_deferred.render(state);
             R.pass_post1.render(state);
-
+            R.pass_post2.render(state);
             // OPTIONAL TODO: call more postprocessing passes, if any
         }
     };
@@ -135,7 +121,7 @@
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
         var cameraPos = [state.cameraPos.x, state.cameraPos.y, state.cameraPos.z];
-        var settings = [cfg.enableToonShading, cfg.enableToonWithRampShading, 0, 0];
+        var settings = [cfg.enableToonShading, cfg.enableRampShading, 0, 0];
         gl.enable(gl.SCISSOR_TEST);
 
         for(var i = 0; i < R.lights.length; i++){
@@ -196,7 +182,8 @@
      */
     R.pass_post1.render = function(state) {
         // * Unbind any existing framebuffer (if there are no more passes)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_post1.fbo);
 
         // * Clear the framebuffer depth to 1.0
         gl.clearDepth(1.0);
@@ -214,10 +201,49 @@
 
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);
-        gl.uniform4fv(R.progPost1.u_settings, [cfg.enableBloom, 0.0, 0.0, 0.0]);
+        gl.uniform4fv(R.progPost1.u_settings, [cfg.enableBloom, cfg.enablePost2, 0.0, 0.0]);
+        gl.uniform1fv(R.progPost1.u_kernel, new Float32Array([0.01,0.02,0.03,0.02,0.01]));
+        if(cfg && cfg.enableBloom){
+            gl.uniform1fv(R.progPost1.u_block_kernel, new Float32Array([0.01,0.01,0.01,0.01,0.01,
+                                                                          0.01,0.01,0.01,0.01,0.01,
+                                                                          0.01,0.01,0.01,0.01,0.01,
+                                                                          0.01,0.01,0.01,0.01,0.01,
+                                                                          0.01,0.01,0.01,0.01,0.01]));
+        }
 
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);
+    };
+
+        /**
+     * 'post1' pass: Perform (first) pass of post-processing
+     */
+    R.pass_post2.render = function(state) {
+        // * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.progPost2.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        gl.activeTexture(gl.TEXTURE0);
+
+        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
+        //gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_post1.colorTex);
+
+        // Configure the R.progPost1.u_color uniform to point at texture unit 0
+        gl.uniform1i(R.progPost2.u_color, 0);
+        gl.uniform4fv(R.progPost2.u_settings, [cfg.enableBloom, cfg.enablePost2, 0.0, 0.0]);
+        gl.uniform1fv(R.progPost2.u_kernel, new Float32Array([0.01,0.02,0.03,0.02,0.01]));
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.progPost2);
     };
 
     var renderFullScreenQuad = (function() {

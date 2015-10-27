@@ -71,7 +71,7 @@ void main() {
     vec3 halfVector = normalize(lightDir + cameraDir);
     float specular = dot(nor, halfVector);
 
-    vec3 fragColor = color.rgb;
+    vec3 fragColor = color.rgb * u_lightCol;
 
     // Toon shading
     if (toonShading == 1.0){
@@ -86,8 +86,8 @@ void main() {
 
     // Normal shading
     } else {
-        fragColor *= diffuse * max(0.0,(u_lightRad - dist)) * 0.5;
-        fragColor += color.rgb * specular * max(0.0,(u_lightRad - dist)) * 0.5;
+        fragColor *= diffuse * max(0.0,(u_lightRad - dist)) * 0.3;
+        fragColor += color.rgb * specular * max(0.0,(u_lightRad - dist)) * 0.3;
     }
 
     gl_FragColor = vec4(fragColor, 1.0);

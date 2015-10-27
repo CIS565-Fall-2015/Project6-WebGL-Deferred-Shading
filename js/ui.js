@@ -8,9 +8,10 @@ var cfg;
         this.debugView = -1;
         this.debugScissor = false;
         this.enableToonShading = false;
-        this.enableToonWithRampShading = false;
+        this.enableRampShading = false;
         this.enableBloom = false;
         this.enableSphere = false;
+        this.enablePost2 = false;
     };
 
     var init = function() {
@@ -29,11 +30,12 @@ var cfg;
         });
         gui.add(cfg, 'debugScissor');
 
-        var eff0 = gui.addFolder('Some Effects');
+        var eff0 = gui.addFolder('Effects & Optimizations');
         eff0.add(cfg, 'enableToonShading');
-        eff0.add(cfg, 'enableToonWithRampShading');
+        eff0.add(cfg, 'enableRampShading');
         eff0.add(cfg, 'enableBloom');
         eff0.add(cfg, 'enableSphere');
+        eff0.add(cfg, 'enablePost2');
         // TODO: add more effects toggles and parameters here
     };
 
