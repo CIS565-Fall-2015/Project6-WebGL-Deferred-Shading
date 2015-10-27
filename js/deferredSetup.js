@@ -11,6 +11,8 @@
 
     R.NUM_GBUFFERS = 3;
 
+    R.useSphereOptimization = false;
+
     /**
      * Set up the deferred pipeline framebuffer objects and textures.
      */
@@ -27,7 +29,7 @@
     R.light_max = [14, 18, 6];
     R.light_dt = -0.03;
     R.LIGHT_RADIUS = 4.0;
-    R.NUM_LIGHTS = 150; // TODO: test with MORE lights!
+    R.NUM_LIGHTS = 50; // TODO: test with MORE lights!
     var setupLights = function() {
         Math.seedrandom(0);
 
@@ -167,23 +169,10 @@
             R.prog_Ambient = p;
         });
 
-        /*
-        loadDeferredProgram('blinnphong-pointlight', function(p) {
-            // Save the object into this variable for access later
-            p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
-            p.u_settings = gl.getUniformLocation(p.prog, 'u_settings');
-            p.u_camera_width = gl.getUniformLocation(p.prog, 'u_camera_width');
-            p.u_camera_height = gl.getUniformLocation(p.prog, 'u_camera_height');
-            p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
-            p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
-            p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
-            
-            R.prog_BlinnPhong_PointLight = p;
-        });
-        */
-
         loadPostProgram('one', function(p) {
-            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_width = gl.getUniformLocation(p.prog, 'u_width');
+            p.u_height = gl.getUniformLocation(p.prog, 'u_height');
+            p.u_color = gl.getUniformLocation(p.prog, 'u_color');
             p.u_settings = gl.getUniformLocation(p.prog, 'u_settings');
             p.u_kernel = gl.getUniformLocation(p.prog, 'u_kernel');
             p.u_block_kernel = gl.getUniformLocation(p.prog, 'u_block_kernel');
@@ -199,21 +188,36 @@
             R.progPost2 = p;
         });
 
-        loadDeferredSphereProgram('blinnphong-pointlight', function(p) {
-            // Save the object into this variable for access later
-            p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
-            p.u_settings = gl.getUniformLocation(p.prog, 'u_settings');
-            p.u_camera_width = gl.getUniformLocation(p.prog, 'u_camera_width');
-            p.u_camera_height = gl.getUniformLocation(p.prog, 'u_camera_height');
-            p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
-            p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
-            p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+        if (R.useSphereOptimization){
+            loadDeferredSphereProgram('blinnphong-pointlight', function(p) {
+                // Save the object into this variable for access later
+                p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
+                p.u_settings = gl.getUniformLocation(p.prog, 'u_settings');
+                p.u_camera_width = gl.getUniformLocation(p.prog, 'u_camera_width');
+                p.u_camera_height = gl.getUniformLocation(p.prog, 'u_camera_height');
+                p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
+                p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
+                p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
 
-            p.u_cameraMat = gl.getUniformLocation(p.prog, 'u_cameraMat');
-            p.u_lightTrans = gl.getUniformLocation(p.prog, 'u_lightTrans');
+                p.u_cameraMat = gl.getUniformLocation(p.prog, 'u_cameraMat');
+                p.u_lightTrans = gl.getUniformLocation(p.prog, 'u_lightTrans');
 
-            R.prog_BlinnPhong_PointLight = p;
-        });
+                R.prog_BlinnPhong_PointLight = p;
+            });
+        } else {
+            loadDeferredProgram('blinnphong-pointlight', function(p) {
+                // Save the object into this variable for access later
+                p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
+                p.u_settings = gl.getUniformLocation(p.prog, 'u_settings');
+                p.u_camera_width = gl.getUniformLocation(p.prog, 'u_camera_width');
+                p.u_camera_height = gl.getUniformLocation(p.prog, 'u_camera_height');
+                p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
+                p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
+                p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+                
+                R.prog_BlinnPhong_PointLight = p;
+            });
+        }
 
         loadDeferredProgram('debug', function(p) {
             p.u_debug = gl.getUniformLocation(p.prog, 'u_debug');
@@ -238,6 +242,7 @@
                     p.u_gbufs[i] = gl.getUniformLocation(prog, 'u_gbufs[' + i + ']');
                 }
                 p.u_depth    = gl.getUniformLocation(prog, 'u_depth');
+
                 p.a_position = gl.getAttribLocation(prog, 'a_position');
 
                 callback(p);

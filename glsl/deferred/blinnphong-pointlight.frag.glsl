@@ -28,10 +28,19 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
 }
 
 void main() {
+    /*
     vec4 gb0 = texture2D(u_gbufs[0], v_uv);
     vec4 gb1 = texture2D(u_gbufs[1], v_uv);
     vec4 gb2 = texture2D(u_gbufs[2], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
+    */
+
+    vec2 guv = gl_FragCoord.xy / vec2(u_camera_width, u_camera_height);
+
+    vec4 gb0 = texture2D(u_gbufs[0], guv);
+    vec4 gb1 = texture2D(u_gbufs[1], guv);
+    vec4 gb2 = texture2D(u_gbufs[2], guv);
+    float depth = texture2D(u_depth, guv).x;
 
     vec3 pos = gb0.xyz; // World-space position
     vec3 geomnor = gb1.xyz; // Normals of the geometry as defined, without normal mapping
@@ -56,7 +65,7 @@ void main() {
         for (int i = -1; i <= 1; i++){
             for (int j = -1; j <= 1; j++){
                 if (i == 0 && j == 0) continue;
-                neighbor = texture2D(u_depth, v_uv + vec2(float(i)/u_camera_width, float(j)/u_camera_height)).x;
+                neighbor = texture2D(u_depth, guv + vec2(float(i)/u_camera_width, float(j)/u_camera_height)).x;
 
                 if (abs(depth - neighbor) > thresh){
                     gl_FragColor = vec4(1.0);
@@ -86,6 +95,7 @@ void main() {
         } else if (diffuse > 0.3) {
             fragColor *= 0.3;
         } else {
+            //fragColor *= 0.1;
             fragColor *= (1.0-rampShading)*0.1 + (rampShading)*diffuse;
         }
         fragColor *= max(0.0,(u_lightRad - dist)) * 0.3;

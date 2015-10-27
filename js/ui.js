@@ -6,13 +6,14 @@ var cfg;
     var Cfg = function() {
         // TODO: Define config fields and defaults here
         this.debugView = -1;
-        this.enableScissor = true;
+        this.enableScissor = false;
         this.debugScissor = false;
         this.enableToonShading = false;
         this.enableRampShading = false;
         this.enableBloom = false;
         this.enableSphere = false;
         this.enablePost2 = false;
+        this.debugSphere = false;
     };
 
     var init = function() {
@@ -31,12 +32,12 @@ var cfg;
         });
         gui.add(cfg, 'enableScissor');
         gui.add(cfg, 'debugScissor');
+        gui.add(cfg, 'debugSphere');
 
-        var eff0 = gui.addFolder('Effects & Optimizations');
+        var eff0 = gui.addFolder('Effects');
         eff0.add(cfg, 'enableToonShading');
         eff0.add(cfg, 'enableRampShading');
         eff0.add(cfg, 'enableBloom');
-        eff0.add(cfg, 'enableSphere');
         eff0.add(cfg, 'enablePost2');
         // TODO: add more effects toggles and parameters here
     };

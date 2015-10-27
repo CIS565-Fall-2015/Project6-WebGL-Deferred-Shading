@@ -106,7 +106,7 @@
         // Enable blending and use gl.blendFunc to blend with:
         //   color = 1 * src_color + 1 * dst_color
         gl.enable(gl.BLEND);
-        if (cfg && cfg.debugScissor){
+        if (cfg && (cfg.debugScissor || cfg.debugSphere) ){
             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         } else {
             gl.blendFunc(gl.ONE, gl.ONE);
@@ -123,7 +123,7 @@
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
         var cameraPos = [state.cameraPos.x, state.cameraPos.y, state.cameraPos.z];
-        var settings = [cfg.enableToonShading, cfg.enableToonWithRampShading, 0, 0];
+        var settings = [cfg.enableToonShading, cfg.enableRampShading, 0, 0];
 
         if (cfg && cfg.enableScissor){
             gl.enable(gl.SCISSOR_TEST);
@@ -144,12 +144,9 @@
                 }
             }
 
-            //readyModelForDraw(R.progRedSphere, R.sphereModel);
-            //drawReadyModel(R.sphereModel);
-            //continue;
-
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_cameraPos, cameraPos);
             gl.uniform4fv(R.prog_BlinnPhong_PointLight.u_settings, settings);
+
             gl.uniform1f(R.prog_BlinnPhong_PointLight.u_camera_width, width);
             gl.uniform1f(R.prog_BlinnPhong_PointLight.u_camera_height, height);
 
@@ -157,17 +154,29 @@
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, R.lights[i].col);
             gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, R.lights[i].rad);
 
-            var lightsTrans = R.lights[i].pos;
-            lightsTrans = lightsTrans.concat(R.lights[i].rad);
+            if (cfg && cfg.enableScissor){
+                renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+            } else {
+                var lightsTrans = R.lights[i].pos;
+                lightsTrans = lightsTrans.concat(R.lights[i].rad);
 
-            gl.uniform4fv(R.prog_BlinnPhong_PointLight.u_lightTrans, lightsTrans);
-            gl.uniformMatrix4fv(R.prog_BlinnPhong_PointLight.u_cameraMat, gl.FALSE, state.cameraMat.elements);
+                gl.uniform4fv(R.prog_BlinnPhong_PointLight.u_lightTrans, lightsTrans);
+                gl.uniformMatrix4fv(R.prog_BlinnPhong_PointLight.u_cameraMat, gl.FALSE, state.cameraMat.elements);
+        
+                if (cfg && cfg.debugSphere){
+                    gl.uniform4fv(R.progRedSphere.u_lightTrans, lightsTrans);
+                    gl.uniformMatrix4fv(R.progRedSphere.u_cameraMat, gl.FALSE, state.cameraMat.elements);
             
-            readyModelForDraw(R.prog_BlinnPhong_PointLight, R.sphereModel);
-            drawReadyModel(R.sphereModel);
+                    readyModelForDraw(R.progRedSphere, R.sphereModel);
+                    drawReadyModel(R.sphereModel);
+                } else {
+                    gl.uniform4fv(R.prog_BlinnPhong_PointLight.u_lightTrans, lightsTrans);
+                    gl.uniformMatrix4fv(R.prog_BlinnPhong_PointLight.u_cameraMat, gl.FALSE, state.cameraMat.elements);
             
-            //gl.bindBuffer(gl.ARRAY_BUFFER, null);
-            //renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+                    readyModelForDraw(R.prog_BlinnPhong_PointLight, R.sphereModel);
+                    drawReadyModel(R.sphereModel);
+                }
+            }
         }
 
         if (cfg && cfg.enableScissor){
@@ -224,6 +233,8 @@
         gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
 
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
+        gl.uniform1f(R.progPost1.u_width, width);
+        gl.uniform1f(R.progPost1.u_height, height);
         gl.uniform1i(R.progPost1.u_color, 0);
         gl.uniform4fv(R.progPost1.u_settings, [cfg.enableBloom, cfg.enablePost2, 0.0, 0.0]);
         gl.uniform1fv(R.progPost1.u_kernel, new Float32Array([0.01,0.02,0.03,0.02,0.01]));

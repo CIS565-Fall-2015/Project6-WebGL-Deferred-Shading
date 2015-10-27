@@ -16,7 +16,8 @@ uniform float u_block_kernel[25];
 uniform float u_kernel[5];
 
 void main() {
-    vec4 color = texture2D(u_color, v_uv);
+	vec2 guv = gl_FragCoord.xy / vec2(u_width,u_height);
+    vec4 color = texture2D(u_color, guv);
 
     if (color.a == 0.0) {
         gl_FragColor = SKY_COLOR;
@@ -31,7 +32,7 @@ void main() {
 
 	    for (int i=-2; i <= 2; i++){
 	    	for (int j=-2; j <= 2; j++){
-	    		n_uv = v_uv + vec2(float(i)/800.0, float(j)/600.0);
+	    		n_uv = guv + vec2(float(i)/800.0, float(j)/600.0);
 	    		n_color = texture2D(u_color, n_uv);
 	    		k = u_block_kernel[(i+2)+(j+2)*5];
 	    		color += k*n_color;
@@ -44,13 +45,11 @@ void main() {
     	vec4 n_color;
 
     	for (int i=-2; i <= 2; i++){
-    		n_uv = v_uv + vec2(0.0, float(i)/600.0);
+    		n_uv = guv + vec2(0.0, float(i)/600.0);
 	    	n_color = texture2D(u_color, n_uv);
-	    	color.r += u_kernel[i+2]*n_color.r;
-	    	color.g += u_kernel[i+2]*n_color.g;
-	    	color.b += u_kernel[i+2]*n_color.b;
+	    	color += u_kernel[i+2]*n_color;
     	}
     }
-	//    color = vec4(1.0);
+    
     gl_FragColor = clamp(color, 0.0, 1.0);
 }
