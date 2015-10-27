@@ -157,7 +157,7 @@
         }
         else if(cfg.proxy == 2)
         {
-            //readyModelForDraw(R.prog_BlinnPhong_PointLight_SphereProxy, R.sphereModel);
+           
             var m = R.sphereModel;
             var prog;
             if(cfg.debugScissor)
@@ -169,18 +169,22 @@
                 prog = phongProg;
             }
             
+            
             gl.useProgram(prog.prog);
             gl.enableVertexAttribArray(prog.a_position);
             gl.bindBuffer(gl.ARRAY_BUFFER, m.position);
             gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, false, 0, 0);
+            
+            
+            //readyModelForDraw(prog, R.sphereModel);
         }
         
         
-        //if(cfg.proxy==1 || cfg.proxy==0)
-        //{
-        gl.uniform1f(phongProg.u_toonShading ,cfg.enableToon );
-        gl.uniform3f( phongProg.u_cameraPos,state.cameraPos.x,state.cameraPos.y,state.cameraPos.z );
-        //}
+        if(!cfg.debugScissor)
+        {
+            gl.uniform1f(phongProg.u_toonShading ,cfg.enableToon );
+            gl.uniform3f( phongProg.u_cameraPos,state.cameraPos.x,state.cameraPos.y,state.cameraPos.z );
+        }
         
         
         for(var i = 0; i < R.NUM_LIGHTS ; i++)

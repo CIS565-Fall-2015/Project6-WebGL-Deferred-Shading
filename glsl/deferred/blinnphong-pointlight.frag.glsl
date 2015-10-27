@@ -39,10 +39,22 @@ vec4 EncodeFloatRGBA( float v ) {
 
 
 void main() {
+
+    vec2 uv = vec2(gl_FragCoord.x / 800.0, gl_FragCoord.y / 600.0);
+    
+    vec4 gb0 = texture2D(u_gbufs[0], uv);
+    vec4 gb1 = texture2D(u_gbufs[1], uv);
+    
+    float depth = texture2D(u_depth, uv).x;
+
+    
+
+/*
     vec4 gb0 = texture2D(u_gbufs[0], v_uv);
     vec4 gb1 = texture2D(u_gbufs[1], v_uv);
     
     float depth = texture2D(u_depth, v_uv).x;
+    */
     // TODO: Extract needed properties from the g-buffers into local variables
     
     //TODO:optimize gbuffer structure
@@ -92,4 +104,5 @@ void main() {
     
     gl_FragColor = vec4 (   attenuation * (diffuse + specular) , 1.0);
    
+    //gl_FragColor = vec4(v_uv,0.0,1.0);
 }
