@@ -10,7 +10,9 @@
             !R.prog_Ambient ||
             !R.prog_BlinnPhong_PointLight ||
             !R.prog_Debug ||
-            !R.progPost1)) {
+            !R.progPost1 ||
+            !R.progPost2 ||
+            !R.progRedSphere)) {
             console.log('waiting for programs to load...');
             return;
         }
@@ -122,9 +124,10 @@
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
         var cameraPos = [state.cameraPos.x, state.cameraPos.y, state.cameraPos.z];
         var settings = [cfg.enableToonShading, cfg.enableRampShading, 0, 0];
-        gl.enable(gl.SCISSOR_TEST);
+        //gl.enable(gl.SCISSOR_TEST);
 
         for(var i = 0; i < R.lights.length; i++){
+            /*
             var sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
             if (sc == null || sc[2] < 0 || sc[3] < 0){
                 continue;
@@ -136,6 +139,11 @@
                 renderFullScreenQuad(R.progRed);
                 continue;
             }
+            */
+
+            //readyModelForDraw(R.progRedSphere, R.sphereModel);
+            //drawReadyModel(R.sphereModel);
+            //continue;
 
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_cameraPos, cameraPos);
             gl.uniform4fv(R.prog_BlinnPhong_PointLight.u_settings, settings);
@@ -145,10 +153,21 @@
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, R.lights[i].pos);
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, R.lights[i].col);
             gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, R.lights[i].rad);
-            renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+
+            var lightsTrans = R.lights[i].pos;
+            lightsTrans = lightsTrans.concat(R.lights[i].rad);
+
+            gl.uniform4fv(R.prog_BlinnPhong_PointLight.u_lightTrans, lightsTrans);
+            gl.uniformMatrix4fv(R.prog_BlinnPhong_PointLight.u_cameraMat, gl.FALSE, state.cameraMat.elements);
+            
+            readyModelForDraw2(R.prog_BlinnPhong_PointLight, R.sphereModel);
+            drawReadyModel(R.sphereModel);
+            
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            //renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
         }
 
-        gl.disable(gl.SCISSOR_TEST);
+        //gl.disable(gl.SCISSOR_TEST);
 
         // In the lighting loop, use the scissor test optimization
         // Enable gl.SCISSOR_TEST, render all lights, then disable it.
@@ -184,6 +203,7 @@
         // * Unbind any existing framebuffer (if there are no more passes)
         //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_post1.fbo);
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         // * Clear the framebuffer depth to 1.0
         gl.clearDepth(1.0);
@@ -216,7 +236,7 @@
     };
 
         /**
-     * 'post1' pass: Perform (first) pass of post-processing
+     * 'post1' pass: Perform (second) pass of post-processing
      */
     R.pass_post2.render = function(state) {
         // * Unbind any existing framebuffer (if there are no more passes)

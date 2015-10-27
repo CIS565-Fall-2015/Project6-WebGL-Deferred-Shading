@@ -97,6 +97,15 @@ window.loadModel = function(obj, callback) {
     loader.load(obj, callback, onProgress, onError);
 };
 
+window.readyModelForDraw2 = function(prog, m){
+    gl.useProgram(prog.prog);
+    gl.enableVertexAttribArray(prog.a_position);
+    gl.bindBuffer(gl.ARRAY_BUFFER, m.position);
+    gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, false, 0, 0);
+    
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.idx);
+}
+
 window.readyModelForDraw = function(prog, m) {
     gl.useProgram(prog.prog);
 
