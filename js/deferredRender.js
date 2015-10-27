@@ -39,13 +39,13 @@
             R.pass_debug.render(state);
         } 
         
-        else if(cfg.debugView<0 && cfg.bloom) {
+        else if(cfg.debugView<0 && cfg.TwoPassBloom) {
            // R.light_pass.render(state);
-           // R.pass_wall.render(state);
             R.pass_deferred.render(state);
         	R.pass_bloom_w.render(state);
         	R.pass_bloom_h.render(state);
         }
+          
         else {
             // * Deferred pass and postprocessing pass(es)
            
@@ -74,6 +74,7 @@
         // * Upload the camera matrix m to the uniform R.progCopy.u_cameraMat
         //   using gl.uniformMatrix4fv
         gl.uniformMatrix4fv(R.progCopy.u_cameraMat,false,m);
+        gl.uniform3f(R.progCopy.u_spec, cfg.specular,0.0,0.0);
         drawScene(state);
     };
 
@@ -124,26 +125,31 @@
         gl.enable(gl.SCISSOR_TEST);
       //!!!!!note: 012!!!xyznot work!!!!I hate it
        for (var i = 0; i < R.lights.length; i++) {//R.lights.length
-         var sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
-         if(sc!=null){
-             gl.scissor(sc[0], sc[1], sc[2], sc[3]);
-             if(!cfg.debugScissor){              
-                  gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightPos, R.lights[i].pos[0],R.lights[i].pos[1],R.lights[i].pos[2]);
-                  gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightCol, R.lights[i].col[0],R.lights[i].col[1],R.lights[i].col[2]);
-                  gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, R.lights[i].rad);
-                  gl.uniform3f(R.prog_BlinnPhong_PointLight.u_cameraPos, state.cameraPos.x,state.cameraPos.y,state.cameraPos.z);
-                  if(cfg.toon)
+          if(cfg.AABBtest){
+               var sc = getAABBForLight(state.viewMat, state.projMat, R.lights[i]);
+             }
+           else sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
+         
+           if(sc!=null){
+               gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+               if(!cfg.debugScissor){              
+                    gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightPos, R.lights[i].pos[0],R.lights[i].pos[1],R.lights[i].pos[2]);
+                    gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightCol, R.lights[i].col[0],R.lights[i].col[1],R.lights[i].col[2]);
+                    gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, R.lights[i].rad);
+                    gl.uniform3f(R.prog_BlinnPhong_PointLight.u_cameraPos, state.cameraPos.x,state.cameraPos.y,state.cameraPos.z);
+                    if(cfg.toon)
+                    {
+                         gl.uniform1i(R.prog_BlinnPhong_PointLight.u_toon, 1);
+                    }
+                    else 
+                    {
+                         gl.uniform1i(R.prog_BlinnPhong_PointLight.u_toon, -1);
+                     } 
+
+                    renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+                  }
+               else 
                   {
-                     gl.uniform1i(R.prog_BlinnPhong_PointLight.u_toon, 1);
-                  }   
-                  else 
-                  {
-                      gl.uniform1i(R.prog_BlinnPhong_PointLight.u_toon, -1);
-                  } 
-                  renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
-                 }
-             else 
-                {
               //additive blend 
                gl.blendFunc(gl.SRC_ALPHA, gl.DST_ALPHA); 
                renderFullScreenQuad(R.progRed);  

@@ -10,6 +10,8 @@ varying vec3 v_position;
 varying vec3 v_normal;
 varying vec2 v_uv;
 
+uniform vec3 u_spec;
+
 void main() {
     // TODO: copy values into gl_FragData[0], [1], etc.
 		
@@ -17,5 +19,6 @@ void main() {
 	gl_FragData[1] =  vec4(v_normal.xyz,1.0);
     gl_FragData[2] =  texture2D(u_colmap, v_uv); 
     gl_FragData[3] =  texture2D(u_normap, v_uv);
+	gl_FragData[4] = vec4(u_spec.xyz,1.0);
   
 }

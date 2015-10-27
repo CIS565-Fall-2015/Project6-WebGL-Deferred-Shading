@@ -14,7 +14,7 @@
     //**********
     R.lights = [];
 
-    R.NUM_GBUFFERS = 4;
+    R.NUM_GBUFFERS = 5;
 
     /**
      * Set up the deferred pipeline framebuffer objects and textures.
@@ -140,13 +140,14 @@
 
                 // Retrieve the uniform and attribute locations
                 p.u_cameraMat = gl.getUniformLocation(prog, 'u_cameraMat');
-               
                 p.u_colmap    = gl.getUniformLocation(prog, 'u_colmap');
                 p.u_normap    = gl.getUniformLocation(prog, 'u_normap');
+                
                 p.a_position  = gl.getAttribLocation(prog, 'a_position');
                 p.a_normal    = gl.getAttribLocation(prog, 'a_normal');
                 p.a_uv        = gl.getAttribLocation(prog, 'a_uv');
-
+                p.u_spec      =gl.getUniformLocation(prog, 'u_spec');
+                //gl.uniform3f(R.progCopy.a_spec, cfg.specular,0.0,0.0);
                 // Save the object into this variable for access later
                 R.progCopy = p;
             });
@@ -175,7 +176,12 @@
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
             p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
             p.u_toon= gl.getUniformLocation(p.prog, 'u_toon');
+          
             R.prog_BlinnPhong_PointLight = p;
+        });
+        loadDeferredProgram('singleBloom', function(p) {
+            p.u_color = gl.getUniformLocation(p.prog, 'u_color');
+            R.prog_singleBloom = p;
         });
        loadDeferredProgram('bloom_w', function(p) {
             p.u_color = gl.getUniformLocation(p.prog, 'u_color');

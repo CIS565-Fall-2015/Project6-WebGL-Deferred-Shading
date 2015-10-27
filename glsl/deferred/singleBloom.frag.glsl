@@ -20,13 +20,16 @@ void main() {
         return;
     }
 	if(color.x>sp||color.y>sp||color.z>sp){
-	vec4 FragmentColor = texture2D( u_color, vec2(v_uv) ) * weight.x;
+	vec4 FragmentColor = texture2D( u_color, vec2(v_uv)) * weight.x;
 	FragmentColor += texture2D( u_color,  vec2(v_uv)+ vec2(offset.y,0.0 )/width )*weight.y;
 	FragmentColor += texture2D( u_color,  vec2(v_uv)- vec2(offset.y,0.0 )/width )*weight.y;
     FragmentColor += texture2D( u_color,  vec2(v_uv)+ vec2(offset.z,0.0 )/width )*weight.z;
 	FragmentColor += texture2D( u_color,  vec2(v_uv)- vec2(offset.z,0.0 )/width )*weight.z;
 	
-	
+	FragmentColor += texture2D( u_color,  vec2(v_uv)+ vec2(0.0, offset.y )/height)*weight.y;
+	FragmentColor += texture2D( u_color,  vec2(v_uv)- vec2(0.0, offset.y )/height)*weight.y;
+    FragmentColor += texture2D( u_color,  vec2(v_uv)+ vec2(0.0, offset.z )/height)*weight.z;
+	FragmentColor += texture2D( u_color,  vec2(v_uv)- vec2(0.0, offset.z )/height)*weight.z;
     gl_FragColor = FragmentColor;
 	}
 	else {

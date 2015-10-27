@@ -130,7 +130,186 @@ window.readyModelForDraw = function(prog, m) {
 window.drawReadyModel = function(m) {
     gl.drawElements(gl.TRIANGLES, m.elemCount, gl.UNSIGNED_INT, 0);
 };
+window.getAABBForLight = (function() {
+    // Pre-allocate for performance - avoids additional allocation
+    var a = new THREE.Vector4(0, 0, 0, 0);
+    var b = new THREE.Vector4(0, 0, 0, 0);
+    var c = new THREE.Vector4(0, 0, 0, 0);
+    var d = new THREE.Vector4(0, 0, 0, 0);
+    var e = new THREE.Vector4(0, 0, 0, 0);
+    var f = new THREE.Vector4(0, 0, 0, 0);
+    var g = new THREE.Vector4(0, 0, 0, 0);
+    var h = new THREE.Vector4(0, 0, 0, 0);
+    var center = new THREE.Vector4(0, 0, 0, 0);
+    var minx=-1.0;
+    var miny=1.0;
+    var minpt = new THREE.Vector2(0, 0);
+    var maxpt = new THREE.Vector2(0, 0);
 
+    var ltx = new THREE.Vector2(0, 0);
+    var lty = new THREE.Vector2(0, 0);
+    var ret = [0, 0, 0, 0];
+
+    return function(view, proj, l) {
+        // front bottom-left corner of sphere's bounding cube
+     /*
+        a.fromArray(l.pos);
+        a.w = 1;
+        a.applyMatrix4(view);
+        a.x += l.rad;
+        a.y += l.rad;
+        //a.z += l.rad;
+        a.applyMatrix4(proj);
+        a.divideScalar(a.w);
+
+        b.fromArray(l.pos);
+        b.w = 1;
+        b.applyMatrix4(view);
+        b.x -= l.rad;
+        b.y += l.rad;
+       // b.z += l.rad;
+        b.applyMatrix4(proj);
+        b.divideScalar(b.w);
+        
+        c.fromArray(l.pos);
+        c.w = 1;
+        c.applyMatrix4(view);
+        c.x += l.rad;
+        c.y -= l.rad;
+       // c.z += l.rad;
+        c.applyMatrix4(proj);
+        c.divideScalar(c.w);
+
+        d.fromArray(l.pos);
+        d.w = 1;
+        d.applyMatrix4(view);
+        d.x -= l.rad;
+        d.y -= l.rad;
+     //   d.z += l.rad;
+        d.applyMatrix4(proj);
+        d.divideScalar(d.w);
+
+        e.fromArray(l.pos);
+        e.w = 1;
+        e.applyMatrix4(view);
+        e.x += l.rad;
+        e.y += l.rad;
+    //  e.z -= l.rad;
+        e.applyMatrix4(proj);
+        e.divideScalar(e.w);
+
+        f.fromArray(l.pos);
+        f.w = 1;
+        f.applyMatrix4(view);
+        f.x -= l.rad;
+        f.y += l.rad;
+       // f.z -= l.rad;
+   //     f.applyMatrix4(proj);
+        f.divideScalar(f.w);
+
+        g.fromArray(l.pos);
+        g.w = 1;
+  //      g.applyMatrix4(view);
+        g.x += l.rad;
+        g.y -= l.rad;
+        g.z -= l.rad;
+   //     g.applyMatrix4(proj);
+        g.divideScalar(g.w);
+
+        h.fromArray(l.pos);
+        h.w = 1;
+  //      h.applyMatrix4(view);
+        h.x -= l.rad;
+        h.y -= l.rad;
+        h.z -= l.rad;
+  //      h.applyMatrix4(proj);
+        h.divideScalar(h.w);
+////////////////////////////////min//////////////
+        var m1x=Math.min(Math.min(Math.min(a.x,b.x),c.x),d.x);
+        var m2x=Math.min(Math.min(e.x,f.x),g.x);
+        var m3x=Math.min(m1x,m2x);
+
+        var m1y=Math.min(Math.min(Math.min(a.y,b.y),c.y),d.y);
+        var m2y=Math.min(Math.min(e.y,f.y),g.y);
+        var m3y=Math.min(m1y,m2y);
+
+        var m1z=Math.min(Math.min(Math.min(a.z,b.z),c.z),d.z);
+        var m2z=Math.min(Math.min(e.z,f.z),g.z);
+        var m3z=Math.min(m1z,m2z);
+
+        var mint=Math.min(m3x,m3y);
+///////////////////////////////max///////////////
+        var a1x=Math.max(Math.max(Math.max(a.x,b.x),c.x),d.x);
+        var a2x=Math.max(Math.max(e.x,f.x),g.x);
+        var a3x=Math.max(a1x,a2x);
+
+        var a1y=Math.max(Math.max(Math.max(a.y,b.y),c.y),d.y);
+        var a2y=Math.max(Math.max(e.y,f.y),g.y);
+        var a3y=Math.max(a1y,a2y);
+        
+        var maxt=Math.max(a3x,a3y);
+        ///////////////////////////////////////////////////
+        //--+d,+++a(-1,1);
+        minpt.set(Math.max(-1, mint.x), Math.max(-1, mint.y));
+        maxpt.set(Math.min( 1, maxt.x), Math.min( 1, maxt.y));
+
+        if (maxpt.x < -1 || 1 < minpt.x ||
+            maxpt.y < -1 || 1 < minpt.y) {
+            return null;
+        }
+
+        minpt.addScalar(1.0); minpt.multiplyScalar(0.5);
+        maxpt.addScalar(1.0); maxpt.multiplyScalar(0.5);
+        //0-2////
+        
+        ret[0] = Math.round(minpt*width);
+        ret[1] = Math.round(maxpt*height);
+        ret[2] = Math.round(width * (maxpt.x - minpt.x));
+        ret[3] = Math.round(height* (maxpt.x - minpt.x));
+         
+        ret[0] = Math.round(width * minpt.x);
+        ret[1] = Math.round(height * minpt.y);
+        ret[2] = Math.round(width/2.0 );
+        ret[3] = Math.round(height /2.0);
+        
+        return ret;*/
+            a.fromArray(l.pos);
+        a.w = 1;
+        a.applyMatrix4(view);
+        a.x -= l.rad;
+        a.y -= l.rad;
+        a.z -= l.rad;
+        a.applyMatrix4(proj);
+        a.divideScalar(a.w);
+
+        // front bottom-left corner of sphere's bounding cube
+        b.fromArray(l.pos);
+        b.w = 1;
+        b.applyMatrix4(view);
+        b.x += l.rad;
+        b.y += l.rad;
+        b.z += l.rad;
+        b.applyMatrix4(proj);
+        b.divideScalar(b.w);
+
+        minpt.set(Math.max(-1, a.x), Math.max(-1, a.y));
+        maxpt.set(Math.min( 1, b.x), Math.min( 1, b.y));
+
+        if (maxpt.x < -1 || 1 < minpt.x ||
+            maxpt.y < -1 || 1 < minpt.y) {
+            return null;
+        }
+
+        minpt.addScalar(1.0); minpt.multiplyScalar(0.5);
+        maxpt.addScalar(1.0); maxpt.multiplyScalar(0.5);
+
+        ret[0] = Math.round(width * minpt.x);
+        ret[1] = Math.round(height * minpt.y);
+        ret[2] = Math.round(width * (maxpt.x - minpt.x));
+        ret[3] = Math.round(height * (maxpt.y - minpt.y));
+        return ret;
+    };
+})();
 window.getScissorForLight = (function() {
     // Pre-allocate for performance - avoids additional allocation
     var a = new THREE.Vector4(0, 0, 0, 0);

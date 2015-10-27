@@ -137,6 +137,19 @@ var width, height;
                 models.push(m);
             });
         });
+           loadModel('models/cube.obj', function(o) {
+            scene.add(o);
+            uploadModel(o, function(m) {
+                // CHECKITOUT: load textures
+                loadTexture('models/sponza/color.jpg').then(function(tex) {
+                    m.colmap = tex;
+                });
+                loadTexture('models/sponza/normal.png').then(function(tex) {
+                    m.normap = tex;
+                });
+                models.push(m);
+            });
+        });
 
         // Render once to get three.js to copy all of the model buffers
         resize();
