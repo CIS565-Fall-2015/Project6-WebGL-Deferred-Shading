@@ -236,14 +236,20 @@
         //
         //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
 
-        gl.enable(gl.SCISSOR_TEST);
+        if (cfg.enableScissor) {
+            gl.enable(gl.SCISSOR_TEST);
+        }
+
         var numLights = R.lights.length;
         for (var i = 0; i < numLights; i++) {
-            var sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
-            if (sc == null) {
-                continue;
-            }            
-            gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+            if (cfg.enableScissor) {
+                var sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
+                if (sc == null) {
+                    continue;
+                }            
+                gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+            }
+
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, R.lights[i].pos);
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, R.lights[i].col);
             gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, R.lights[i].rad);
@@ -251,7 +257,9 @@
             renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
         }
 
-        gl.disable(gl.SCISSOR_TEST);
+        if (cfg.enableScissor) {
+            gl.disable(gl.SCISSOR_TEST);
+        }
 
         // Disable blending so that it doesn't affect other code
         gl.disable(gl.BLEND);

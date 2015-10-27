@@ -68,8 +68,8 @@ TILING
 -seems like it could extend from scissor test?
 
 TODO before seeing Kai:
--make bloom toggleable
--make scissor test toggleable
+-make bloom toggleable [done]
+-make scissor test toggleable [done...? there was a mystery crash]
 -add a toon shader. make it toggleable. should theoretically be very similar to blinnphong in the js
 
 Seeing Kai:

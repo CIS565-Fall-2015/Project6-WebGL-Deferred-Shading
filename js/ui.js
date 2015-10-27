@@ -7,6 +7,7 @@ var cfg;
         // TODO: Define config fields and defaults here
         this.debugView = -1;
         this.debugScissor = false;
+        this.enableScissor = true;        
         this.enableBloom = false;
         this.compressedGbuffers = false;
     };
@@ -26,6 +27,7 @@ var cfg;
             '5 Surface normal':  5
         });
         gui.add(cfg, 'debugScissor');
+        gui.add(cfg, 'enableScissor');
 
         var eff0 = gui.addFolder('Bloom');
         eff0.add(cfg, 'enableBloom');
