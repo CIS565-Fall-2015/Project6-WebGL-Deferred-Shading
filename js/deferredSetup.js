@@ -8,7 +8,8 @@
     R.pass_post1 = {};
     R.lights = [];
 
-    R.NUM_GBUFFERS = 4;
+    //R.NUM_GBUFFERS = 4;
+    R.NUM_GBUFFERS = 2;
 
     /**
      * Set up the deferred pipeline framebuffer objects and textures.
@@ -94,8 +95,25 @@
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
-
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        
+        
+        //bloom buffer
+        if(true)
+        {
+            R.pass_deferred.glowbuffer = gl.createFramebuffer();
+            // * Create, bind, and store a single color target texture for the FBO
+            R.pass_deferred.glowTex = createAndBindColorTargetTexture(
+                R.pass_deferred.glowbuffer, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+    
+            // * Check for framebuffer errors
+            abortIfFramebufferIncomplete(R.pass_deferred.glowbuffer);
+            
+            gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            gl.clearDepth(1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        }
+        
     };
 
     /**
@@ -124,6 +142,18 @@
                 // Create an object to hold info about this shader program
                 R.progRed = { prog: prog };
             });
+            
+            
+        loadShaderProgram(gl, 'glsl/sphere.vert.glsl', 'glsl/red.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                R.progRedSphere = { prog: prog };
+                R.progRedSphere.a_position = gl.getAttribLocation(prog, 'a_position');
+                
+                
+                R.progRedSphere.u_cameraMat = gl.getUniformLocation(prog, 'u_cameraMat');
+                R.progRedSphere.u_transformMat = gl.getUniformLocation(prog, 'u_transformMat');
+            });
 
         loadShaderProgram(gl, 'glsl/quad.vert.glsl', 'glsl/clear.frag.glsl',
             function(prog) {
@@ -141,6 +171,9 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+            p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
+            p.u_toonShading = gl.getUniformLocation(p.prog, 'u_toonShading');
+            
             R.prog_BlinnPhong_PointLight = p;
         });
 
@@ -152,12 +185,78 @@
 
         loadPostProgram('one', function(p) {
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_glow = gl.getUniformLocation(p.prog, 'u_glow');
             // Save the object into this variable for access later
             R.progPost1 = p;
         });
 
         // TODO: If you add more passes, load and set up their shader programs.
+        loadDeferredProgram('contour',function(p){
+            // Save the object into this variable for access later
+            p.u_width = gl.getUniformLocation(p.prog, 'u_width');
+            p.u_height = gl.getUniformLocation(p.prog, 'u_height');
+            
+            R.prog_Contour = p;
+        });
+        
+        
+        loadDeferredProgram('bloom',function(p){
+            // Save the object into this variable for access later
+            p.u_width = gl.getUniformLocation(p.prog, 'u_width');
+            p.u_height = gl.getUniformLocation(p.prog, 'u_height');
+            p.u_axis = gl.getUniformLocation(p.prog, 'u_axis');
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            R.prog_Bloom = p;
+        });
+        
+        
+        
+        loadDeferredProgramSphereProxy('blinnphong-pointlight', function(p) {
+            // Save the object into this variable for access later
+            p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
+            p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
+            p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+            p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
+            p.u_toonShading = gl.getUniformLocation(p.prog, 'u_toonShading');
+            
+            R.prog_BlinnPhong_PointLight_SphereProxy = p;
+        });
+        
+        /*
+        loadPostProgram('bloom',function(p){
+            // Save the object into this variable for access later
+            p.u_width = gl.getUniformLocation(p.prog, 'u_width');
+            p.u_height = gl.getUniformLocation(p.prog, 'u_height');
+            p.u_axis = gl.getUniformLocation(p.prog, 'u_axis');
+            R.prog_Bloom = p;
+        });
+        */
     };
+
+    var loadDeferredProgramSphereProxy = function(name, callback) {
+        loadShaderProgram(gl, 'glsl/sphere.vert.glsl',
+                          'glsl/deferred/' + name + '.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                var p = { prog: prog };
+
+                // Retrieve the uniform and attribute locations
+                p.u_gbufs = [];
+                for (var i = 0; i < R.NUM_GBUFFERS; i++) {
+                    p.u_gbufs[i] = gl.getUniformLocation(prog, 'u_gbufs[' + i + ']');
+                }
+                p.u_depth    = gl.getUniformLocation(prog, 'u_depth');
+                p.a_position = gl.getAttribLocation(prog, 'a_position');
+                
+                
+                p.u_cameraMat = gl.getUniformLocation(prog, 'u_cameraMat');
+                p.u_transformMat = gl.getUniformLocation(prog, 'u_transformMat');
+                
+
+                callback(p);
+            });
+    };
+
 
     var loadDeferredProgram = function(name, callback) {
         loadShaderProgram(gl, 'glsl/quad.vert.glsl',

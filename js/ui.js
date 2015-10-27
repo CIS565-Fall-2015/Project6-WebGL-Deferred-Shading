@@ -7,7 +7,11 @@ var cfg;
         // TODO: Define config fields and defaults here
         this.debugView = -1;
         this.debugScissor = false;
-        this.enableEffect0 = false;
+        this.enableToon = false;
+        
+        this.enableBloom = false;
+        
+        this.proxy = 1;
     };
 
     var init = function() {
@@ -26,9 +30,20 @@ var cfg;
         });
         gui.add(cfg, 'debugScissor');
 
-        var eff0 = gui.addFolder('EFFECT NAME HERE');
-        eff0.add(cfg, 'enableEffect0');
+        gui.add(cfg, 'proxy', {
+            '0 None':             0,
+            '1 Scissor':           1,
+            '2 Sphere':        2,
+        });
+
+        var eff0 = gui.addFolder('Effects');
+        eff0.add(cfg, 'enableToon');
+        //eff0.add(cfg, 'enableToon');
         // TODO: add more effects toggles and parameters here
+        eff0.add(cfg,'enableBloom');
+        
+        
+        
     };
 
     window.handle_load.push(init);

@@ -10,7 +10,14 @@
             !R.prog_Ambient ||
             !R.prog_BlinnPhong_PointLight ||
             !R.prog_Debug ||
-            !R.progPost1)) {
+            !R.progPost1 ||
+            
+            !R.prog_Contour ||
+            !R.prog_Bloom   ||
+            
+            !R.prog_BlinnPhong_PointLight_SphereProxy ||
+            !R.progRedSphere
+            )) {
             console.log('waiting for programs to load...');
             return;
         }
@@ -28,12 +35,7 @@
         // CHECKITOUT: START HERE! You can even uncomment this:
         //debugger;
 
-        { // TODO: this block should be removed after testing renderFullScreenQuad
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-            // TODO: Implement/test renderFullScreenQuad first
-            renderFullScreenQuad(R.progRed);
-            return;
-        }
+        
 
         R.pass_copy.render(state);
 
@@ -44,8 +46,8 @@
         } else {
             // * Deferred pass and postprocessing pass(es)
             // TODO: uncomment these
-            //R.pass_deferred.render(state);
-            //R.pass_post1.render(state);
+            R.pass_deferred.render(state);
+            R.pass_post1.render(state);
 
             // OPTIONAL TODO: call more postprocessing passes, if any
         }
@@ -57,21 +59,26 @@
     R.pass_copy.render = function(state) {
         // * Bind the framebuffer R.pass_copy.fbo
         // TODO: ^
+        gl.bindFramebuffer(gl.FRAMEBUFFER,R.pass_copy.fbo);
 
         // * Clear screen using R.progClear
-        TODO: renderFullScreenQuad(R.progClear);
+        renderFullScreenQuad(R.progClear);
         // * Clear depth buffer to value 1.0 using gl.clearDepth and gl.clear
         // TODO: ^
         // TODO: ^
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
 
         // * "Use" the program R.progCopy.prog
         // TODO: ^
         // TODO: Write glsl/copy.frag.glsl
+        gl.useProgram(R.progCopy.prog);
 
         var m = state.cameraMat.elements;
         // * Upload the camera matrix m to the uniform R.progCopy.u_cameraMat
         //   using gl.uniformMatrix4fv
         // TODO: ^
+        gl.uniformMatrix4fv(R.progCopy.u_cameraMat,false,m);
 
         // * Draw the scene
         drawScene(state);
@@ -108,28 +115,163 @@
     R.pass_deferred.render = function(state) {
         // * Bind R.pass_deferred.fbo to write into for later postprocessing
         gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
         // * Clear depth to 1.0 and color to black
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
         gl.clearDepth(1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+        
         // * _ADD_ together the result of each lighting pass
 
         // Enable blending and use gl.blendFunc to blend with:
         //   color = 1 * src_color + 1 * dst_color
         // TODO: ^
+        gl.enable(gl.BLEND);
+        gl.blendEquation( gl.FUNC_ADD );
+        gl.blendFunc(gl.ONE,gl.ONE);
 
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
         renderFullScreenQuad(R.prog_Ambient);
 
+
+        
+        
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
-        bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
+        var phongProg = R.prog_BlinnPhong_PointLight;
+        if(cfg.proxy == 2)
+        {
+            phongProg = R.prog_BlinnPhong_PointLight_SphereProxy;
+        }
+        bindTexturesForLightPass(phongProg);
 
         // TODO: add a loop here, over the values in R.lights, which sets the
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
+        
+        if(cfg.proxy==1)
+        {
+            gl.enable(gl.SCISSOR_TEST);
+        }
+        else if(cfg.proxy == 2)
+        {
+           
+            var m = R.sphereModel;
+            var prog;
+            if(cfg.debugScissor)
+            {
+                prog = R.progRedSphere;
+            }
+            else
+            {
+                prog = phongProg;
+            }
+            
+            
+            gl.useProgram(prog.prog);
+            gl.enableVertexAttribArray(prog.a_position);
+            gl.bindBuffer(gl.ARRAY_BUFFER, m.position);
+            gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, false, 0, 0);
+            
+            
+            //readyModelForDraw(prog, R.sphereModel);
+        }
+        
+        
+        if(!cfg.debugScissor)
+        {
+            gl.uniform1f(phongProg.u_toonShading ,cfg.enableToon );
+            gl.uniform3f( phongProg.u_cameraPos,state.cameraPos.x,state.cameraPos.y,state.cameraPos.z );
+        }
+        
+        
+        for(var i = 0; i < R.NUM_LIGHTS ; i++)
+        {
+            var light = R.lights[i];
+            
+            
+            if(cfg.proxy == 1)
+            {
+                //Scissor
+                var sc = getScissorForLight(state.viewMat, state.projMat, light);
+                if(sc != null)
+                {
+                    gl.scissor(sc[0],sc[1],sc[2],sc[3]);
+                    if (cfg.debugScissor) 
+                    {
+                        //?
+                        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+                        renderFullScreenQuad(R.progRed);
+                    } 
+                    else 
+                    {
+                        
+                        gl.uniform3fv( phongProg.u_lightCol, light.col );
+                        gl.uniform3fv( phongProg.u_lightPos, light.pos );
+                        gl.uniform1f( phongProg.u_lightRad, light.rad );
+                        renderFullScreenQuad(phongProg);
+                    }
+                }
+            }
+            else if(cfg.proxy == 2)
+            {
+                //sphere proxy
+                
+                //debugger;
+                var S = new THREE.Matrix4();
+                S.makeScale(light.rad,light.rad,light.rad);
+                var T = new THREE.Matrix4();
+                T.makeTranslation(light.pos[0],light.pos[1],light.pos[2]);
+                var M = new THREE.Matrix4();
+                M.multiplyMatrices(T,S);
+                //M.multiplyMatrices(S,T);
+                
+                
+                
+                if (cfg.debugScissor) 
+                {
+                    gl.uniformMatrix4fv(R.progRedSphere.u_cameraMat,false,state.cameraMat.elements);
+                    gl.uniformMatrix4fv(R.progRedSphere.u_transformMat,false,M.elements);
+                    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+                    drawReadyModel(R.sphereModel);
+                } 
+                else 
+                {
+                    gl.uniformMatrix4fv(phongProg.u_cameraMat,false,state.cameraMat.elements);
+                    gl.uniformMatrix4fv(phongProg.u_transformMat,false,M.elements);
+                    
+                    gl.uniform3fv( phongProg.u_lightCol, light.col );
+                    gl.uniform3fv( phongProg.u_lightPos, light.pos );
+                    gl.uniform1f( phongProg.u_lightRad, light.rad );
+                    
+                    //readyModelForDraw(R.prog_BlinnPhong_PointLight_SphereProxy, R.sphereModel);
+                    drawReadyModel(R.sphereModel);
+                    //renderFullScreenQuad(R.prog_BlinnPhong_PointLight_SphereProxy);
+                }
+                
+                
+            }
+            else
+            {
+                //naive
+                
+                gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightCol, light.col );
+                gl.uniform3fv( R.prog_BlinnPhong_PointLight.u_lightPos, light.pos );
+                gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, light.rad );
+                renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+            }
+            
+            
+            
+            
+        }
+        
+        if(cfg.proxy==1)
+        {
+            gl.disable(gl.SCISSOR_TEST);
+        }
 
         // TODO: In the lighting loop, use the scissor test optimization
         // Enable gl.SCISSOR_TEST, render all lights, then disable it.
@@ -140,6 +282,63 @@
         //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
 
         // Disable blending so that it doesn't affect other code
+        
+        
+        //bloom
+        if(cfg.enableBloom)
+        {
+            gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.glowbuffer);
+            
+            gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            //gl.clearDepth(1.0);
+            //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            
+            gl.blendFunc(gl.ONE,gl.ONE);
+            var prog = R.prog_Bloom;
+            
+            gl.useProgram(prog.prog);
+            gl.activeTexture(gl['TEXTURE0']);
+            gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+            gl.uniform1f(prog.u_width, width);
+            gl.uniform1f(prog.u_height,height);
+            gl.uniform1i(prog.u_color, 0);
+            
+            //x
+            gl.uniform1i(prog.u_axis, 0);
+            
+            renderFullScreenQuad(prog);
+            
+            //y
+            gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+            gl.activeTexture(gl['TEXTURE0']);
+            gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.glowTex);
+            
+            gl.uniform1i(prog.u_axis, 1);
+            
+            renderFullScreenQuad(prog);
+        }
+        
+        
+        
+        
+        //Contour shader (part of toon shading)
+        //gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+        if( cfg.enableToon )
+        {
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+            var prog = R.prog_Contour;
+            gl.useProgram(prog.prog);
+            gl.activeTexture(gl['TEXTURE0']);
+            gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
+            gl.uniform1i(prog.u_depth, 0);
+            gl.uniform1f(prog.u_width, width);
+            gl.uniform1f(prog.u_height,height);
+            renderFullScreenQuad(R.prog_Contour);
+        }
+        
         gl.disable(gl.BLEND);
     };
 
@@ -156,6 +355,8 @@
         gl.activeTexture(gl['TEXTURE' + R.NUM_GBUFFERS]);
         gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
         gl.uniform1i(prog.u_depth, R.NUM_GBUFFERS);
+        
+        
     };
 
     /**
@@ -175,13 +376,27 @@
         // * Bind the deferred pass's color output as a texture input
         // Set gl.TEXTURE0 as the gl.activeTexture unit
         // TODO: ^
+        gl.activeTexture(gl.TEXTURE0);
+        
         // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
         // TODO: ^
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);
 
+
+        //if(cfg.enableBloom)
+        //{
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.glowTex);
+            gl.uniform1i(R.progPost1.u_glow,1);
+       // }
+
+
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);
+        
     };
 
     var renderFullScreenQuad = (function() {
@@ -205,12 +420,16 @@
         var init = function() {
             // Create a new buffer with gl.createBuffer, and save it as vbo.
             // TODO: ^
+            vbo = gl.createBuffer();
 
             // Bind the VBO as the gl.ARRAY_BUFFER
             // TODO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
+            
             // Upload the positions array to the currently-bound array buffer
             // using gl.bufferData in static draw mode.
             // TODO: ^
+            gl.bufferData(gl.ARRAY_BUFFER,positions,gl.STATIC_DRAW);
         };
 
         return function(prog) {
@@ -224,18 +443,94 @@
 
             // Bind the VBO as the gl.ARRAY_BUFFER
             // TODO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
+            
             // Enable the bound buffer as the vertex attrib array for
             // prog.a_position, using gl.enableVertexAttribArray
             // TODO: ^
+            gl.enableVertexAttribArray(prog.a_position);
+            
             // Use gl.vertexAttribPointer to tell WebGL the type/layout for
             // prog.a_position's access pattern.
             // TODO: ^
+            gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, gl.FALSE, 0, 0);
 
             // Use gl.drawArrays (or gl.drawElements) to draw your quad.
             // TODO: ^
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
             // Unbind the array buffer.
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         };
     })();
+    
+    
+    var renderSphere = (function() {
+        // The variables in this function are private to the implementation of
+        // renderFullScreenQuad. They work like static local variables in C++.
+
+        // Create an array of floats, where each set of 3 is a vertex position.
+        // You can render in normalized device coordinates (NDC) so that the
+        // vertex shader doesn't have to do any transformation; draw two
+        // triangles which cover the screen over x = -1..1 and y = -1..1.
+        // This array is set up to use gl.drawArrays with gl.TRIANGLE_STRIP.
+        var positions = new Float32Array([
+            -1.0, -1.0, 0.0,
+             1.0, -1.0, 0.0,
+            -1.0,  1.0, 0.0,
+             1.0,  1.0, 0.0
+        ]);
+
+        var vbo = null;
+
+        var init = function() {
+            // Create a new buffer with gl.createBuffer, and save it as vbo.
+            // TODO: ^
+            vbo = gl.createBuffer();
+
+            // Bind the VBO as the gl.ARRAY_BUFFER
+            // TODO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
+            
+            // Upload the positions array to the currently-bound array buffer
+            // using gl.bufferData in static draw mode.
+            // TODO: ^
+            gl.bufferData(gl.ARRAY_BUFFER,positions,gl.STATIC_DRAW);
+        };
+
+        return function(prog) {
+            if (!vbo) {
+                // If the vbo hasn't been initialized, initialize it.
+                init();
+            }
+
+            // Bind the program to use to draw the quad
+            gl.useProgram(prog.prog);
+
+            // Bind the VBO as the gl.ARRAY_BUFFER
+            // TODO: ^
+            gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
+            
+            // Enable the bound buffer as the vertex attrib array for
+            // prog.a_position, using gl.enableVertexAttribArray
+            // TODO: ^
+            gl.enableVertexAttribArray(prog.a_position);
+            
+            // Use gl.vertexAttribPointer to tell WebGL the type/layout for
+            // prog.a_position's access pattern.
+            // TODO: ^
+            gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, gl.FALSE, 0, 0);
+
+            // Use gl.drawArrays (or gl.drawElements) to draw your quad.
+            // TODO: ^
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            // Unbind the array buffer.
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        };
+    })();
+    
+    
+    
+    
 })();
