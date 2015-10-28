@@ -27,6 +27,14 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     return normap.y * surftan + normap.x * surfbinor + normap.z * geomnor;
 }
 
+float ramp(float value, float steps) {
+    // clamp value to a step between 0.0 and 1.0. If value > 1.0, do nothing
+    if (value > 1.0) return value;
+    float stepSize = 1.0 / steps;
+    float stepsCovered = floor(value / stepSize);
+    return stepsCovered * stepSize;
+}
+
 void main() {
     vec4 gb0 = texture2D(u_gbufs[0], v_uv); // texture mapped color
     vec4 gb1 = texture2D(u_gbufs[1], v_uv); // world space position
@@ -61,7 +69,10 @@ void main() {
 
     float attenuation = max(0.0, u_lightRad - lightDistance);
 
-    // clamp attenuation based on a generated ramp
+    // clamp lambert and specular components using a step function
+    lambert = ramp(lambert, 3.0);
+    specular = ramp(specular, 3.0);
+    attenuation = ramp(attenuation, 4.0);
 
     vec3 color = lambert * colmap * u_lightCol + specular * u_lightCol;
     color *= attenuation;
