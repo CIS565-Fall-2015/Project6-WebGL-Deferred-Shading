@@ -13,7 +13,8 @@ WebGL Deferred Shading
 
 ### Demo Video
 
-[![](img/video.png)](TODO)
+(Apologize for the low-quality video, none of the screen recorders seem to work)
+https://www.youtube.com/watch?v=8UpVNrFkYcw&feature=em-upload_owner
 
 ### Features and Optimizations
 
