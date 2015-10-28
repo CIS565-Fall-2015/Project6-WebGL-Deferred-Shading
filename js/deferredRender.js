@@ -29,6 +29,22 @@
         gl.uniform1i(prog.u_depth, R.NUM_GBUFFERS);
     };
 
+    var bindTexturePR = function(prog, tex, data, textureID, numLights) {
+        gl.activeTexture(gl['TEXTURE' + textureID]);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, numLights, 1, 0, gl.RGBA, gl.FLOAT, data);
+
+        gl.uniform1i(prog.u_lightsPR, textureID);
+    };
+
+    var bindTextureC = function(prog, tex, data, textureID, numLights) {
+        gl.activeTexture(gl['TEXTURE' + textureID]);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, numLights, 1, 0, gl.RGB, gl.FLOAT, data);
+
+        gl.uniform1i(prog.u_lightsC, textureID);
+    };
+
     R.deferredRender = function(state) {
         if (!aborted && (
             !R.progCopy ||
@@ -36,6 +52,8 @@
             !R.progClear ||
             !R.prog_Ambient ||
             !R.prog_BlinnPhong_PointLight ||
+            !R.progScissor ||
+            !R.progTiled ||
             !R.prog_Debug || !R.progPost1)) {
             console.log('waiting for programs to load...');
             return;
@@ -115,55 +133,96 @@
         gl.clearDepth(1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        // * _ADD_ together the result of each lighting pass
-
-        // Enable blending and use gl.blendFunc to blend with:
-        //   color = 1 * src_color + 1 * dst_color
-        gl.enable(gl.BLEND);
-        gl.blendFunc(gl.ONE, gl.ONE);
-
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
         gl.uniform1f(R.prog_Ambient.u_ambientTerm, cfg.ambient);
         renderFullScreenQuad(R.prog_Ambient);
 
-        if (cfg.optimization === 0) {
-            gl.enable(gl.SCISSOR_TEST);
+        // Constants
+        var WIDTH  = 800;
+        var HEIGHT = 600;
+        var TILE_SIZE = 100;
+        var TILES_WIDTH  = WIDTH  / TILE_SIZE;
+        var TILES_HEIGHT = HEIGHT / TILE_SIZE;
+        var NUM_TILES = TILES_WIDTH * TILES_HEIGHT;
+
+        // [ tiles ] [ lights per tile ].
+        var tileLights = [];
+
+        // Create an inner array for each outer array.
+        for (var i = 0; i < TILES_WIDTH * TILES_HEIGHT; i++) {
+            tileLights.push([]);
         }
 
-        // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
-        var cam = state.cameraPos;
-        for (var i = 0; i < R.lights.length; i++) {
-            var light = R.lights[i];
+        // Store lights into tileLights.
+        for (var lightIdx = 0; lightIdx < R.lights.length; lightIdx++) {
+            var light = R.lights[lightIdx];
             var sc = getScissorForLight(state.viewMat, state.projMat, light);
+            // xmin, ymin, xwidth, ywidth
             if (sc !== null && sc[2] > 0 && sc[3] > 0) {
-                gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+                var tileX = Math.round(sc[0] / TILE_SIZE);
+                var tileY = Math.round(sc[1] / TILE_SIZE);
+                var tileW = Math.round(sc[2] / TILE_SIZE);
+                var tileH = Math.round(sc[3] / TILE_SIZE);
+
+                for (var x = tileX; x < tileX + tileW; x++) {
+                    for (var y = tileY; y < tileY + tileH; y++) {
+                        var idx = x + y * TILES_WIDTH;
+                        if (idx < TILES_WIDTH * TILES_HEIGHT) {
+                            tileLights[idx].push(lightIdx);
+                        }
+                    }
+                }
             } else {
                 continue;
             }
-
-            var program = R.prog_BlinnPhong_PointLight;
-            if (cfg.debugScissor) {
-                program = R.progScissor;
-
-                gl.uniform3f(program.u_lightCol,
-                            light.col[0], light.col[1], light.col[2]);
-            } else {
-                bindTexturesForLightPass(program);
-                gl.uniform1i(program.u_toon, cfg.toon ? 1 : 0);
-                gl.uniform3f(program.u_cameraPos,
-                            cam.x, cam.y, cam.z);
-                gl.uniform3f(program.u_lightCol,
-                            light.col[0], light.col[1], light.col[2]);
-                gl.uniform3f(program.u_lightPos,
-                            light.pos[0], light.pos[1], light.pos[2]);
-                gl.uniform1f(program.u_lightRad, light.rad);
-            }
-            renderFullScreenQuad(program);
         }
-        gl.disable(gl.SCISSOR_TEST);
 
-        // Disable blending so that it doesn't affect other code
+        // Generate textures from tileLights.
+        var lightsForTile     = new Float32Array(10 * NUM_TILES);
+        var lightArrayIndices = new Float32Array(2 * NUM_TILES);
+
+        // Loop over tiles
+        var totalOffset = 0;
+        for (var tile = 0; tile < TILES_WIDTH * TILES_HEIGHT; tile++) {
+            var lights = tileLights[tile];
+            var len = lights.length;
+            totalOffset += len;
+
+            lightArrayIndices[2*tile] = totalOffset;
+            lightArrayIndices[2*tile+1] = len;
+
+            for (var lightIdx = 0; lightIdx < len; lightIdx++) {
+                // TODO store into lightsForTile
+            }
+        }
+
+        // Enable blending and scissor testing
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE);
+        gl.enable(gl.SCISSOR_TEST);
+
+        // Bind/setup the tiled program and uniforms that don't change.
+        var program = R.progTiled;
+        bindTexturesForLightPass(program);
+        gl.uniform1i(program.u_toon, cfg.toon ? 1 : 0);
+        var cam = state.cameraPos;
+
+        bindTexturePR(program, R.pass_tiled.lightDataPosRad, R.lightTexturePosRad, R.NUM_GBUFFERS+1, R.lights.length);
+        bindTextureC (program, R.pass_tiled.lightDataCol,    R.lightTextureCol,    R.NUM_GBUFFERS+2, R.lights.length);
+        //bindTexture(program, R.pass_tiled.lightTileTex, lightsForTile,     R.NUM_GBUFFERS+2);
+        //bindTexture(program, R.pass_tiled.tileIndexTex, lightArrayIndices, R.NUM_GBUFFERS+1);
+
+        // Loop through the tiles and call the program for each.
+        for (var x = 0; x < TILES_WIDTH; x++) {
+            for (var y = 0; y < TILES_HEIGHT; y++) {
+                gl.scissor(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                renderFullScreenQuad(program);
+            }
+        }
+
+        // Disable gl features
+        gl.disable(gl.SCISSOR_TEST);
         gl.disable(gl.BLEND);
     };
 
@@ -197,6 +256,9 @@
 
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
         var cam = state.cameraPos;
+        var program = cfg.debugScissor ? R.progScissor : R.prog_BlinnPhong_PointLight;
+        bindTexturesForLightPass(program);
+        gl.uniform1i(program.u_toon, cfg.toon ? 1 : 0);
         for (var i = 0; i < R.lights.length; i++) {
             var light = R.lights[i];
             var sc = getScissorForLight(state.viewMat, state.projMat, light);
@@ -206,15 +268,10 @@
                 continue;
             }
 
-            var program = R.prog_BlinnPhong_PointLight;
             if (cfg.debugScissor) {
-                program = R.progScissor;
-
                 gl.uniform3f(program.u_lightCol,
                             light.col[0], light.col[1], light.col[2]);
             } else {
-                bindTexturesForLightPass(program);
-                gl.uniform1i(program.u_toon, cfg.toon ? 1 : 0);
                 gl.uniform3f(program.u_cameraPos,
                             cam.x, cam.y, cam.z);
                 gl.uniform3f(program.u_lightCol,

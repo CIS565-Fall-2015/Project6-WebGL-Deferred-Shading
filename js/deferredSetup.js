@@ -8,6 +8,8 @@
     R.pass_tiled = {};
     R.pass_post1 = {};
     R.lights = [];
+    R.lightTexturePosRad = new Float32Array();
+    R.lightTextureCol    = new Float32Array();
 
     R.NUM_GBUFFERS = 4;
 
@@ -19,6 +21,7 @@
         loadAllShaderPrograms();
         R.pass_copy.setup();
         R.pass_deferred.setup();
+        R.pass_tiled.setup();
     };
 
     R.light_min = [-14, 0, -6];
@@ -58,6 +61,23 @@
         }
         // And slice to size, if you're removing lights
         R.lights.lights = numLights;
+
+        // Write to lightTextures
+        R.lightTexturePosRad = new Float32Array(4 * numLights);
+        R.lightTextureCol    = new Float32Array(3 * numLights);
+        for (i = 0; i < numLights; i++) {
+            var light = R.lights[i];
+            var idxPR = 4*i;
+            R.lightTexturePosRad[idxPR+0] = light.pos[0];
+            R.lightTexturePosRad[idxPR+1] = light.pos[1];
+            R.lightTexturePosRad[idxPR+2] = light.pos[2];
+            R.lightTexturePosRad[idxPR+3] = light.rad;
+
+            var idxC  = 3*i;
+            R.lightTexturePosRad[idxC+0] = light.col[0];
+            R.lightTexturePosRad[idxC+1] = light.col[1];
+            R.lightTexturePosRad[idxC+2] = light.col[2];
+        }
     };
 
     /**
@@ -101,6 +121,23 @@
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    };
+
+    /**
+     * Create/configure framebuffer between "deferred" and "post1" stages
+     */
+    R.pass_tiled.setup = function() {
+        // Don't create another FBO -- this will actually write into
+        // pass_deferred, so the post-processing step can share that FBO.
+
+        // contains light (pos, radius) data
+        R.pass_tiled.lightDataPosRad = createAndBindLightDataTexture();
+        // contains light (color) data
+        R.pass_tiled.lightDataCol    = createAndBindLightDataTexture();
+        // contains lights per tile
+        R.pass_tiled.lightTileTex = createAndBindLightDataTexture();
+        // contains indices into lightTileTex
+        R.pass_tiled.tileIndexTex = createAndBindLightDataTexture();
     };
 
     /**
@@ -150,6 +187,15 @@
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
             p.u_toon     = gl.getUniformLocation(p.prog, 'u_toon');
             R.prog_BlinnPhong_PointLight = p;
+        });
+
+        loadDeferredProgram('tile', function(p) {
+            // Save the object into this variable for access later
+            p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
+            p.u_toon      = gl.getUniformLocation(p.prog, 'u_toon');
+            p.u_lightsPR = gl.getUniformLocation(p.prog, 'u_lightsPR');
+            p.u_lightsC  = gl.getUniformLocation(p.prog, 'u_lightsC');
+            R.progTiled = p;
         });
 
         loadDeferredProgram('scissor', function(p) {
@@ -238,6 +284,18 @@
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, tex, 0);
 
+        return tex;
+    };
+
+    var createAndBindLightDataTexture = function() {
+        var tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, null);
+        gl.bindTexture(gl.TEXTURE_2D, null);
         return tex;
     };
 })();

@@ -12,6 +12,8 @@ uniform vec3 u_lightPos;
 uniform float u_lightRad;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
+uniform sampler2D u_lightsPR;
+uniform sampler2D u_lightsC;
 
 varying vec2 v_uv;
 
@@ -64,6 +66,13 @@ void main() {
     vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
 
+    vec4 lightPosRad = texture2D(u_lightsPR, vec2(0, 0));
+    vec4 lightc = texture2D(u_lightsC, vec2(0, 0));
+
+    gl_FragColor = vec4(vec3(lightPosRad).xyz, 0);
+    gl_FragColor = vec4(lightc);
+    return;
+
     // worldspace positions
     vec3 pos = vec3(gb0);
     // unlit surface color
@@ -80,6 +89,7 @@ void main() {
         gl_FragColor = vec4(0);
         return;
     }
+    gl_FragColor = vec4(0, 0, 1, 1);
 
     vec3 terms = lightTerms(normal, pos);
     float diff = terms.x;
