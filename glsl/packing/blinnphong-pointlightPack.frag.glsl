@@ -2,7 +2,7 @@
 precision highp float;
 precision highp int;
 
-#define NUM_GBUFFERS 4
+#define NUM_GBUFFERS 2
 
 uniform vec3 u_camPos; // in world space
 uniform vec3 u_lightCol;
@@ -10,28 +10,44 @@ uniform vec3 u_lightPos;
 uniform float u_lightRad;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
+uniform mat4 u_invCameraMat;
+
 const float shininess = 16.0;
 
 varying vec2 v_uv;
 
-vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
-    normap = normap * 2.0 - 1.0;
-    vec3 up = normalize(vec3(0.001, 1, 0.001));
-    vec3 surftan = normalize(cross(geomnor, up));
-    vec3 surfbinor = cross(geomnor, surftan);
-    return normap.y * surftan + normap.x * surfbinor + normap.z * geomnor;
-}
-
 void main() {
     vec4 gb0 = texture2D(u_gbufs[0], v_uv); // texture mapped color
-    vec4 gb1 = texture2D(u_gbufs[1], v_uv); // world space position
-    vec4 gb2 = texture2D(u_gbufs[2], v_uv); // geometry normal
-    vec4 gb3 = texture2D(u_gbufs[3], v_uv); // mapped normal
+    vec4 gb1 = texture2D(u_gbufs[1], v_uv); // compressed "final" normal
     float depth = texture2D(u_depth, v_uv).x;
     // TODO: Extract needed properties from the g-buffers into local variables
-    vec3 pos = gb1.xyz;     // cam space position
-    vec3 colmap = gb0.xyz;  // The color map - unlit "albedo" (surface color)
-    vec3 norm = normalize(applyNormalMap(gb2.xyz, gb3.xyz));     // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
+    // These definitions are suggested for starting out, but you will probably want to change them.
+    vec4 screenPos = vec4(0.0, 0.0, 0.0, 1.0);
+    vec3 pos = vec3(0.0, 0.0, 0.0);
+
+    if (depth < 1.0) {
+        // reconstruct screen space position
+        // https://mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/
+        // http://stackoverflow.com/questions/22360810/reconstructing-world-coordinates-from-depth-buffer-and-arbitrary-view-projection
+        screenPos.x = v_uv.x * 2.0 - 1.0;
+        screenPos.y = v_uv.y * 2.0 - 1.0;
+        screenPos.z = depth * 2.0 - 1.0;
+        vec4 worldPos = u_invCameraMat * screenPos;
+        worldPos /= worldPos.w;
+        pos = worldPos.xyz;
+    }
+
+    // reconstruct normal
+    vec3 norm = vec3(gb1.xy, 1.0);
+    if (abs(norm.x) > 0.0 && abs(norm.y) > 0.0 && abs(norm.y) < 1.0) {
+        if (abs(norm.x) >= 1.0) {
+            norm.z = -1.0;
+            norm.x -= norm.x / abs(norm.x);
+        }
+        norm.z *= sqrt(1.0 - norm.x * norm.x - norm.y * norm.y);
+    } else {
+        norm = vec3(0.0, 0.0, 0.0);
+    }
 
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.
@@ -56,8 +72,8 @@ void main() {
 
     float attenuation = max(0.0, u_lightRad - lightDistance);
 
-    vec3 color = lambert * colmap * u_lightCol + specular * u_lightCol;
+    vec3 color = lambert * gb0.rgb * u_lightCol + specular * u_lightCol;
     color *= attenuation;
 
-    gl_FragColor = vec4(color, 1); 
+    gl_FragColor = vec4(color, 1);
 }

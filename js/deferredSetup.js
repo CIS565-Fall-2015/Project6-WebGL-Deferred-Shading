@@ -6,6 +6,7 @@
     R.pass_debug = {};
     R.pass_deferred = {};
     R.pass_post1 = {};
+    R.pass_post1_compressed = {};
     R.lights = [];
 
     R.NUM_GBUFFERS = 4;
@@ -13,6 +14,7 @@
     // workflow using compressed g buffers
     R.pass_copy_compressed = {};
     R.pass_debug_compressed = {};
+    R.pass_deferred_compressed = {};
 
     R.NUM_GBUFFERS_COMPRESSED = 2;
 
@@ -26,6 +28,8 @@
         R.pass_deferred.setup(); // allocate
 
         R.pass_copy_compressed.setup(); // allocate
+        R.pass_deferred_compressed.setup();
+
         console.log("setup complete");
     };
 
@@ -101,6 +105,23 @@
 
         // * Check for framebuffer errors
         abortIfFramebufferIncomplete(R.pass_deferred.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    };
+
+    /**
+     * Create/configure framebuffer between "deferred" and "post1" stages
+     */
+    R.pass_deferred_compressed.setup = function() {
+        // * Create the FBO
+        R.pass_deferred_compressed.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_deferred_compressed.colorTex = createAndBindColorTargetTexture(
+            R.pass_deferred_compressed.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_deferred_compressed.fbo);
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
@@ -248,6 +269,44 @@
             function(prog) {
                 // Create an object to hold info about this shader program
                 R.progClearCompressed = { prog: prog };
+            });
+
+        loadShaderProgram(gl, 'glsl/quad.vert.glsl',
+                          'glsl/packing/blinnphong-pointlightPack.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                var p = { prog: prog };
+
+                // Retrieve the uniform and attribute locations
+                p.u_gbufs = [];
+                for (var i = 0; i < R.NUM_GBUFFERS_COMPRESSED; i++) {
+                    p.u_gbufs[i] = gl.getUniformLocation(prog, 'u_gbufs[' + i + ']');
+                }
+                p.u_depth    = gl.getUniformLocation(prog, 'u_depth');
+
+                p.u_camPos = gl.getUniformLocation(p.prog, 'u_camPos');            
+                p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
+                p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
+                p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+                p.u_invCameraMat = gl.getUniformLocation(prog, 'u_invCameraMat');
+
+                R.prog_BlinnPhong_PointLightCompressed = p;
+            }); 
+
+        loadShaderProgram(gl, 'glsl/quad.vert.glsl',
+                          'glsl/packing/ambientPack.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                var p = { prog: prog };
+
+                // Retrieve the uniform and attribute locations
+                p.u_gbufs = [];
+                for (var i = 0; i < R.NUM_GBUFFERS_COMPRESSED; i++) {
+                    p.u_gbufs[i] = gl.getUniformLocation(prog, 'u_gbufs[' + i + ']');
+                }
+                p.u_depth    = gl.getUniformLocation(prog, 'u_depth');
+
+                R.prog_AmbientCompressed = p;
             });
     };
 

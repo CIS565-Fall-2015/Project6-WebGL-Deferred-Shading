@@ -33,14 +33,10 @@ void main() {
         worldPos /= worldPos.w;
         pos = worldPos.xyz;
     }
-    //pos.xy = v_uv * 10.0;
-    //pos.z = 0.0;
 
     // reconstruct normal
-    vec3 norm;
-    norm.xy = gb1.zw;
+    vec3 norm = vec3(gb1.xy, 1.0);
     if (abs(norm.x) > 0.0 && abs(norm.y) > 0.0 && abs(norm.y) < 1.0) {
-        norm.z = 1.0;
         if (abs(norm.x) >= 1.0) {
             norm.z = -1.0;
             norm.x -= norm.x / abs(norm.x);
