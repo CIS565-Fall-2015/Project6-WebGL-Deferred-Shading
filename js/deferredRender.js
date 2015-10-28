@@ -146,8 +146,13 @@
         gl.uniform1i(R.prog_DebugCompressed.u_debug, cfg.debugView);
 
         // upload the inverse camera matrix
-        var invThreejsMat = state.cameraMat;
+        var invThreejsMat = new THREE.Matrix4();
+        invThreejsMat.copy(state.cameraMat);
         invThreejsMat.getInverse(invThreejsMat);
+
+        //var ID = new THREE.Matrix4;
+        //ID.multiplyMatrices(invThreejsMat, state.cameraMat);
+
         var m = invThreejsMat.elements;     
         gl.uniformMatrix4fv(R.prog_DebugCompressed.u_invCameraMat, gl.FALSE, m);
 

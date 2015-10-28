@@ -31,7 +31,7 @@ void main() {
     // TODO: Extract needed properties from the g-buffers into local variables
     vec3 pos = gb1.xyz;     // cam space position
     vec3 colmap = gb0.xyz;  // The color map - unlit "albedo" (surface color)
-    vec3 norm = applyNormalMap(gb2.xyz, gb3.xyz);     // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
+    vec3 norm = normalize(applyNormalMap(gb2.xyz, gb3.xyz));     // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
 
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.

@@ -9,7 +9,7 @@ var cfg;
         this.debugScissor = false;
         this.enableScissor = true;        
         this.enableBloom = false;
-        this.compressedGbuffers = false;
+        this.compressedGbuffers = true;
     };
 
     var init = function() {
@@ -29,7 +29,7 @@ var cfg;
         gui.add(cfg, 'debugScissor');
         gui.add(cfg, 'enableScissor');
 
-        var eff0 = gui.addFolder('Bloom');
+        var eff0 = gui.addFolder('effects');
         eff0.add(cfg, 'enableBloom');
         gui.add(cfg, 'compressedGbuffers');
     };

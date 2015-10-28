@@ -19,34 +19,36 @@ void main() {
     float depth = texture2D(u_depth, v_uv).x;
     // TODO: Extract needed properties from the g-buffers into local variables
     // These definitions are suggested for starting out, but you will probably want to change them.
-    vec4 screenPos;
+    vec4 screenPos = vec4(0.0, 0.0, 0.0, 1.0);
+    vec3 pos = vec3(0.0, 0.0, 0.0);
 
     if (depth < 1.0) {
-        screenPos = vec4(gb1.xy, depth, 1.0); // screen space position
-
         // reconstruct screen space position
         // https://mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/
-        screenPos.x = screenPos.x * 2.0 - 1.0;
-        screenPos.y = (1.0 - screenPos.y) * 2.0 - 1.0;
+        // http://stackoverflow.com/questions/22360810/reconstructing-world-coordinates-from-depth-buffer-and-arbitrary-view-projection
+        screenPos.x = v_uv.x * 2.0 - 1.0;
+        screenPos.y = v_uv.y * 2.0 - 1.0;
+        screenPos.z = depth * 2.0 - 1.0;
+        vec4 worldPos = u_invCameraMat * screenPos;
+        worldPos /= worldPos.w;
+        pos = worldPos.xyz;
     }
-
-    vec4 worldPos = u_invCameraMat * screenPos;
-
-    vec3 pos = worldPos.xyz / worldPos.w;
+    //pos.xy = v_uv * 10.0;
+    //pos.z = 0.0;
 
     // reconstruct normal
     vec3 norm;
     norm.xy = gb1.zw;
-    if (abs(norm.x) > 0.0 && abs(norm.y) > 0.0) {
+    if (abs(norm.x) > 0.0 && abs(norm.y) > 0.0 && abs(norm.y) < 1.0) {
         norm.z = 1.0;
         if (abs(norm.x) >= 1.0) {
             norm.z = -1.0;
             norm.x -= norm.x / abs(norm.x);
         }
         norm.z *= sqrt(1.0 - norm.x * norm.x - norm.y * norm.y);
+    } else {
+        norm = vec3(0.0, 0.0, 0.0);
     }
-    norm = gb1.xyz; // debug
-    pos = gb1.xyz; // debug
 
     if (u_debug == 0) {
         gl_FragColor = vec4(vec3(depth), 1.0);
