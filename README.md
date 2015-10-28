@@ -25,8 +25,9 @@ Features:
 Extra:
 <p>5.Toon shading, the width of the outline is changed due to the distance to the viewer, more like comic.</p>
 <p>6.Allow variability in additional material properties. add extra cube.since all the texture I find for the cow makes it look wired.</p>
-<p>7.Optimized 2 pass Gaussian bloom.
-<p>the toon effect</p>
+<p>7.Optimized 2 pass Gaussian bloom.</p>
+<p>8.AABB box for light.</p>
+##the toon effect
 <p><img src="img/toon1.png"  width="330" height="200"><img src="img/toon2.png"  width="330" height="200"></p> 
 Happy Helloween!
 <p><img src="img/creepy.png"  width="330" height="200"><img src="img/blood.png"  width="330" height="200"></p> 
