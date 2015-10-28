@@ -40,25 +40,11 @@ Increasing the number of the models, makes the program much slower.
 
 <p><img src="img/chart2.png"  width="330" height="120"><p>
 <p><img src="img/chart3.png"  width="360" height="200"> <img src="img/chart4.png"  width="360" height="200"><p>
+<p>The debug view of the original bounding box</p>
+<p><img src="img/debug2.png"  width="360" height="200">
+<p>The debug view of the current bounding box. I calculate is as a "box" not a plane so the length of the box maybe bigger </p>
+<img src="img/debug2.png"  width="360" height="200"><p>
 
-<p><img src="img/debug.png"  width="360" height="200"> <img src="img/debug2.png"  width="360" height="200"><p>
-* Concise overview write-up of the feature.
-* Performance change due to adding the feature.
-  * If applicable, how do parameters (such as number of lights, etc.)
-    affect performance? Show data with simple graphs.
-* If you did something to accelerate the feature, what did you do and why?
-* How might this feature be optimized beyond your current implementation?
-
-For each *performance* feature (required or extra), please provide:
-
-* Concise overview write-up of the feature.
-* Detailed performance improvement analysis of adding the feature
-  * What is the best case scenario for your performance improvement? What is
-    the worst? Explain briefly.
-  * Are there tradeoffs to this performance feature? Explain briefly.
-  * How do parameters (such as number of lights, tile size, etc.) affect
-    performance? Show data with graphs.
-  * Show debug views when possible.
-    * If the debug view correlates with performance, explain how.
+When calculating the boundingbox, I was plan to buil a box with 6 point and apply transform an projection matrix on it and it is very slow so I did not use that method.
 
 
