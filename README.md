@@ -16,81 +16,20 @@ WebGL Deferred Shading
 [![](img/video.png)](https://www.youtube.com/watch?v=z_TlmlxQoGs)
 
 ========================
-### Feature and Analyze
+### Feature
 Features:
-<p>1.Blinn-Phong shading for point lights</p>
-<p>2.scissor test and debug view</p>
-<p>3.bloom shading using Gaussian blur</p>
-<p>4.Toon shading</p> 
+<p>1.Blinn-Phong shading for point lights.</p>
+<p>2.scissor test and debug view.</p>
+<p>3.bloom shading using Gaussian blur.</p>
+<p>4.Optimized g-buffer.</p> 
 Extra:
 <p>5.Toon shading, the width of the outline is changed due to the distance to the viewer, more like comic.</p>
-<p>6.Optimized g-buffer.
-<p>7.Toon Toon 
-
-
-
-* (2pts) Allow variability in additional material properties
-  * Include other properties (e.g. specular coeff/exponent) in g-buffers
-  * Use this to render objects with different material properties
-  * These may be uniform across one model draw call, but you'll have to show
-    multiple models
-
-**Optimizations/Analysis:**
-
-* (2pts) Improved screen-space AABB for scissor test
-  (smaller/more accurate than provided - but beware of CPU/GPU tradeoffs)
-
-* (3pts) Two-pass **Gaussian** blur using separable convolution (using a second
-  postprocess render pass) to improve bloom or other 2D blur performance
-
-* (4-6pts) Light proxies
-  * (4pts) Instead of rendering a scissored full-screen quad for every light,
-    render some proxy geometry which covers the part of the screen affected by
-    the light (e.g. a sphere, for an attenuated point light).
-    * A model called `sphereModel` is provided which can be drawn in the same
-      way as the code in `drawScene`. (Must be drawn with a vertex shader which
-      scales it to the light radius and translates it to the light position.)
-  * (+2pts) To avoid lighting geometry far behind the light, render the proxy
-    geometry (e.g. sphere) using an inverted depth test
-    (`gl.depthFunc(gl.GREATER)`) with depth writing disabled (`gl.depthMask`).
-    This test will pass only for parts of the screen for which the backside of
-    the sphere appears behind parts of the scene.
-    * Note that the copy pass's depth buffer must be bound to the FBO during
-      this operation!
-  * Show a debug view for this (showing light proxies)
-  * Compare performance of this, naive, and scissoring.
-
-* (8pts) Tile-based deferred shading with detailed performance comparison
-  * On the CPU, check which lights overlap which tiles. Then, render each tile
-    just once for all lights (instead of once for each light), applying only
-    the overlapping lights.
-    * The method is described very well in
-      [Yuqin & Sijie's README](https://github.com/YuqinShao/Tile_Based_WebGL_DeferredShader/blob/master/README.md#algorithm-details).
-    * This feature requires allocating the global light list and tile light
-      index lists as shown at this link. These can be implemented as textures.
-  * Show a debug view for this (number of lights per tile)
-
-* (6pts) Deferred shading without multiple render targets
-  (i.e. without WEBGL_draw_buffers).
-  * Render the scene once for each target g-buffer, each time into a different
-    framebuffer object.
-  * Include a detailed performance analysis, comparing with/without
-    WEBGL_draw_buffers (like in the
-    [Mozilla blog article](https://hacks.mozilla.org/2014/01/webgl-deferred-shading/)).
-
-* (2-6pts) Compare performance to equivalently-lit forward-rendering:
-  * (2pts) With no forward-rendering optimizations
-  * (+2pts) Coarse, per-object back-to-front sorting of geometry for early-z
-    * (Of course) must render many objects to test
-  * (+2pts) Z-prepass for early-z
-
-This extra feature list is not comprehensive. If you have a particular idea
-that you would like to implement, please **contact us first** (preferably on
-the mailing list).
-
-**Where possible, all features should be switchable using the GUI panel in
-`ui.js`.**
-
+<p>6.Allow variability in additional material properties. add extra cube.since all the texture I find for the cow makes it look wired.</p>
+<p>7.Optimized 2 pass Gaussian bloom.
+<p>the toon effect</p>
+<p><img src="img/toon1.png"  width="330" height="200"><img src="img/toon2.png"  width="330" height="200"></p> 
+Happy Helloween!
+<p><img src="img/creepy.png"  width="330" height="200"><img src="img/blood.png"  width="330" height="200"></p> 
 ### Performance & Analysis
 
 **Before doing performance analysis,** you must disable debug mode by changing
