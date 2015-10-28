@@ -29,12 +29,16 @@ The implemented features include,
 
   * Toon shading (with ramp shading + simple depth-edge detection for outlines)
   ![](img/10.png)
-  Toon shading using Sobel operator as an edge detector.
+  Toon shading using Sobel operator as an edge detector. This has minor impact on the perfomance.
 
 
 * Optimizations:
-  * Scissor test optimization
+  * Scissor Test
   ![](img/9.png)
+  When 
+
+  * Optimized AABB Scissor Test
+  ![](img/12.png)
 
 * Debug views
   * Depth
@@ -50,9 +54,21 @@ The implemented features include,
   * Surface normal
   ![](img/8.png)
 
-## Performance & Analysis
-The rendering performance with and without scissor test optimization is,
-* Without scissor test optimization: 17 FPS
-* With scissor test optimization: 35 FPS
+## Performance Comparison
+* No Scissor
+![](img/13.png)
 
-With the scissor test optimization, the performance is approximatly twice better. The reason for this is, with the optimizaiton, when accumulating shading from each point light source, only the rectangle around the light is rendered.
+* Original Scissor
+![](img/14.png)
+
+* AABB Scissor
+![](img/15.png)
+
+## Resources
+
+* [1] Bloom:
+  [GPU Gems, Ch. 21](http://http.developer.nvidia.com/GPUGems/gpugems_ch21.html) 
+* [2] Screen-Space Ambient Occlusion:
+  [Floored Article](http://floored.com/blog/2013/ssao-screen-space-ambient-occlusion.html)
+* [3] Post-Process Motion Blur:
+  [GPU Gems 3, Ch. 27](http://http.developer.nvidia.com/GPUGems3/gpugems3_ch27.html)
