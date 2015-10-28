@@ -3,7 +3,7 @@ WebGL Deferred Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 6**
 
-* (TODO) YOUR NAME HERE
+* Levi Cai
 * Tested on: **Google Chrome** on
   Windows 8, i7-5500U @ 2.4GHz, 12GB, NVidia GeForce 940M 2GB
 
