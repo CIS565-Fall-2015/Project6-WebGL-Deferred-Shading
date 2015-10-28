@@ -38,12 +38,22 @@ I am using the global light with distance attenuation to generate the ambient li
 
 ![](img/light/ambient_1025.png)
 * Bling Phong
+ 
+For Bling Phong Lightning, I am using the standard method to compute the color on the surface. Also, in order to let each light influence a certain distance of area. I compare the distance from the surface to the position of the light, if it is beyond the influence region, I simply just ignore this light. Besides, I also introduce the attennuation of light according to the distance.
+
 ![](img/light/blinnphong_1025.png)
 
 ### Special Effects
 * Bloom
+
+For the Bloom Effect, I am using the Gaussian Blur to generate it. First I tried it with the standard 2D convolution, which is time comsuming and need to get more data. (O(m*n)) Then I tried the Two-pass Gaussian blur using separable convolution to improve the performance, this method has the complexity of O(m+n). If the m and n are very large, this improvement will be quite obvious.
+
 ![](img/light/bloom.png)
+
 * Toon
+
+For the Toon Effect, I am using the simple 2 Tone method, which just compare the color with some threshold to get the final result. 
+
 ![](img/light/toon.png)
 
 ### Optimization
