@@ -9,6 +9,7 @@ var cfg;
         this.debugScissor = false;
         this.enableScissor = true;        
         this.enableBloom = false;
+        this.enableToon = false;        
         this.compressedGbuffers = true;
     };
 
@@ -31,6 +32,7 @@ var cfg;
 
         var eff0 = gui.addFolder('effects');
         eff0.add(cfg, 'enableBloom');
+        eff0.add(cfg, 'enableToon');        
         gui.add(cfg, 'compressedGbuffers');
     };
 

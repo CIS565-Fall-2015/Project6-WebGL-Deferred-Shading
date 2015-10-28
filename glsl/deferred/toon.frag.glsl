@@ -63,5 +63,5 @@ void main() {
     vec3 color = lambert * colmap * u_lightCol + specular * u_lightCol;
     color *= attenuation;
 
-    gl_FragColor = vec4(color, 1); 
+    gl_FragColor = vec4(color.gbr, 1); 
 }

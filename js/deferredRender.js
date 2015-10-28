@@ -9,6 +9,7 @@
             !R.progClear ||
             !R.prog_Ambient ||
             !R.prog_BlinnPhong_PointLight ||
+            !R.prog_Toon ||
             !R.prog_Debug ||
             !R.progPost1 ||
             !R.progCopyCompressed ||
@@ -49,7 +50,7 @@
             R.pass_debug_compressed.render(state);
         } else if (cfg.compressedGbuffers) {
             R.pass_deferred_compressed.render(state);
-            R.pass_post1_compressed.render(state);            
+            R.pass_post1.render(state, R.pass_deferred_compressed.colorTex);
         } else if (cfg && cfg.debugScissor){
             // do a scissor debug render instead of a regular render.
             // don't do any post-proccessing in debug mode.
@@ -58,11 +59,14 @@
             // Do a debug render instead of a regular render
             // Don't do any post-processing in debug mode
             R.pass_debug.render(state);
+        } else if (cfg && cfg.enableToon){
+            R.pass_toon.render(state);
+            R.pass_post1.render(state, R.pass_deferred.colorTex);
         } else {
             // * Deferred pass and postprocessing pass(es)
             // TODO: uncomment these
             R.pass_deferred.render(state);
-            R.pass_post1.render(state);
+            R.pass_post1.render(state, R.pass_deferred.colorTex);
 
             // OPTIONAL TODO: call more postprocessing passes, if any
         }
@@ -273,6 +277,64 @@
         gl.disable(gl.BLEND);
     };
 
+    /**
+     * 'deferred' pass: Add lighting results for each individual light
+     */
+    R.pass_toon.render = function(state) { // "pass 2"
+        // * Bind R.pass_deferred.fbo to write into for later postprocessing
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+
+        // * Clear depth to 1.0 and color to black
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        gl.clearDepth(1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // * _ADD_ together the result of each lighting pass
+
+        // Enable blending and use gl.blendFunc to blend with:
+        //   color = 1 * src_color + 1 * dst_color
+        //   goal is to blend each lighting pass into one beautiful frame buffer
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE);
+
+        // * Bind/setup the ambient pass, and render using fullscreen quad
+        bindTexturesForLightPass(R.prog_Ambient);
+        renderFullScreenQuad(R.prog_Ambient);
+
+        // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
+        bindTexturesForLightPass(R.prog_Toon);
+
+        gl.uniform3fv(R.prog_Toon.u_camPos, state.cameraPos.toArray());
+
+        if (cfg.enableScissor) {
+            gl.enable(gl.SCISSOR_TEST);
+        }
+
+        var numLights = R.lights.length;
+        for (var i = 0; i < numLights; i++) {
+            if (cfg.enableScissor) {
+                var sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
+                if (sc == null) {
+                    continue;
+                }            
+                gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+            }
+
+            gl.uniform3fv(R.prog_Toon.u_lightPos, R.lights[i].pos);
+            gl.uniform3fv(R.prog_Toon.u_lightCol, R.lights[i].col);
+            gl.uniform1f(R.prog_Toon.u_lightRad, R.lights[i].rad);
+
+            renderFullScreenQuad(R.prog_Toon);
+        }
+
+        if (cfg.enableScissor) {
+            gl.disable(gl.SCISSOR_TEST);
+        }
+
+        // Disable blending so that it doesn't affect other code
+        gl.disable(gl.BLEND);
+    };
+
 /**
      * 'deferred' pass: Add lighting results for each individual light
      */
@@ -372,7 +434,7 @@
     /**
      * 'post1' pass: Perform (first) pass of post-processing
      */
-    R.pass_post1.render = function(state) {
+    R.pass_post1.render = function(state, tex) {
         // * Unbind any existing framebuffer (if there are no more passes)
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -389,34 +451,7 @@
         gl.activeTexture(gl.TEXTURE0);
         // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
         // TODO: ^
-        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
-        // Configure the R.progPost1.u_color uniform to point at texture unit 0
-        gl.uniform1i(R.progPost1.u_color, 0);
-        gl.uniform1i(R.progPost1.u_bloom, cfg.enableBloom);
-
-        // * Render a fullscreen quad to perform shading on
-        renderFullScreenQuad(R.progPost1);
-    };
-
-    /**
-     * 'post1' pass: Perform (first) pass of post-processing
-     */
-    R.pass_post1_compressed.render = function(state) {
-        // * Unbind any existing framebuffer (if there are no more passes)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-        // * Clear the framebuffer depth to 1.0
-        gl.clearDepth(1.0);
-        gl.clear(gl.DEPTH_BUFFER_BIT);
-
-        // * Bind the postprocessing shader program
-        gl.useProgram(R.progPost1.prog);
-
-        // * Bind the deferred pass's color output as a texture input
-        // Set gl.TEXTURE0 as the gl.activeTexture unit
-        gl.activeTexture(gl.TEXTURE0);
-        // Bind the TEXTURE_2D, R.pass_deferred_compressed.colorTex to the active texture unit
-        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred_compressed.colorTex);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);
         gl.uniform1i(R.progPost1.u_bloom, cfg.enableBloom);
