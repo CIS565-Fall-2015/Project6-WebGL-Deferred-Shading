@@ -23,12 +23,30 @@ All features turned on at once:
 
 ## Toon Shading (with Ramp Shading option)
 
-## Bloom Effect
+![](img/toon_shading.PNG)
+
+## Naive Bloom Effect
+
+![](img/bloom.PNG)
 
 ## Bloom Effect with 2 Pass Separable Filter
 
+![](img/bloom_post2.PNG)
+
 ## Sphere vs. Box Scissor Testing Optimization
+
+![](img/debug_scissor.PNG)
+
+![](img/debug_spheres.PNG)
 
 ### Debug Views
 
+![](img/depth.PNG)
+
+![](img/position.PNG)
+
+![](img/surface_normal.PNG)
+
 ### Analysis
+
+g-buffer size of 3
