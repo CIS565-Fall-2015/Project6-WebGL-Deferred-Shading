@@ -23,8 +23,13 @@ var width, height;
 			screenDim: {w: width, h: height}
         });
     };
-
+    var lightNumber = 0;
     var update = function() {
+	    if (lightNumber != cfg.lightNumber)
+            {
+                R.deferredSetup();
+                lightNumber = cfg.lightNumber;
+            }
         controls.update();
         stats.begin();
         render();
@@ -92,7 +97,7 @@ var width, height;
         initExtensions();
 
         stats = new Stats();
-        stats.setMode(1); // 0: fps, 1: ms, 2: mb
+        stats.setMode(0); // 0: fps, 1: ms, 2: mb
         stats.domElement.style.position = 'absolute';
         stats.domElement.style.left = '0px';
         stats.domElement.style.top = '0px';
@@ -154,7 +159,7 @@ var width, height;
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         R.deferredSetup();
-
+        lightNumber = cfg.lightNumber;
         requestAnimationFrame(update);
     };
 

@@ -16,15 +16,21 @@ WebGL Deferred Shading
 
 
 ## Project Description:
-In this project, a a deferred shading pipeline is implemented using GLSL and WebGL.
+In this project, a a deferred shading pipeline and various lighting and visual effects are implemented using GLSL and WebGL.
 The implemented features include,
 * Effects:
   * Deferred Blinn-Phong shading (diffuse + specular) for point lights
-  ![](img/1.png)
+  ![](img/thumb.png)
+  A standared Blinn-Phong sharder. Defferred means that no shading is actuaally performaed in the first pass of the vertex and pixel shaders, instdead shading is "deferred" untill a second pass. On the first pass, only data that is required for shading  computation is gathered and put into the geometry buffer(G-buffer). Then the sharder computs the lighting at each pixel using the information.
+
   * Bloom using post-process blur
   ![](img/11.png)
+  Blur using a 5*5 kernal in one single pass to simulate the bloom effect. This will slightly decrease the perfomance. Possible further improvement could be use a two-pass blur, this will require less computation.
+
   * Toon shading (with ramp shading + simple depth-edge detection for outlines)
   ![](img/10.png)
+  Toon shading using Sobel operator as an edge detector.
+
 
 * Optimizations:
   * Scissor test optimization

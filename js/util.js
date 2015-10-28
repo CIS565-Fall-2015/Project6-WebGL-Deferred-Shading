@@ -149,19 +149,29 @@ window.getScissorForLight = (function() {
         a.applyMatrix4(view);
         a.x -= l.rad;
         a.y -= l.rad;
-        a.z += l.rad;
+        
+		// front bottom-left corner of sphere's bounding cube
+		b.fromArray(l.pos);
+		b.w = 1;
+		b.applyMatrix4(view);
+		b.x += l.rad;
+		b.y += l.rad;
+		
+        if(cfg.scissor!='1')
+		{ 
+           a.z += l.rad;
+           b.z += l.rad;
+		}
+		
+	   
+
         a.applyMatrix4(proj);
         a.divideScalar(a.w);
-
-        // front bottom-left corner of sphere's bounding cube
-        b.fromArray(l.pos);
-        b.w = 1;
-        b.applyMatrix4(view);
-        b.x += l.rad;
-        b.y += l.rad;
-        b.z += l.rad;
-        b.applyMatrix4(proj);
+		b.applyMatrix4(proj);
         b.divideScalar(b.w);
+
+        
+		
 
         minpt.set(Math.max(-1, a.x), Math.max(-1, a.y));
         maxpt.set(Math.min( 1, b.x), Math.min( 1, b.y));

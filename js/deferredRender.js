@@ -45,7 +45,7 @@
             // * Deferred pass and postprocessing pass(es)
             // TODO: uncomment these
             R.pass_deferred.render(state);
-			R.pass_post1.render(state);
+			//R.pass_post1.render(state);
 			// call postprocessing pass, more could be added later 
 			//console.log("cfg.enableEffect is "+cfg.enableEffect);
 			switch (cfg.enableEffect){
@@ -176,33 +176,45 @@
         gl.uniform3f(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
 		    
 		var light_Number = R.lights.length;
-		gl.enable(gl.SCISSOR_TEST);
 		
-		if (cfg.debugScissor)
-		{
-		    for (var i = 0; i < light_Number; i++) {
+		
+		if (cfg.scissor == -1)
+	    { // normal render without scissor  
+	        for (var i = 0; i < light_Number; i++) {
 				var light = R.lights[i];
-				var sc = getScissorForLight(state.viewMat, state.projMat, light);
+		        gl.uniform3f( R.prog_BlinnPhong_PointLight.u_lightCol, light.col[0], light.col[1], light.col[2] );
+                gl.uniform3f( R.prog_BlinnPhong_PointLight.u_lightPos, light.pos[0], light.pos[1], light.pos[2] );
+                gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, light.rad );
+                renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+			};	
+	    } else {
+			gl.enable(gl.SCISSOR_TEST);
+			if (cfg.debugScissor)  // show scissor squares 
+		    {
+		        for (var i = 0; i < light_Number; i++) {
+				    var light = R.lights[i];
+				    var sc = getScissorForLight(state.viewMat, state.projMat, light);
 				
 				if (sc != null){
 					gl.scissor(sc[0], sc[1], sc[2], sc[3]);
 					renderFullScreenQuad(R.progRed);
-				}
-            };
-		} else {
-		     for (var i = 0; i < light_Number; i++) {
-				var light = R.lights[i];
-				var sc = getScissorForLight(state.viewMat, state.projMat, light);
-				
-				if (sc != null){
-				    gl.scissor(sc[0], sc[1], sc[2], sc[3]);
-					gl.uniform3f( R.prog_BlinnPhong_PointLight.u_lightCol, light.col[0], light.col[1], light.col[2] );
-                    gl.uniform3f( R.prog_BlinnPhong_PointLight.u_lightPos, light.pos[0], light.pos[1], light.pos[2] );
-                    gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, light.rad );
-                    renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
-				}
-            };
-		
+				   }
+                };
+		    } else {
+			 
+				for (var i = 0; i < light_Number; i++) {
+				    var light = R.lights[i];
+				    var sc = getScissorForLight(state.viewMat, state.projMat, light);
+				    if (sc != null){
+				         gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+					    gl.uniform3f( R.prog_BlinnPhong_PointLight.u_lightCol, light.col[0], light.col[1], light.col[2] );
+                        gl.uniform3f( R.prog_BlinnPhong_PointLight.u_lightPos, light.pos[0], light.pos[1], light.pos[2] );
+                        gl.uniform1f( R.prog_BlinnPhong_PointLight.u_lightRad, light.rad );
+                        renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+				    }
+                };
+		    }
+			gl.disable(gl.SCISSOR_TEST);
 		}
 		// // report 
 		// for (var i = 0; i < light_Number; i++) {
@@ -218,7 +230,7 @@
 				// //}
             // };
 		
-		gl.disable(gl.SCISSOR_TEST);
+		
 		
 		
 		

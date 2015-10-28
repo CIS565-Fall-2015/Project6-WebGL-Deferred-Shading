@@ -37,8 +37,12 @@
     R.LIGHT_RADIUS = 4.0;
     R.NUM_LIGHTS = 20; // TODO: test with MORE lights!
     var setupLights = function() {
+		if (cfg)
+	        R.NUM_LIGHTS = parseInt(cfg.lightNumber); 
+	    else 
+	        R.NUM_LIGHTS = 20;
         Math.seedrandom(0);
-
+        
         var posfn = function() {
             var r = [0, 0, 0];
             for (var i = 0; i < 3; i++) {
@@ -87,7 +91,7 @@
         gl_draw_buffers.drawBuffersWEBGL(attachments);
          
 		// Maybe disabled??????
-        //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
 
     /**
@@ -107,7 +111,7 @@
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
 		
 		// Maybe disabled??????
-        //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
 	
 	/**
