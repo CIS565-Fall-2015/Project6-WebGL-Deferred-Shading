@@ -117,20 +117,25 @@
         renderFullScreenQuad(R.prog_Ambient);
 
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
-        bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
-
-        // TODO: add a loop here, over the values in R.lights, which sets the
+        if (cfg && cfg.enableSphere){
+            bindTexturesForLightPass(R.prog_BlinnPhong_PointLightSphere);
+        } else {
+            bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
+        }
+        
+        //   loop here, over the values in R.lights, which sets the
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
         var cameraPos = [state.cameraPos.x, state.cameraPos.y, state.cameraPos.z];
         var settings = [cfg.enableToonShading, cfg.enableRampShading, 0, 0];
 
-        if (cfg && cfg.enableScissor){
+        if (cfg && !cfg.enableSphere){
             gl.enable(gl.SCISSOR_TEST);
         }
 
         for(var i = 0; i < R.lights.length; i++){
-            if (cfg && cfg.enableScissor){
+            // Scissor Testing
+            if (cfg && !cfg.enableSphere){
                 var sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
                 if (sc == null || sc[2] < 0 || sc[3] < 0){
                     continue;
@@ -142,26 +147,37 @@
                     renderFullScreenQuad(R.progRed);
                     continue;
                 }
-            }
+            
+                gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_cameraPos, cameraPos);
+                gl.uniform4fv(R.prog_BlinnPhong_PointLight.u_settings, settings);
 
-            gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_cameraPos, cameraPos);
-            gl.uniform4fv(R.prog_BlinnPhong_PointLight.u_settings, settings);
+                gl.uniform1f(R.prog_BlinnPhong_PointLight.u_camera_width, width);
+                gl.uniform1f(R.prog_BlinnPhong_PointLight.u_camera_height, height);
 
-            gl.uniform1f(R.prog_BlinnPhong_PointLight.u_camera_width, width);
-            gl.uniform1f(R.prog_BlinnPhong_PointLight.u_camera_height, height);
+                gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, R.lights[i].pos);
+                gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, R.lights[i].col);
+                gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, R.lights[i].rad);
 
-            gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, R.lights[i].pos);
-            gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, R.lights[i].col);
-            gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, R.lights[i].rad);
-
-            if (cfg && cfg.enableScissor){
                 renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+
+            // Sphere Testing
             } else {
+
+                gl.uniform3fv(R.prog_BlinnPhong_PointLightSphere.u_cameraPos, cameraPos);
+                gl.uniform4fv(R.prog_BlinnPhong_PointLightSphere.u_settings, settings);
+
+                gl.uniform1f(R.prog_BlinnPhong_PointLightSphere.u_camera_width, width);
+                gl.uniform1f(R.prog_BlinnPhong_PointLightSphere.u_camera_height, height);
+
+                gl.uniform3fv(R.prog_BlinnPhong_PointLightSphere.u_lightPos, R.lights[i].pos);
+                gl.uniform3fv(R.prog_BlinnPhong_PointLightSphere.u_lightCol, R.lights[i].col);
+                gl.uniform1f(R.prog_BlinnPhong_PointLightSphere.u_lightRad, R.lights[i].rad);
+
                 var lightsTrans = R.lights[i].pos;
                 lightsTrans = lightsTrans.concat(R.lights[i].rad);
 
-                gl.uniform4fv(R.prog_BlinnPhong_PointLight.u_lightTrans, lightsTrans);
-                gl.uniformMatrix4fv(R.prog_BlinnPhong_PointLight.u_cameraMat, gl.FALSE, state.cameraMat.elements);
+                gl.uniform4fv(R.prog_BlinnPhong_PointLightSphere.u_lightTrans, lightsTrans);
+                gl.uniformMatrix4fv(R.prog_BlinnPhong_PointLightSphere.u_cameraMat, gl.FALSE, state.cameraMat.elements);
         
                 if (cfg && cfg.debugSphere){
                     gl.uniform4fv(R.progRedSphere.u_lightTrans, lightsTrans);
@@ -170,16 +186,16 @@
                     readyModelForDraw(R.progRedSphere, R.sphereModel);
                     drawReadyModel(R.sphereModel);
                 } else {
-                    gl.uniform4fv(R.prog_BlinnPhong_PointLight.u_lightTrans, lightsTrans);
-                    gl.uniformMatrix4fv(R.prog_BlinnPhong_PointLight.u_cameraMat, gl.FALSE, state.cameraMat.elements);
+                    gl.uniform4fv(R.prog_BlinnPhong_PointLightSphere.u_lightTrans, lightsTrans);
+                    gl.uniformMatrix4fv(R.prog_BlinnPhong_PointLightSphere.u_cameraMat, gl.FALSE, state.cameraMat.elements);
             
-                    readyModelForDraw(R.prog_BlinnPhong_PointLight, R.sphereModel);
+                    readyModelForDraw(R.prog_BlinnPhong_PointLightSphere, R.sphereModel);
                     drawReadyModel(R.sphereModel);
                 }
             }
         }
 
-        if (cfg && cfg.enableScissor){
+        if (cfg && !cfg.enableSphere){
             gl.disable(gl.SCISSOR_TEST);
         }
         // In the lighting loop, use the scissor test optimization

@@ -6,14 +6,14 @@ var cfg;
     var Cfg = function() {
         // TODO: Define config fields and defaults here
         this.debugView = -1;
-        this.enableScissor = false;
+        this.enableSphere = true;
+        this.debugSphere = false;        
         this.debugScissor = false;
         this.enableToonShading = false;
         this.enableRampShading = false;
         this.enableBloom = false;
         this.enableSphere = false;
         this.enablePost2 = false;
-        this.debugSphere = false;
     };
 
     var init = function() {
@@ -30,7 +30,7 @@ var cfg;
             '4 Normal map':      4,
             '5 Surface normal':  5
         });
-        gui.add(cfg, 'enableScissor');
+        gui.add(cfg, 'enableSphere');
         gui.add(cfg, 'debugScissor');
         gui.add(cfg, 'debugSphere');
 
