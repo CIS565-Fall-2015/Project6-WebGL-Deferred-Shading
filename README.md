@@ -3,9 +3,9 @@ WebGL Deferred Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 6**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Xinyue Zhu
+* Tested on: **Google Chrome  46.0.2490.71 m** on
+  Windows 10, i5-5200U @ 2.2GHz 8.00GB, GTX 960M 222MB 
 
 ### Live Online
 
@@ -15,47 +15,10 @@ WebGL Deferred Shading
 
 [![](img/video.png)](https://www.youtube.com/watch?v=z_TlmlxQoGs)
 
-### (TODO: Your README)
-
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
-
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
-
-
-Instructions (delete me)
 ========================
 
 This is due at midnight on the evening of Tuesday, October 27.
 
-**Summary:** In this project, you'll be introduced to the basics of deferred
-shading and WebGL. You'll use GLSL and WebGL to implement a deferred shading
-pipeline and various lighting and visual effects.
-
-**Recommendations:**
-Take screenshots as you go. Use them to document your progress in your README!
-
-Read (or at least skim) the full README before you begin, so that you know what
-to expect and what to prepare for.
-
-### Running the code
-
-If you have Python, you should be able to run `server.py` to start a server.
-Then, open [`http://localhost:10565/`](http://localhost:10565/) in your browser.
-
-This project requires a WebGL-capable web browser with support for
-`WEBGL_draw_buffers`. You can check for support on
-[WebGL Report](http://webglreport.com/).
-
-Google Chrome seems to work best on all platforms. If you have problems running
-the starter code, use Chrome or Chromium, and make sure you have updated your
-browser and video drivers.
-
-In Moore 100C, both Chrome and Firefox work.
-See below for notes on profiling/debugging tools.
-
-Use the screenshot button to save a screenshot.
 
 ## Requirements
 
