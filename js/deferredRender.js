@@ -405,6 +405,19 @@
     var bindTexturesForLightPass = function(prog) {
         gl.useProgram(prog.prog);
 
+        // testing updating textures with an array during runtime
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.gbufs[0]); // texture mapped color  
+        var data = new Float32Array(width * height * 4);
+        for (var i = 0; i < width * height * 4; i += 4) {
+            data[i] = 1.0;
+            data[i + 1] = 0.0;
+            data[i + 2] = 0.0;
+            data[i + 3] = 1.0;
+        }
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, data);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+
         // * Bind all of the g-buffers and depth buffer as texture uniform
         //   inputs to the shader
         for (var i = 0; i < R.NUM_GBUFFERS; i++) {
