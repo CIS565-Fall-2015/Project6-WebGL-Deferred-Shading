@@ -198,6 +198,11 @@
             R.prog_Ambient = p;
         });
 
+        loadDeferredProgram('ambientToon', function(p) {
+            // Save the object into this variable for access later
+            R.prog_ToonAmbient = p;
+        });        
+
         loadDeferredProgram('blinnphong-pointlight', function(p) {
             // Save the object into this variable for access later
             p.u_camPos = gl.getUniformLocation(p.prog, 'u_camPos');            

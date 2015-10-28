@@ -17,6 +17,7 @@ varying vec2 v_uv;
 const int lineCheckRadius = 5;
 const float lineCheckStep = 0.001;
 const float lineCheckDepthRange = 0.01;
+const float lineCheckAngleRange = 0.5;
 
 vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
@@ -64,6 +65,7 @@ void main() {
 
     vec3 color = lambert * colmap * u_lightCol + specular * u_lightCol;
     color *= attenuation;
+    //color = vec3(1.0, 1.0, 1.0);
 
     // use convolution to add outline based on depth change edge detect
     vec2 sampleUV = v_uv - vec2(lineCheckStep * (5.0 / 2.0));
@@ -80,7 +82,7 @@ void main() {
             }
 
             vec3 sampleNorm = texture2D(u_gbufs[2], sampleUV).xyz;
-            if (dot(sampleNorm, norm) < lineCheckDepthRange) {
+            if (dot(sampleNorm, norm) < lineCheckAngleRange) {
                 color = vec3(0.0, 0.0, 0.0);
             }
 

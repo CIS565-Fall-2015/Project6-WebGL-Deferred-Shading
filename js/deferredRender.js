@@ -10,6 +10,7 @@
             !R.prog_Ambient ||
             !R.prog_BlinnPhong_PointLight ||
             !R.prog_Toon ||
+            !R.prog_ToonAmbient ||
             !R.prog_Debug ||
             !R.progPost1 ||
             !R.progCopyCompressed ||
@@ -298,8 +299,8 @@
         gl.blendFunc(gl.ONE, gl.ONE);
 
         // * Bind/setup the ambient pass, and render using fullscreen quad
-        bindTexturesForLightPass(R.prog_Ambient);
-        renderFullScreenQuad(R.prog_Ambient);
+        bindTexturesForLightPass(R.prog_ToonAmbient);
+        renderFullScreenQuad(R.prog_ToonAmbient);
 
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Toon);

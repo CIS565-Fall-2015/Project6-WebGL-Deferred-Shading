@@ -7,10 +7,10 @@ var cfg;
         // TODO: Define config fields and defaults here
         this.debugView = -1;
         this.debugScissor = false;
-        this.enableScissor = true;        
+        this.enableScissor = false;        
         this.enableBloom = false;
-        this.enableToon = false;        
-        this.compressedGbuffers = true;
+        this.enableToon = true;        
+        this.compressedGbuffers = false;
     };
 
     var init = function() {
