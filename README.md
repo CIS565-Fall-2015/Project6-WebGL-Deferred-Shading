@@ -12,7 +12,7 @@ WebGL Deferred Shading
 [![](img/thumb.png)](http://pontusun.github.io/Project6-WebGL-Deferred-Shading/)
 
 ### Demo Video
-[![](img/thumb.png)](http://pontusun.github.io/Project6-WebGL-Deferred-Shading/)
+[![](img/1.png)](https://youtu.be/NqMIuMhTMnI)
 
 
 ## Project Description:
@@ -35,10 +35,11 @@ The implemented features include,
 * Optimizations:
   * Scissor Test
   ![](img/9.png)
-  When 
+  When accumulating shading from each point light source, only render in a rectangle around the light. This will greatly imporve the perfomance.
 
   * Optimized AABB Scissor Test
   ![](img/12.png)
+  This generates smaller bounding boxes for the scissor test, thus further improves the perfomance.
 
 * Debug views
   * Depth
