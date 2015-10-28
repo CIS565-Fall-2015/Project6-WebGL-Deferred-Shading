@@ -67,7 +67,7 @@ var width, height;
 
     var init = function() {
         // TODO: For performance measurements, disable debug mode!
-        var debugMode = false;
+        var debugMode = true;
 
         if (debugMode) {
             $('#debugmodewarning').css('display', 'block');

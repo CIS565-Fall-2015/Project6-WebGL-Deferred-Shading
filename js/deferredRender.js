@@ -10,7 +10,7 @@
             !R.prog_Ambient ||
             !R.prog_BlinnPhong_PointLight ||
             !R.prog_Debug ||
-            !R.progPost1 || !R.progPost_bloom || !R.progPost_bloom2)) {
+            !R.progPost1 || !R.progPost_bloom || !R.progPost_bloom2 || !R.progToon)) {
             console.log('waiting for programs to load...');
             return;
         }
@@ -52,6 +52,12 @@
                 R.pass_post2.render(state); //bloom 1
                 R.pass_post3.render(state); //bloom 2
             }
+            else if (cfg.Toon)
+            {
+                R.pass_post4.render(state); //toon
+            }
+            
+
            
 
             // OPTIONAL TODO: call more postprocessing passes, if any
@@ -226,7 +232,7 @@
      */
     R.pass_post1.render = function(state) {
         // * Unbind any existing framebuffer (if there are no more passes)
-        if (cfg.Bloom)
+        if (cfg.Bloom || cfg.Toon)
         {
             gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_post1.fbo);
         } 
@@ -317,6 +323,36 @@
 
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost_bloom2);
+    };
+
+
+
+    R.pass_post4.render = function (state) {
+        // * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.progToon.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        // Set gl.TEXTURE0 as the gl.activeTexture unit
+        // TODO: ^
+        gl.activeTexture(gl.TEXTURE0);
+        // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
+        // TODO: ^
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_post1.colorTex);
+
+        // Configure the R.progPost_bloom.u_color uniform to point at texture unit 0
+        gl.uniform1i(R.progToon.u_color, 0);
+
+    
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.progToon);
     };
 
 

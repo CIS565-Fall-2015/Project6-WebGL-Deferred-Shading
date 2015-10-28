@@ -8,6 +8,7 @@ var cfg;
         this.debugView = -1;
         this.debugScissor = false;
         this.Bloom = false;
+        this.Toon = false;
     };
 
     var init = function() {
@@ -28,6 +29,7 @@ var cfg;
 
         var eff0 = gui.addFolder('EFFECT NAME HERE');
         eff0.add(cfg, 'Bloom');
+        eff0.add(cfg, 'Toon');
         // TODO: add more effects toggles and parameters here
     };
 

@@ -8,6 +8,7 @@
     R.pass_post1 = {};
     R.pass_post2 = {}; // bloom1
     R.pass_post3 = {}; //bloom2
+    R.pass_post4 = {}; // toon
     R.lights = [];
 
     R.NUM_GBUFFERS = 4;
@@ -214,6 +215,12 @@
             p.u_ymax = gl.getUniformLocation(p.prog, 'u_ymax');
             // Save the object into this variable for access later
             R.progScdebug = p;
+        });
+
+        loadPostProgram('toon', function (p) {
+            p.u_color = gl.getUniformLocation(p.prog, 'u_color');
+            // Save the object into this variable for access later
+            R.progToon = p;
         });
 
     };
