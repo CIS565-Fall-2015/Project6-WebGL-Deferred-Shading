@@ -23,18 +23,18 @@ var cfg;
             'None':             -1,
             '0 Depth':           0,
             '1 Position':        1,
-            '2 Geometry normal': 2,
+            '2 Surface Normal':  2,
             '3 Color map':       3,
-            '4 Normal map':      4,
-            '5 Surface normal':  5
+			'4 Bloom source mask': 4,
+			'5 Bloom blurred src': 5
         });
         gui.add(cfg, 'debugScissor');
 		
 		var opt0 = gui.addFolder('OPTIMIZATIONS');
 		opt0.add(cfg,'scissor_test_optimization');
 		
-        var eff0 = gui.addFolder('EFFECT NAME HERE');
-        eff0.add(cfg, 'enableEffect0');
+        var eff0 = gui.addFolder('POST EFFECTS');
+        //eff0.add(cfg, 'enableEffect0');
 		eff0.add(cfg, 'bloomEffect');
 		eff0.add(cfg, 'toonEffect');
 		//http://http.developer.nvidia.com/GPUGems/gpugems_ch21.html

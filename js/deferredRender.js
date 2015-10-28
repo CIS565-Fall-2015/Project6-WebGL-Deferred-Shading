@@ -49,7 +49,7 @@
 //*/
         R.pass_copy.render(state);
 
-        if (cfg && cfg.debugView >= 0 && cfg.debugView<=5) {
+        if (cfg && cfg.debugView >= 0 && cfg.debugView<=3) {
             // Do a debug render instead of a regular render
             // Don't do any post-processing in debug mode
             R.pass_debug.render(state);
@@ -61,9 +61,17 @@
 			if(cfg.bloomEffect)
 			{
 				R.pass_srcmask.render(state);
-				R.pass_bloomX.render(state);
-				R.pass_bloomY.render(state);
-				finalRender = R.pass_bloomY.colorTex;
+				if(cfg.debugView==4)
+				{
+					finalRender = R.pass_srcmask.colorTex;
+				}
+				else
+				{
+					R.pass_bloomX.render(state);
+					R.pass_bloomY.render(state);
+					finalRender = R.pass_bloomY.colorTex;
+				}
+				
 			}
 			else if(cfg.toonEffect)//TODO:later if
 			{
@@ -146,13 +154,7 @@
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
         gl.clearDepth(1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-        // * _ADD_ together the result of each lighting pass
-
-        // Enable blending and use gl.blendFunc to blend with:
-        //   color = 1 * src_color + 1 * dst_color
 		//http://learningwebgl.com/blog/?p=859
-        // TO_DO: ^ ??? dst_color?
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 		gl.enable(gl.BLEND);
         // * Bind/setup the ambient pass, and render using fullscreen quad
@@ -162,9 +164,6 @@
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
 
-        // TO_DO: add a loop here, over the values in R.lights, which sets the
-        //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
-        //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
 		if(cfg.scissor_test_optimization)
 			gl.enable(gl.SCISSOR_TEST);
 		//scissor: 118ms->52ms, but , hard edge
@@ -331,6 +330,7 @@
 		
 		var tSize = [width,height];	
 		gl.uniform2fv(R.progBloomY.u_texSize,tSize);
+		gl.uniform1i(R.progBloomY.u_debug, cfg.debugView);
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progBloomY);
     };

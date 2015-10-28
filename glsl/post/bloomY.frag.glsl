@@ -5,6 +5,7 @@ precision highp int;
 uniform sampler2D u_color;
 uniform sampler2D u_origCol;
 
+uniform int u_debug;
 uniform vec2 u_texSize;
 
 varying vec2 v_uv;
@@ -34,6 +35,7 @@ void main() {
     if (origCol.a == 0.0) {
         origCol = SKY_COLOR;
     }	
+	if(u_debug==5) origCol = vec4(0.0);
 	gl_FragColor = color+origCol;
 
 }

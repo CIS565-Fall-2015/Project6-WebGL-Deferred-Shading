@@ -267,6 +267,7 @@
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
 			p.u_origCol = gl.getUniformLocation(p.prog, 'u_origCol');
 			p.u_texSize = gl.getUniformLocation(p.prog, 'u_texSize');
+			p.u_debug = gl.getUniformLocation(p.prog, 'u_debug');
             // Save the object into this variable for access later
             R.progBloomY = p;
         });

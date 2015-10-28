@@ -20,21 +20,29 @@ Features
 
 ### Basics
 
+![](img/FinalRender.png)
+
 **Debug Views**
 
-|Depth						 |Position
-|:--------------------------:|:---------------------------------------:
-|![](img/debug_0depth.png)	 |![](img/debug_1pos.png)
-|Geometry Normal			 |Texture Color
-|![](img/debug_2geonor.png)	 |![](img/debug_3col.png )	
-|Normal Map					 |Surface Normal
-|![](img/debug_4normap.png ) |![](img/debug_5nor.png )
+|Depth						 |Position					 |Geometry Normal
+|:--------------------------:|:-------------------------:|:-------------------------:		 
+|![](img/debug_0depth.png)	 |![](img/debug_1pos.png)	 |![](img/debug_2geonor.png)	 
+|Texture Color				 |Normal Map				 |Surface Normal
+|![](img/debug_3col.png )	 |![](img/debug_4normap.png ) |![](img/debug_5nor.png )
 
 ### Post Effects
 
+Implemented post effects are bloom effect, toon shading and motion blur.
+
 ####Bloom Effect
 
+![](img/bloomEffect.png)
 
+Followed steps in [GPU Gems 3, Ch. 27](http://http.developer.nvidia.com/GPUGems3/gpugems3_ch27.html),first get the lighting source, blur it and then add it with original picture.
+
+|Masked Source| Gaussian blurred source|
+|:--------------------------:|:-------------------------:|		 
+|![](img/Bloom_srcMask_.png)	 |![](img/Bloom_srcMaskBlurred_.png)	 |	 
 
 ####Toon Shading
 
@@ -69,7 +77,7 @@ These two methods below are used to reduce the g-buffer size:
 
 * Reduce normal size and pack them into position buffer and color buffer: only keep two elements in the normal vector, then put each of them into the pos.a and color.a relatively. The g-buffer size then reduced to only two. However, after reducing the normal size, there are some black spots on some surfaces.
 
-![](img/Opt_G_Buff_bSpot_.png)
+![](img/Opt_G_Buff_bSpot.png)
 
 Resources
 ========================
