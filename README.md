@@ -16,84 +16,18 @@ WebGL Deferred Shading
 [![](img/video.png)](https://www.youtube.com/watch?v=z_TlmlxQoGs)
 
 ========================
+### Feature and Analyze
+Features:
+<p>1.Blinn-Phong shading for point lights</p>
+<p>2.scissor test and debug view</p>
+<p>3.bloom shading using Gaussian blur</p>
+<p>4.Toon shading</p> 
+Extra:
+<p>5.Toon shading, the width of the outline is changed due to the distance to the viewer, more like comic.</p>
+<p>6.Optimized g-buffer.
+<p>7.Toon Toon 
 
-This is due at midnight on the evening of Tuesday, October 27.
 
-
-## Requirements
-
-**Ask on the mailing list for any clarifications.**
-
-In this project, you are given code for:
-
-* Loading OBJ files and color/normal map textures
-* Camera control
-* Partial implementation of deferred shading including many helper functions
-
-### Required Tasks
-
-**Before doing performance analysis,** you must disable debug mode by changing
-`debugMode` to `false` in `framework.js`. Keep it enabled when developing - it
-helps find WebGL errors *much* more easily.
-
-You will need to perform the following tasks:
-
-* Complete the deferred shading pipeline so that the Blinn-Phong and Post1
-  shaders recieve the correct input. Go through the Starter Code Tour **before
-  continuing!**
-
-**Effects:**
-
-* Implement deferred Blinn-Phong shading (diffuse + specular) for point lights
-  * With normal mapping (code provided)
-  * For deferred shading, you want to use a lighting model for the point lights
-    which has a limited radius - so that adding a scissor or proxy geometry
-    will not cause parts of the lighting to disappear. It should look very
-    similar both with and without scissor/proxy optimization. Here is a
-    convenient lighting model, but you can also use others:
-    * `float attenuation = max(0.0, u_lightRad - dist_from_surface_to_light);`
-
-* Implement one of the following effects:
-  * Bloom using post-process blur (box or Gaussian) [1]
-  * Toon shading (with ramp shading + simple depth-edge detection for outlines)
-
-**Optimizations:**
-
-* Scissor test optimization: when accumulating shading from each point
-  light source, only render in a rectangle around the light.
-  * Show a debug view for this (showing scissor masks clearly), e.g. by
-    modifying and using `red.frag.glsl` with additive blending and alpha = 0.1.
-  * Code is provided to compute this rectangle for you, and there are
-    comments at the relevant place in `deferredRender.js` with more guidance.
-    * **NOTE:** The provided scissor function is not very accurate - it is a
-      quick hack which results in some errors (as can be seen in the live
-      demo).
-
-* Optimized g-buffer format - reduce the number and size of g-buffers:
-  * Ideas:
-    * Pack values together into vec4s
-    * Use 2-component normals
-    * Quantize values by using smaller texture types instead of gl.FLOAT
-    * Reduce number of properties passed via g-buffer, e.g. by:
-      * Applying the normal map in the `copy` shader pass instead of
-        copying both geometry normals and normal maps
-      * Reconstructing world space position using camera matrices and X/Y/depth
-  * For credit, you must show a good optimization effort and record the
-    performance of each version you test, in a simple table.
-    * It is expected that you won't need all 4 provided g-buffers for a basic
-      pipeline - make sure you disable the unused ones.
-  * See mainly: `copy.frag.glsl`, `deferred/*.glsl`, `deferredSetup.js`
-
-### Extra Tasks
-
-You must do at least **10 points** worth of extra features (effects or
-optimizations/analysis).
-
-**Effects:**
-
-* (3pts) The effect you didn't choose above (bloom or toon shading)
-
-* (3pts) Screen-space motion blur (blur along velocity direction) [3]
 
 * (2pts) Allow variability in additional material properties
   * Include other properties (e.g. specular coeff/exponent) in g-buffers
