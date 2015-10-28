@@ -50,3 +50,7 @@ All features turned on at once:
 ### Analysis
 
 g-buffer size of 3
+
+![](img/fps_scissor_lights.png)
+
+![](img/fps_scissor_fragments.png)
