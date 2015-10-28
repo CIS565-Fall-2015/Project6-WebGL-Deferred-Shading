@@ -9,11 +9,11 @@ WebGL Deferred Shading
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project6-WebGL-Deferred-Shading)
+[![](img/FinalRender.png)](http://zammiez.github.io/Project6-WebGL-Deferred-Shading/)
 
 ### Demo Video
 
-[![](img/video.png)](TODO)
+[![](img/youtube.png)](https://www.youtube.com/watch?v=1ksnaoIVf08&feature=youtu.be)
 
 Features
 ========================
