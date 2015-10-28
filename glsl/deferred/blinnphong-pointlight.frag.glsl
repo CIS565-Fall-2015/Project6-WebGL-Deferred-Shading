@@ -28,17 +28,19 @@ void main() {
     vec4 gb0 = texture2D(u_gbufs[0], v_uv);
     vec4 gb1 = texture2D(u_gbufs[1], v_uv);
     vec4 gb2 = texture2D(u_gbufs[2], v_uv);
-    vec4 gb3 = texture2D(u_gbufs[3], v_uv);
+    //vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
     // TODO: Extract needed properties from the g-buffers into local variables
 
 
 	vec3 pos = vec3(gb0);
-    vec3 geomnor = vec3(gb1);
+    
     vec3 colmap = vec3(gb2);
-    vec3 normap = vec3(gb3);
-    vec3 nor = applyNormalMap(geomnor, normap);
-
+    
+	//vec3 geomnor = vec3(gb1);
+	//vec3 normap = vec3(gb3);
+ //   vec3 nor = applyNormalMap(geomnor, normap);
+	vec3 nor = vec3(gb1);
 
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.

@@ -4,17 +4,27 @@ precision highp int;
 
 uniform sampler2D u_color;
 
+uniform float u_width;
+uniform float u_height;
+
 varying vec2 v_uv;
 
 const vec4 SKY_COLOR = vec4(0.01, 0.14, 0.42, 1.0);
 
+
 void main() {
     vec4 color = texture2D(u_color, v_uv);
-
-    if (color.a == 0.0) {
+	
+	
+    
+	if (color.a == 0.0) {
         gl_FragColor = SKY_COLOR;
         return;
     }
+
+	
+
+
 
     gl_FragColor = color;
 }
