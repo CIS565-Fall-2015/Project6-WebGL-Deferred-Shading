@@ -37,7 +37,11 @@ Happy Helloween!
 <p>In the bloom effect, I choose 5*5 simples, int the toon I only calculate the left and top three samples, but their performace do not make much difference. However in the bloom effect, I devide Gaussian matrix into two passes, x and y pass. I think that's why it is a little faster. I think I should change the toon into x y pass to get a more accurate result. </p>
 Increasing the number of the models, makes the program much slower.
 <p><img src="img/chart1.png"  width="520" height="300"><p>
-
+<p>these are the g-buffers improvment I made. First only disable the buffer do not make much difference.
+<p>note: M1: pack the specular parameter into posision.w</p>
+<p>M2:apply normal map before</p>
+<p>M3:if I do not use the specular parameter in g-buffer and take the color value apart and reduce the number of g-buffer to 2.</p>
+<p>Since I have to use the specular component, so I use the 3 buffers in the end. But reducing the number of g-buffers accelerate the program dramatically. </p>
 <p><img src="img/chart2.png"  width="330" height="120"><p>
 <p><img src="img/chart3.png"  width="360" height="200"> <img src="img/chart4.png"  width="360" height="200"><p>
 <p>The debug view of the original bounding box</p>
