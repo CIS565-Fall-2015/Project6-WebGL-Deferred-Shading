@@ -69,14 +69,13 @@ void main() {
 
     float attenuation = max(0.0, u_lightRad - lightDistance);
 
-    // clamp lambert and specular components using a step function
+    // clamp lambert and specular components as well as attenuation using a step function
     lambert = ramp(lambert, 3.0);
     specular = ramp(specular, 3.0);
     attenuation = ramp(attenuation, 4.0);
 
     vec3 color = lambert * colmap * u_lightCol + specular * u_lightCol;
     color *= attenuation;
-    //color = vec3(1.0, 1.0, 1.0);
 
     // use convolution to add outline based on depth change edge detect
     vec2 sampleUV = v_uv - vec2(lineCheckStep * (5.0 / 2.0));
