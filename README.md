@@ -57,12 +57,16 @@ For the Toon Effect, I am using the simple 2 Tone method, which just compare the
 ![](img/light/toon.png)
 
 ### Optimization
-* Without G-Buffer Optimization
+* Without G-Buffer Optimization (Rendering takes 22.3% valid time)
 ![](img/profile/wo_g_buffer_optimization.png)
 
-* With G-Buffer Optimization
+* With G-Buffer Optimization (Rendering takes 21.5% valid time)
 ![](img/profile/w_g_buffer_optimization.png)
+
+Previously, I am using all the g-buffer to generate the result. This require a lot of data passing and can impact the performance. So I tried to reduce number of properties passed via g-buffer. Basically, I just applying the normal map in the copy shader pass instead of copying both geometry normals and normal maps.This improvement is kind of small according to the compare above.
 
 *Scissor test
 ![](img/debug_img/Sc_debug.png)
+
+Using the getScissor code provided, I generate the debug view of Scissor test above. Although it is not very close bounded, we can already see that it reduce the amount of compute and render work by quite a lot.
 
