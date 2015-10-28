@@ -117,7 +117,7 @@
         // * Clear depth buffer to value 1.0 using gl.clearDepth and gl.clear
         gl.clearDepth(1.0);
         // http://webgl.wikia.com/wiki/Clear
-        gl.clear(gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         // * "Use" the program R.progCopyCompressed.prog
         gl.useProgram(R.progCopyCompressed.prog);
@@ -299,7 +299,7 @@
 
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
-        //renderFullScreenQuad(R.prog_Ambient);
+        renderFullScreenQuad(R.prog_Ambient);
 
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Toon);

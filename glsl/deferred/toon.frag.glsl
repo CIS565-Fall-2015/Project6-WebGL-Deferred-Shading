@@ -64,7 +64,6 @@ void main() {
 
     vec3 color = lambert * colmap * u_lightCol + specular * u_lightCol;
     color *= attenuation;
-    color = colmap; // TODO: what's going on here?
 
     // use convolution to add outline based on depth change edge detect
     vec2 sampleUV = v_uv - vec2(lineCheckStep * (5.0 / 2.0));
