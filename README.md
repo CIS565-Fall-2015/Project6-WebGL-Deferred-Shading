@@ -51,6 +51,6 @@ All features turned on at once:
 
 g-buffer size of 3
 
-![](img/fps_scissor_lights.png)
+![](img/fps_lights.png)
 
 ![](img/fps_scissor_fragments.png)
