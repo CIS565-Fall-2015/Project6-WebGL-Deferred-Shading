@@ -299,7 +299,7 @@
 
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
-        renderFullScreenQuad(R.prog_Ambient);
+        //renderFullScreenQuad(R.prog_Ambient);
 
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Toon);

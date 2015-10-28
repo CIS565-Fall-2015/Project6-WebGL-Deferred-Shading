@@ -14,6 +14,10 @@ const float shininess = 16.0;
 
 varying vec2 v_uv;
 
+const int lineCheckRadius = 5;
+const float lineCheckStep = 0.001;
+const float lineCheckDepthRange = 0.01;
+
 vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
     vec3 up = normalize(vec3(0.001, 1, 0.001));
@@ -58,10 +62,33 @@ void main() {
 
     // clamp attenuation based on a generated ramp
 
-    // use convolution to add outline based on depth change edge detect
-
     vec3 color = lambert * colmap * u_lightCol + specular * u_lightCol;
     color *= attenuation;
+    color = colmap; // TODO: what's going on here?
 
-    gl_FragColor = vec4(color.gbr, 1); 
+    // use convolution to add outline based on depth change edge detect
+    vec2 sampleUV = v_uv - vec2(lineCheckStep * (5.0 / 2.0));
+    float numPixelSamples = 1.0;
+    for (int x = 0; x < lineCheckRadius; x++) {
+        for (int y = 0; y < lineCheckRadius; y++) {
+
+            float sampleDepth = texture2D(u_depth, sampleUV).x;
+
+            // if sampleDepth is sufficiently different from this fragment's depth,
+            // darken this pixel as an edge
+            if (abs(sampleDepth - depth) > lineCheckDepthRange) {
+                color = vec3(0.0, 0.0, 0.0);
+            }
+
+            vec3 sampleNorm = texture2D(u_gbufs[2], sampleUV).xyz;
+            if (dot(sampleNorm, norm) < lineCheckDepthRange) {
+                color = vec3(0.0, 0.0, 0.0);
+            }
+
+        }
+        sampleUV.y = v_uv.y - lineCheckStep * 5.0 / 2.0;
+        sampleUV.x += lineCheckStep;        
+    }
+
+    gl_FragColor = vec4(color, 1); 
 }
