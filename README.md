@@ -9,7 +9,7 @@ WebGL Deferred Shading
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project6-WebGL-Deferred-Shading)
+[![](img/thumb.png)](http://Zhuxinyue909.github.io/Project6-WebGL-Deferred-Shading)
 
 ### Demo Video
 
