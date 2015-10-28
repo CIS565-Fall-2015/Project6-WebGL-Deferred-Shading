@@ -77,3 +77,41 @@ Seeing Kai:
 -this pipeline has copy stuff that produces fewer gbuffers
 -my understanding is that each framebuffer can have its own gbuffers
 -but the gbuffers here seem to be wrong. what's up?
+
+TILING FOR REAL
+-so the basic idea is to store each light's attributes in textures
+-then you store each tile's lights list in another texture
+-and to render a tile, you run the shader over that tile region with the index and length of the tile's light list
+
+QUESTIONS
+-how to build the tile/light lists?
+	-likely involves buffering data?
+	-ok. lists: can use texImage2D with internal format UNSIGNED_INT, format DEPTH_COMPONENT. presumably we can upload an unsigned int array.
+		-https://www.khronos.org/registry/webgl/extensions/WEBGL_depth_texture/
+	-light info: will probably have to be vec4 for pos/radius and vec4 color
+		-will need to update per render with new position
+	-we'll need a way to compute a "new UV" in the shader per light index
+	-can PROBABLY use texture2D in the shader and pass in an appropriate UV value
+
+-how to get the lighting shader to loop over lights?
+	-define some max number of lights?
+	-glsl for loops have to have a determined number of iters right?
+-how to get the lighting shader to only handle the tile it's in?
+	-scissor? -> yeah yeah yeah!
+
+LOOK AT
+-binding textures to uniform pos: util.js -> window.readyModelForDraw
+	-it's just a matter of binding texture to uniform
+	-be careful with the whole active texture thing?
+-also: deferredRender.js -> bindTexturesForLightPass
+-reloading textures: util.js -> handleTextureLoaded
+	-there's a "texImage2D" use here.
+	-MSDN says it can be used with int arrays -> ArrayBufferView
+	-https://developer.mozilla.org/en-US/docs/Web/API/ArrayBufferView
+	-http://www.javascripture.com/ArrayBufferView
+	-so apparently ArrayBufferView just means "some array"
+	-so straight up Uint16 arrays are ok?
+	-http://stackoverflow.com/questions/9046643/webgl-create-texture
+
+TRY
+-overwriting the color pass texture in bindTexturesForLightPass with a float array
