@@ -36,10 +36,12 @@ Happy Helloween!
 <p>1.The number of the light increase the memory usead is increase, and the FPS is decrease.</p>
 <p>In the bloom effect, I choose 5*5 simples, int the toon I only calculate the left and top three samples, but their performace do not make much difference. However in the bloom effect, I devide Gaussian matrix into two passes, x and y pass. I think that's why it is a little faster. I think I should change the toon into x y pass to get a more accurate result. </p>
 Increasing the number of the models, makes the program much slower.
-<p><img src="img/chart1.png"  width="430" height="300"><p>
+<p><img src="img/chart1.png"  width="450" height="300"><p>
 
 <p><img src="img/chart2.png"  width="330" height="200"><p>
 <p><img src="img/chart3.png"  width="330" height="200"> <img src="img/chart4.png"  width="330" height="200"><p>
+
+<p><img src="img/debug.png"  width="330" height="200"> <img src="img/debug2.png"  width="330" height="200"><p>
 * Concise overview write-up of the feature.
 * Performance change due to adding the feature.
   * If applicable, how do parameters (such as number of lights, etc.)
