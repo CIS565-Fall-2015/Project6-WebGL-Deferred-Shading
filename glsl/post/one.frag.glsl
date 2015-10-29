@@ -1,6 +1,6 @@
 #version 100
 #define COFF 0.8
-#define N 5.0
+#define N 32.0
 precision highp float;
 precision highp int;
 

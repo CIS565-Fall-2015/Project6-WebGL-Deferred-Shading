@@ -156,8 +156,8 @@
         for(var i=0;i<R.NUM_LIGHTS;++i){
         	var sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
         	if(sc!=null){
-        		//gl.enable(gl.SCISSOR_TEST)
-        		//gl.scissor(sc[0],sc[1],sc[2]*2.0,sc[3]*2.0);
+        		gl.enable(gl.SCISSOR_TEST)
+        		gl.scissor(sc[0],sc[1],sc[2]*2.0,sc[3]*2.0);
         	}
         	gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos,R.lights[i].pos);
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol,R.lights[i].col);
