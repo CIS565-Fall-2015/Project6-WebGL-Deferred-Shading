@@ -6,8 +6,10 @@
     R.pass_debug = {};
     R.pass_deferred = {};
     R.pass_post1 = {};
+    R.pass_post2 = {};
     R.lights = [];
-
+    R.previousMat = new THREE.Matrix4();
+    R.count=-1;
     R.NUM_GBUFFERS = 4;
 
     /**
@@ -18,6 +20,7 @@
         loadAllShaderPrograms();
         R.pass_copy.setup();
         R.pass_deferred.setup();
+        R.pass_post1.setup();
     };
 
     // TODO: Edit if you want to change the light initial positions
@@ -26,6 +29,9 @@
     R.light_dt = -0.03;
     R.LIGHT_RADIUS = 4.0;
     R.NUM_LIGHTS = 20; // TODO: test with MORE lights!
+    Math.seedrandom(0);
+    //R.specCoff=1+Math.random()*60;
+    R.specCoff=20.0;
     var setupLights = function() {
         Math.seedrandom(0);
 
@@ -69,7 +75,7 @@
             R.pass_copy.gbufs.push(tex);
             attachments.push(attachment);
         }
-
+        
         // * Check for framebuffer errors
         abortIfFramebufferIncomplete(R.pass_copy.fbo);
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
@@ -93,6 +99,20 @@
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
     };
+    
+    R.pass_post1.setup = function() {
+        // * Create the FBO
+        R.pass_post1.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_post1.colorTex = createAndBindColorTargetTexture(
+            R.pass_post1.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_post1.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    };
 
     /**
      * Loads all of the shader programs used in the pipeline.
@@ -110,6 +130,7 @@
                 p.a_position  = gl.getAttribLocation(prog, 'a_position');
                 p.a_normal    = gl.getAttribLocation(prog, 'a_normal');
                 p.a_uv        = gl.getAttribLocation(prog, 'a_uv');
+                
 
                 // Save the object into this variable for access later
                 R.progCopy = p;
@@ -129,6 +150,8 @@
 
         loadDeferredProgram('ambient', function(p) {
             // Save the object into this variable for access later
+        	p.u_camPos = gl.getUniformLocation(p.prog, 'u_camPos');
+        	p.u_enableToon = gl.getUniformLocation(p.prog, 'u_enableToon');
             R.prog_Ambient = p;
         });
 
@@ -137,6 +160,9 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+            p.u_camPos = gl.getUniformLocation(p.prog, 'u_camPos');
+            p.u_debugScissor= gl.getUniformLocation(p.prog, 'u_debugScissor');
+            p.u_specCoff  = gl.getUniformLocation(p.prog, 'u_specCoff');
             R.prog_BlinnPhong_PointLight = p;
         });
 
@@ -147,9 +173,19 @@
         });
 
         loadPostProgram('one', function(p) {
-            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_color = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_mode = gl.getUniformLocation(p.prog, 'u_mode');
+            p.u_depth = gl.getUniformLocation(p.prog, 'u_depth');
+            p.u_previousMat = gl.getUniformLocation(p.prog, 'u_previousMat');
+            p.u_currentMat = gl.getUniformLocation(p.prog, 'u_currentMat');
             // Save the object into this variable for access later
             R.progPost1 = p;
+        });
+        
+        loadPostProgram('two', function(p) {
+            p.u_color = gl.getUniformLocation(p.prog, 'u_color');
+            // Save the object into this variable for access later
+            R.progPost2 = p;
         });
 
         // TODO: If you add more passes, load and set up their shader programs.

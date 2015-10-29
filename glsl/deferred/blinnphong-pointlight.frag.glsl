@@ -4,8 +4,11 @@ precision highp int;
 
 #define NUM_GBUFFERS 4
 
+uniform int u_debugScissor;
 uniform vec3 u_lightCol;
 uniform vec3 u_lightPos;
+uniform vec3 u_camPos;
+uniform float u_specCoff;
 uniform float u_lightRad;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
@@ -35,5 +38,22 @@ void main() {
         return;
     }
 
-    gl_FragColor = vec4(0, 0, 1, 1);  // TODO: perform lighting calculations
+	vec3 geomnor=gb1.xyz;  // Normals of the geometry as defined, without normal mapping
+    vec3 colmap=gb2.xyz;  // The color map - unlit "albedo" (surface color)
+    vec3 normap=gb3.xyz;
+	vec3 nor=applyNormalMap(geomnor,normap);
+	vec3 cameraDir=normalize(u_camPos-gb0.xyz);
+	vec3 lightDir=normalize(gb0.xyz-u_lightPos);
+	vec3 ref=normalize(lightDir-2.0*nor*dot(lightDir,nor));
+	
+    vec3 spec=u_lightCol*pow(max(0.0,dot(ref,cameraDir)),u_specCoff);
+
+	float len=length(u_lightPos-gb0.xyz);
+	if(u_debugScissor==1&&len<2.0*u_lightRad){
+		gl_FragColor=vec4(spec+vec3(0.2,0,0),1);
+	}
+	else if(len<u_lightRad){
+		gl_FragColor=2.0*vec4(spec,1)*(u_lightRad-len)/u_lightRad;
+	}
+	else gl_FragColor=vec4(0,0,0,1);
 }

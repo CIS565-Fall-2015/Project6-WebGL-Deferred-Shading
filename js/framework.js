@@ -68,8 +68,13 @@ var width, height;
 
     var init = function() {
         // TODO: For performance measurements, disable debug mode!
-        var debugMode = true;
-
+    	canvas = document.getElementById('canvas');
+    	renderer = new THREE.WebGLRenderer({
+    		canvas: canvas,
+            preserveDrawingBuffer: debugMode
+    	});
+    	gl = renderer.context;
+        var debugMode = false;
         if (debugMode) {
             $('#debugmodewarning').css('display', 'block');
             var throwOnGLError = function(err, funcName, args) {

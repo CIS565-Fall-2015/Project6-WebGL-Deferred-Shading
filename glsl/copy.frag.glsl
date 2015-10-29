@@ -5,6 +5,7 @@ precision highp int;
 
 uniform sampler2D u_colmap;
 uniform sampler2D u_normap;
+uniform float u_specCoff;
 
 varying vec3 v_position;
 varying vec3 v_normal;
@@ -12,4 +13,8 @@ varying vec2 v_uv;
 
 void main() {
     // TODO: copy values into gl_FragData[0], [1], etc.
+	gl_FragData[0]=vec4(v_position,1);
+	gl_FragData[1]=vec4(v_normal,1);
+	gl_FragData[2]=texture2D(u_colmap, v_uv);
+	gl_FragData[3]=texture2D(u_normap, v_uv);
 }
