@@ -3,13 +3,12 @@ WebGL Deferred Shading
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 6**
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) **Google Chrome 222.2** on
-  Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
+* Megan Moore
+* Tested on: Google Chrome on MacBook Pro 2.6 GHz Intel Core i5 @ 8 GB 1600 MHz DDR3, Intel Iris 1536 MB
 
 ### Live Online
 
-[![](img/thumb.png)](http://TODO.github.io/Project6-WebGL-Deferred-Shading)
+[![](img/final_noEffects.png)](http://megmo21.github.io/Project6-WebGL-Deferred-Shading)
 
 ### Demo Video
 
