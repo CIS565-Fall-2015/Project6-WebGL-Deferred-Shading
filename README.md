@@ -38,3 +38,9 @@ After pass value to the copy.vert.glsl. All debug view is easy to get.
 
 6 Surface Normal: Use normal map*geometry normal to render
 ![](img/debug6.png)
+
+# Part III: Ambient Shader(With Toon Shading)
+Here the default value is black. I use the color map(texture) as its ambient color. Because the texture is too light, I use 0.4*colorMap instead. Then I implemented toon shading. Given the eye position, we can get the toon shading using lambert's law(somewhat like diffuse shading). However, here we divide color into 4 levels based on the angle between the eye and the normal. So we get the result like this:
+![](img/rep4.jpg)
+
+# Part VI: Blinn-Phong Shader(With Lighting Fade Off)
