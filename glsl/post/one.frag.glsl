@@ -14,7 +14,7 @@ varying vec2 v_uv;
 
 const vec4 SKY_COLOR = vec4(0.01, 0.14, 0.42, 1.0);
 
-vec4 getBlur(vec2 v_uv,sampler2D u_gbuf){
+vec4 getBlur(vec2 v_uv,sampler2D u_gbuf){//old method
 	vec4 result=texture2D(u_gbuf,v_uv);
 	vec4 v00,v01,v02,v10,v11,v12,v20,v21,v22;
 	v00=texture2D(u_gbuf,vec2(v_uv.x-0.001,v_uv.y+0.001))*1.2;

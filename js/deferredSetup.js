@@ -10,7 +10,7 @@
     R.lights = [];
     R.previousMat = new THREE.Matrix4();
     R.count=-1;
-    R.NUM_GBUFFERS = 4;
+    R.NUM_GBUFFERS = 5;
 
     /**
      * Set up the deferred pipeline framebuffer objects and textures.

@@ -48,14 +48,14 @@ void main() {
     }
 
     if(u_enableToon==1){
-	vec3 geomnor=gb1.xyz;  // Normals of the geometry as defined, without normal mapping
-    vec3 colmap=gb2.xyz;  // The color map - unlit "albedo" (surface color)
-    vec3 normap=gb3.xyz;
-	vec3 nor=applyNormalMap(geomnor,normap);
-	vec3 cameraDir=normalize(u_camPos-gb0.xyz);
-	float angle=dot(nor,cameraDir);
-	angle=contourStep(angle);
-	gl_FragColor=vec4(angle,angle,angle,1);
+		vec3 geomnor=gb1.xyz;  // Normals of the geometry as defined, without normal mapping
+		vec3 colmap=gb2.xyz;  // The color map - unlit "albedo" (surface color)
+	    vec3 normap=gb3.xyz;
+		vec3 nor=applyNormalMap(geomnor,normap);
+		vec3 cameraDir=normalize(u_camPos-gb0.xyz);
+		float angle=dot(nor,cameraDir);
+		angle=contourStep(angle);
+		gl_FragColor=vec4(angle,angle,angle,1);
 	}
 	else{
 		vec3 colmap=gb2.xyz;
