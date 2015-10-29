@@ -70,7 +70,7 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
   
 <img src="img/graph.png" height="300" width="400">
 
-
+  * In order to reduce the size of the GBuffer, I applied the normal map function during the copy fragment shader, rather than in the ambient, blinn-phong, and debug shaders.  This allowed me not to pass through both the geometry normal and normal map.  I could just pass the surface normal into the shader.  You can see from the graph above, that having a smaller GBuffer size increased the FPS in all cases.  
 
 
 
