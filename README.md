@@ -67,4 +67,11 @@ The Scissor Test is very important for performance improvement. The Small the sc
 
 We can see that the average fps of using scissor outweight the method without the scissor in all comparison. When the computation is large(like in motion blur) the performance is not so obvious. But when the computation task is not heavy, the improvement is clear. I believe when the distance of camera to the light is large, the enhance in performance should be more obvious.
 
+2 Bloom vs non-Bloom
+The changing variable is in lights number, and number of offsets.
+When the lights number is the variable, it is very strange to find the in all cases the bloom is faster than not using bloom. The default number of offsets is 10. This show when the number of offsets is low, the bottle neck is not on the number of offsets.
+![](img/ana_bloom1.jpg)
+
+When the number of offsets is the variable, the fps drop dramatically when the number goes up.
+![](img/ana_bloom2.png)
 
