@@ -87,20 +87,3 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
 * [3] Post-Process Motion Blur:
   [GPU Gems 3, Ch. 27](http://http.developer.nvidia.com/GPUGems3/gpugems3_ch27.html)
 
-
-### GitHub Pages
-
-Since this assignment is in WebGL, you can make your project easily viewable by 
-taking advantage of GitHub's project pages feature.
-
-Once you are done with the assignment, create a new branch:
-
-`git branch gh-pages`
-
-Push the branch to GitHub:
-
-`git push origin gh-pages`
-
-Now, you can go to `<user_name>.github.io/<project_name>` to see your
-renderer online from anywhere. Add this link to your README.
-
