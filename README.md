@@ -59,12 +59,12 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
 
 **Optimizations:**
 
-* Scissor test optimization: when accumulating shading from each point
+* Scissor test optimization, Old and Improved
+
+<img src="img/badScissor.png" height="300" width="400"> <img src="img/goodScissor.png" height="300" width="400">
+
+  * when accumulating shading from each point
   light source, only render in a rectangle around the light.
-  * Show a debug view for this (showing scissor masks clearly), e.g. by
-    modifying and using `red.frag.glsl` with additive blending.
-  * Code is provided to compute this rectangle for you, and there are
-    comments at the relevant place in `deferredRender.js` with more guidance.
 
 * Optimized g-buffer format - reduce the number and size of g-buffers:
   
