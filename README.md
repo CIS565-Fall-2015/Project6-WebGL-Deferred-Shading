@@ -67,19 +67,9 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
     comments at the relevant place in `deferredRender.js` with more guidance.
 
 * Optimized g-buffer format - reduce the number and size of g-buffers:
-  * Ideas:
-    * Pack values together into vec4s
-    * Use 2-component normals
-    * Quantize values by using smaller texture types instead of gl.FLOAT
-    * Reduce number of properties passed via g-buffer, e.g. by:
-      * Applying the normal map in the `copy` shader pass instead of
-        copying both geometry normals and normal maps
-      * Reconstructing world space position using camera matrices and X/Y/depth
-  * For credit, you must show a good optimization effort and record the
-    performance of each version you test, in a simple table.
-    * It is expected that you won't need all 4 provided g-buffers for a basic
-      pipeline - make sure you disable the unused ones.
-  * See mainly: `copy.frag.glsl`, `deferred/*.glsl`, `deferredSetup.js`
+  
+<img src="img/graph.png" height="300" width="400">
+
 
 
 
