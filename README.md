@@ -34,7 +34,7 @@ After pass value to the copy.vert.glsl. All debug view is easy to get.
 ![](img/debug4.jpg)
 
 5 Normal Map: Simply use normal map to render
-![](img/debug5.jpg)
+![](img/debug5.png)
 
 6 Surface Normal: Use normal map*geometry normal to render
-![](img/debug6.jpg)
+![](img/debug6.png)
