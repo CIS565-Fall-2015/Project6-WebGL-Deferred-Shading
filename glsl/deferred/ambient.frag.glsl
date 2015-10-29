@@ -59,6 +59,6 @@ void main() {
 	}
 	else{
 		vec3 colmap=gb2.xyz;
-		gl_FragColor = 0.4*gb2;
+		gl_FragColor = 0.2*gb2;
 	}
 }

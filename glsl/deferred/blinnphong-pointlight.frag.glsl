@@ -46,14 +46,17 @@ void main() {
 	vec3 lightDir=normalize(gb0.xyz-u_lightPos);
 	vec3 ref=normalize(lightDir-2.0*nor*dot(lightDir,nor));
 	
+	vec3 diff=u_lightCol*dot(nor,cameraDir);
     vec3 spec=u_lightCol*pow(max(0.0,dot(ref,cameraDir)),u_specCoff);
+
+	vec3 color=0.5*diff+0.5*spec;
 
 	float len=length(u_lightPos-gb0.xyz);
 	if(u_debugScissor==1&&len<2.0*u_lightRad){
-		gl_FragColor=vec4(spec+vec3(0.2,0,0),1);
+		gl_FragColor=vec4(color+vec3(0.2,0,0),1);
 	}
 	else if(len<u_lightRad){
-		gl_FragColor=2.0*vec4(spec,1)*(u_lightRad-len)/u_lightRad;
+		gl_FragColor=vec4(color,1)*(u_lightRad-len)/u_lightRad;
 	}
 	else gl_FragColor=vec4(0,0,0,1);
 }
