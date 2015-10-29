@@ -38,7 +38,7 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
 * Implement Toon shading 
   * With ramp shading and simple depth-edge detection
    
-  ![](img/toon1.png)
+<img src="img/toon1.png" height="300" width="400">
  
   * Toon shading requires just one post process pass.  In order to implement toon shading, the diffuse and specular values in the blinn-phong shading were manipulated to be step functions, rather than continous functions.  If the diffuse term was lower than .5, it became .2.  If it was higher than .5, it became 1.0.  The same was done for the specular value.  This allows for the distinct change in color on the models.  This was all done in the blinn-phong shader.  Then, the edge detection was done in the post-process pass.  The color of 8 neighboring fragments was collected.  If the mix of all those fragments was greater than a certain threshold, it meant that the color was changing and this fragment was on the edge of a material.  Thus, it's color should be changed to black.  This implementation took less time than the bloom implementation, it only slowed down the program by 4 FPS.
   * It took a while to get this implementation correct.  Below are some of the early stage toon images.  At first, the diffuse term was backwards, causing the lights to be very bright on the edge and dark at the center.  Then, I had the correct shading, but no outlines.  
