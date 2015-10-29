@@ -45,6 +45,13 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
   
 <img src="img/backwards_toon.png" height="192" width="341.333333333"> <img src="img/toon_noOutline.png" height="192" width="341.333333333">
 
+* Allow variability in additional material properties
+
+<img src="img/diff_specExp.png" height="300" width="400">
+
+  * This effect was implemented, by adding an extra variable to each model that was loaded into the scene.  As the model's data was being copied into the GBuffer, the specular exponent that had been loaded with the model, was copied into the fourth element of the normal vector in the GBuffer.  Then it was used in the blinn phong calculations.  This did not add on any extra run-time, as it didn't add to the size of the GBuffers that were being copied and passed into the shaders.  
+
+
 **Optimizations:**
 
 * Scissor test optimization: when accumulating shading from each point
@@ -80,11 +87,7 @@ optimizations/analysis).
 
 * (3pts) Screen-space motion blur (blur along velocity direction) [3]
 
-* (2pts) Allow variability in additional material properties
-  * Include other properties (e.g. specular coeff/exponent) in g-buffers
-  * Use this to render objects with different material properties
-  * These may be uniform across one model draw call, but you'll have to show
-    multiple models
+
 
 **Optimizations/Analysis:**
 
