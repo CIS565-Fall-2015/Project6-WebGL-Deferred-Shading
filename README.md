@@ -61,10 +61,13 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
 
 * Scissor test optimization, Old and Improved
 
-<img src="img/badScissor.png" height="300" width="400"> <img src="img/goodScissor.png" height="300" width="400">
-<img src="img/light_badScissor.png" height="300" width="400"> <img src="img/light_goodScissor.png" height="300" width="400">
-  * when accumulating shading from each point
-  light source, only render in a rectangle around the light.
+<img src="img/badScissor.png" height="300" width="400"> <img src="img/light_badScissor.png" height="300" width="400">
+
+  * This is the original scissor test.  When accumulating shading from each light source, I only want to render in a rectangle around the light.  This helps to increase the run time of our program.  In this case, the scissor test allowed my FPS to go from an average of 14 to 31.  The images above show the debug view, which has all the rectangles that are being rendered, and an image of the actual rendered model.  
+
+<img src="img/goodScissor.png" height="300" width="400"> <img src="img/light_goodScissor.png" height="300" width="400">
+  
+  * The scissor test was able to be improved.  By calculating amore precise bounding box, around the entire light sphere, I was able to increase the speed and accuracy of the render.   The speed up was less impressive, but still allowed for the FPS to increase to an average of 35, improving it by 4 FPS.  Also, there are no longer any cut offs on the lights.  You can see on the image on the right, the light in the upper right corner is cut off in the original image, but not in the image directly above.  
 
 * Optimized g-buffer format - reduce the number and size of g-buffers:
   
