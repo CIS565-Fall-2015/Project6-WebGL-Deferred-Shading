@@ -156,8 +156,8 @@
         for(var i=0;i<R.NUM_LIGHTS;++i){
         	var sc = getScissorForLight(state.viewMat, state.projMat, R.lights[i]);
         	if(sc!=null){
-        		gl.enable(gl.SCISSOR_TEST)
-        		gl.scissor(sc[0],sc[1],sc[2]*2.0,sc[3]*2.0);
+        		//gl.enable(gl.SCISSOR_TEST)
+        		//gl.scissor(sc[0],sc[1],sc[2]*2.0,sc[3]*2.0);
         	}
         	gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos,R.lights[i].pos);
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol,R.lights[i].col);
@@ -232,7 +232,7 @@
         gl.uniformMatrix4fv(R.progPost1.u_currentMat, false, new Float32Array(m4.elements));
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);
-        if(R.count>150){
+        if(R.count>15){
         	//R.previousMat=new THREE.Matrix4(state.cameraMat.elements);
         	var tmp=state.cameraMat.elements;
         	R.previousMat.set(tmp[0],tmp[4],tmp[8],tmp[12],tmp[1],tmp[5],tmp[9],tmp[13]
