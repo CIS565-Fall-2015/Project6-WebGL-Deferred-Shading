@@ -14,74 +14,16 @@ WebGL Deferred Shading
 
 [![](img/video.png)](TODO)
 
-### (TODO: Your README)
 
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
+In this project, I implemented a deferred
+shading pipeline and various lighting and visual effects using WebGL and GLSL.
 
-This assignment has a considerable amount of performance analysis compared
-to implementation work. Complete the implementation early to leave time!
-
-
-Instructions (delete me)
-========================
-
-This is due at midnight on the evening of Sunday, October 25.
-
-**Summary:** In this project, you'll be introduced to the basics of deferred
-shading and WebGL. You'll use GLSL and WebGL to implement a deferred shading
-pipeline and various lighting and visual effects.
-
-**Recommendations:**
-Take screenshots as you go. Use them to document your progress in your README!
-
-Read (or at least skim) the full README before you begin, so that you know what
-to expect and what to prepare for.
-
-### Running the code
-
-If you have Python, you should be able to run `server.py` to start a server.
-Then, open [`http://localhost:10565/`](http://localhost:10565/) in your browser.
-
-This project requires a WebGL-capable web browser with support for
-`WEBGL_draw_buffers`. You can check for support on
-[WebGL Report](http://webglreport.com/).
-
-Google Chrome seems to work best on all platforms. If you have problems running
-the starter code, use Chrome or Chromium, and make sure you have updated your
-browser and video drivers.
-
-In Moore 100C, both Chrome and Firefox work.
-See below for notes on profiling/debugging tools.
-
-Use the screenshot button to save a screenshot.
-
-## Requirements
-
-**Ask on the mailing list for any clarifications.**
-
-In this project, you are given code for:
-
-* Loading OBJ files and color/normal map textures
-* Camera control
-* Partial implementation of deferred shading including many helper functions
-
-### Required Tasks
-
-**Before doing performance analysis,** you must disable debug mode by changing
-`debugMode` to `false` in `framework.js`. Keep it enabled when developing - it
-helps find WebGL errors *much* more easily.
-
-You will need to perform the following tasks:
-
-* Complete the deferred shading pipeline so that the Blinn-Phong and Post1
-  shaders recieve the correct input. Go through the Starter Code Tour **before
-  continuing!**
 
 **Effects:**
 
 * Implement deferred Blinn-Phong shading (diffuse + specular)
   * With normal mapping (code provided)
+  <img src="img/final_noEffects.png" height="192" width="341.333333333">
 
 * Implement one of the following effects:
   * Bloom using post-process blur (box or Gaussian) [1]
