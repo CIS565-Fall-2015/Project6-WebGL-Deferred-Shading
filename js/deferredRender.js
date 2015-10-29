@@ -66,7 +66,7 @@
 
         // * "Use" the program R.progCopy.prog
         // TODO: ^
-        // TODO: Write glsl/copy.frag.glsl
+        // TODO: Go write code in glsl/copy.frag.glsl
 
         var m = state.cameraMat.elements;
         // * Upload the camera matrix m to the uniform R.progCopy.u_cameraMat
