@@ -57,7 +57,7 @@ The idea of bloom shading[2] here is to get the result color from the blinn-phon
 ![](img/rep5.jpg)
 
 # Part VI: Motion Blur
-The motion blur is pretty easy to understand in the reference[3]. However, one major problem I came across is when I tried to record the old camera matrix, the whole object is stored. If I want to renew the camera matrix every 10 frame, the object camera matrix renew every frame since it is the current camera matrix's object. One way to solve this is to use the set function in THREE.js's Matrix4 class. I renew the scene(update the old camera matrix) every 15 frame and the blur is ideal.
+The motion blur[3] is pretty easy to understand in the reference[3]. However, one major problem I came across is when I tried to record the old camera matrix, the whole object is stored. If I want to renew the camera matrix every 10 frame, the object camera matrix renew every frame since it is the current camera matrix's object. One way to solve this is to use the set function in THREE.js's Matrix4 class. I renew the scene(update the old camera matrix) every 15 frame and the blur is ideal.
 ![](img/blur.jpg)
 
 # Part VII: Performance Analysis
@@ -75,3 +75,7 @@ When the lights number is the variable, it is very strange to find the in all ca
 When the number of offsets is the variable, the fps drop dramatically when the number goes up.
 ![](img/ana_bloom2.png)
 
+# Part VIII: References:
+[1] https://www.khronos.org/webgl/wiki/Getting_a_WebGL_Implementation
+[2] http://http.developer.nvidia.com/GPUGems/gpugems_ch21.html
+[3] http://http.developer.nvidia.com/GPUGems3/gpugems3_ch27.html
