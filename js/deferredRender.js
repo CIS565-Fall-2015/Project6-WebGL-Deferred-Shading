@@ -232,7 +232,7 @@
         gl.uniformMatrix4fv(R.progPost1.u_currentMat, false, new Float32Array(m4.elements));
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);
-        if(R.count>15){
+        if(R.count>150){
         	//R.previousMat=new THREE.Matrix4(state.cameraMat.elements);
         	var tmp=state.cameraMat.elements;
         	R.previousMat.set(tmp[0],tmp[4],tmp[8],tmp[12],tmp[1],tmp[5],tmp[9],tmp[13]
