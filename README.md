@@ -23,11 +23,27 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
 
 * Implement deferred Blinn-Phong shading (diffuse + specular)
   * With normal mapping (code provided)
+ 
   <img src="img/final_noEffects.png" height="192" width="341.333333333">
 
-* Implement one of the following effects:
-  * Bloom using post-process blur (box or Gaussian) [1]
-  * Toon shading (with ramp shading + simple depth-edge detection for outlines)
+  * The Blinn-Phong shading was the first effect implemented. This is a deferred shader and does not use any post processing.  The Blinn-Phong lighting was applied with normal mapping.  
+
+* Implement Bloom using post-process blur 
+  * Using post-process blur (Gaussian) [1]
+   
+  <img src="img/Bloom.png" height="192" width="341.333333333">
+
+  * Bloom was implemented using a two-pass Gaussian blur.  The first pass allows for the blur to be applied horizontally, while the second allows for the blur to be applied vertically.  By splitting this process up into two passes, we are able to increase the speed of the effect.  Doing this in one pass would require n^2 amount of time, where n is the diameter of the blur.  However, in a two-pass process it only requires 2n.  Overall the bloom effect slightly decreased the speed of the program.  It went from 35 FPS to 29 FPS, causing a drop of 6 FPS.  
+ 
+* Implement Toon shading 
+  * With ramp shading and simple depth-edge detection
+   
+  <img src="img/toon1.png" height="192" width="341.333333333">
+ 
+  * Toon shading requires just one post process pass.  In order to implement toon shading, the diffuse and specular values in the blinn-phong shading were manipulated to be step functions, rather than continous functions.  If the diffuse term was lower than .5, it became .2.  If it was higher than .5, it became 1.0.  The same was done for the specular value.  This allows for the distinct change in color on the models.  This was all done in the blinn-phong shader.  Then, the edge detection was done in the post-process pass.  The color of 8 neighboring fragments was collected.  If the mix of all those fragments was greater than a certain threshold, it meant that the color was changing and this fragment was on the edge of a material.  Thus, it's color should be changed to black.  This implementation took less time than the bloom implementation, it only slowed down the program by 4 FPS.
+  * It took a while to get this implementation correct.  Below are some of the early stage toon images.  At first, the diffuse term was backwards, causing the lights to be very bright on the edge and dark at the center.  Then, I had the correct shading, but no outlines.  
+  
+<img src="img/backwards_toon.png" height="192" width="341.333333333"> <img src="img/toon_noOutline.png" height="192" width="341.333333333">
 
 **Optimizations:**
 
