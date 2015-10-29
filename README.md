@@ -77,5 +77,7 @@ When the number of offsets is the variable, the fps drop dramatically when the n
 
 # Part VIII: References:
 [1] https://www.khronos.org/webgl/wiki/Getting_a_WebGL_Implementation
+
 [2] http://http.developer.nvidia.com/GPUGems/gpugems_ch21.html
+
 [3] http://http.developer.nvidia.com/GPUGems3/gpugems3_ch27.html
