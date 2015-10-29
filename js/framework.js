@@ -138,7 +138,7 @@ var width, height;
                 loadTexture('models/sponza/normal.png').then(function(tex) {
                     m.normap = tex;
                 });
-                m.material = 10000.0;
+                m.material = 100000.0;
                 models.push(m);
             });
         });
