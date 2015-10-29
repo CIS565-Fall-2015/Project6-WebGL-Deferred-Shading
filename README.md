@@ -53,5 +53,11 @@ Then in the actual rendering, the lighting fade off is set to be linear. So we g
 The specular coefficient is a random number between 1 and 60, with is passed to the shader with the G-buffer.
 
 # Part V: Bloom Shading(With Two Passes)
-The idea of bloom shading here is to get the result color from the blinn-phong shader first and post processing twice to get the bluring images. Using the Guassian function we first do the texture(color) offset in x direction. Then push the color back and reuse in the second pass, and then we do the texture(color) offset in y direction. The number of offset is 10 in both direction, and the coefficient for Guassian fade off is 0.8. If the color to be add is less than 0.8 in length, then discard it and use the original color. So after blurring, the result is like:
+The idea of bloom shading[2] here is to get the result color from the blinn-phong shader first and post processing twice to get the bluring images. Using the Guassian function we first do the texture(color) offset in x direction. Then push the color back and reuse in the second pass, and then we do the texture(color) offset in y direction. The number of offset is 10 in both direction, and the coefficient for Guassian fade off is 0.8. If the color to be add is less than 0.8 in length, then discard it and use the original color. So after blurring, the result is like:
 ![](img/rep5.jpg)
+
+# Part VI: Motion Blur
+The motion blur is pretty easy to understand in the reference[3]. However, one major problem I came across is when I tried to record the old camera matrix, the whole object is stored. If I want to renew the camera matrix every 10 frame, the object camera matrix renew every frame since it is the current camera matrix's object. One way to solve this is to use the set function in THREE.js's Matrix4 class. I renew the scene(update the old camera matrix) every 15 frame and the blur is ideal.
+![](img/blur.jpg)
+
+
