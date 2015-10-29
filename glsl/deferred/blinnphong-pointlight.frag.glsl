@@ -26,6 +26,13 @@ void main() {
     vec4 gb2 = texture2D(u_gbufs[2], v_uv);
     vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
+	
+    vec3 pos = gb0.xyz;
+    vec3 geomnor = normalize(gb1.xyz);
+    vec3 colmap = gb2.xyz;
+    vec3 normap = gb3.xyz;
+    vec3 nor = applyNormalMap(geomnor, normap);
+	
     // TODO: Extract needed properties from the g-buffers into local variables
 
     // If nothing was rendered to this pixel, set alpha to 0 so that the
@@ -34,6 +41,12 @@ void main() {
         gl_FragColor = vec4(0, 0, 0, 0);
         return;
     }
-
-    gl_FragColor = vec4(0, 0, 1, 1);  // TODO: perform lighting calculations
+	
+  	vec3 lightdiff = u_lightPos - pos;
+    float lightdist = length(lightdiff);
+    vec3 lightdir = lightdiff / lightdist;
+    vec3 diff = u_lightCol
+         * max(0.0, dot(nor, lightdir))
+         * max(0.0, u_lightRad - lightdist);
+    gl_FragColor = vec4(colmap * diff, 1.0);
 }
