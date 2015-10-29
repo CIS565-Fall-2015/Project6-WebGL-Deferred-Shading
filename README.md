@@ -12,7 +12,7 @@ WebGL Deferred Shading
 
 ### Demo Video
 
-[![](img/video.png)](TODO)
+[![](img/Bloom.png)](https://vimeo.com/144067450)
 
 
 In this project, I implemented a deferred
