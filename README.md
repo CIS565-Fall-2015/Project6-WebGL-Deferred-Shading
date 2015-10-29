@@ -53,6 +53,8 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
 
 * Screen-space motion blur [3]
 
+<img src="img/motion_blur.gif" height="300" width="400">
+
   * This effect was implemented in a post process pass.  The previous frame's camera matrix was kept in a global variable that could be passed into the shader during the next frame.  With that, I am able to calculate the current world coordinates' texture coordinates of the previous frame.  From this, I can calcualte the velocity of the fragment by taking the difference between the two coordinates.  Then, I sample the colors along a vector going in the direction of the velocity.  The average of this sample becomes the new fragment color.  
   * There is also a debug view for this effect.  It shows the velocity (in color) at each fragment.  
 
