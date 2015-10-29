@@ -31,7 +31,7 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
 * Implement Bloom using post-process blur 
   * Using post-process blur (Gaussian) [1]
    
- <img src="img/bloom.png" height="300" width="400">
+ <img src="img/Bloom.png" height="300" width="400">
 
   * Bloom was implemented using a two-pass Gaussian blur.  The first pass allows for the blur to be applied horizontally, while the second allows for the blur to be applied vertically.  By splitting this process up into two passes, we are able to increase the speed of the effect.  Doing this in one pass would require n^2 amount of time, where n is the diameter of the blur.  However, in a two-pass process it only requires 2n.  Overall the bloom effect slightly decreased the speed of the program.  It went from 35 FPS to 29 FPS, causing a drop of 6 FPS.  
  
