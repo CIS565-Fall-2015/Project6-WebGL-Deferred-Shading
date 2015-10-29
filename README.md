@@ -62,7 +62,7 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
 * Scissor test optimization, Old and Improved
 
 <img src="img/badScissor.png" height="300" width="400"> <img src="img/goodScissor.png" height="300" width="400">
-
+<img src="img/light_badScissor.png" height="300" width="400"> <img src="img/light_goodScissor.png" height="300" width="400">
   * when accumulating shading from each point
   light source, only render in a rectangle around the light.
 
