@@ -51,6 +51,11 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
 
   * This effect was implemented, by adding an extra variable to each model that was loaded into the scene.  As the model's data was being copied into the GBuffer, the specular exponent that had been loaded with the model, was copied into the fourth element of the normal vector in the GBuffer.  Then it was used in the blinn phong calculations.  This did not add on any extra run-time, as it didn't add to the size of the GBuffers that were being copied and passed into the shaders.  
 
+* Screen-space motion blur [3]
+
+  * This effect was implemented in a post process pass.  The previous frame's camera matrix was kept in a global variable that could be passed into the shader during the next frame.  With that, I am able to calculate the current world coordinates' texture coordinates of the previous frame.  From this, I can calcualte the velocity of the fragment by taking the difference between the two coordinates.  Then, I sample the colors along a vector going in the direction of the velocity.  The average of this sample becomes the new fragment color.  
+  * There is also a debug view for this effect.  It shows the velocity (in color) at each fragment.  
+
 
 **Optimizations:**
 
@@ -76,16 +81,9 @@ shading pipeline and various lighting and visual effects using WebGL and GLSL.
       pipeline - make sure you disable the unused ones.
   * See mainly: `copy.frag.glsl`, `deferred/*.glsl`, `deferredSetup.js`
 
-### Extra Tasks
 
-You must do at least **10 points** worth of extra features (effects or
-optimizations/analysis).
 
-**Effects:**
 
-* (3pts) The effect you didn't choose above (bloom or toon shading)
-
-* (3pts) Screen-space motion blur (blur along velocity direction) [3]
 
 
 
