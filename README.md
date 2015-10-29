@@ -8,7 +8,7 @@ WebGL Deferred Shading
 
 ### Live Online
 
-[![](img/final_noEffects.png)](http://megmo21.github.io/Project6-WebGL-Deferred-Shading)
+[![](img/final_noEffects.png)](http://megmo21.github.io/Project6-WebGL-Deferred-Shading/)
 
 ### Demo Video
 
