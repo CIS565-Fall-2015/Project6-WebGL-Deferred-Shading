@@ -152,7 +152,7 @@ var width, height;
                 loadTexture('models/cow_norm.png').then(function(tex) {
                     m.normap = tex;
                 });
-                m.material = 0.0;
+                m.material = 1.0;
                 models.push(m);
             });
         });
