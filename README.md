@@ -60,4 +60,11 @@ The idea of bloom shading[2] here is to get the result color from the blinn-phon
 The motion blur is pretty easy to understand in the reference[3]. However, one major problem I came across is when I tried to record the old camera matrix, the whole object is stored. If I want to renew the camera matrix every 10 frame, the object camera matrix renew every frame since it is the current camera matrix's object. One way to solve this is to use the set function in THREE.js's Matrix4 class. I renew the scene(update the old camera matrix) every 15 frame and the blur is ideal.
 ![](img/blur.jpg)
 
+# Part VII: Performance Analysis
+1 Scissor Test vs non Scissor Test
+The Scissor Test is very important for performance improvement. The Small the scissor square is, the better the performance is enhanced. Below is a comparison of performance of with and without scissor test.
+![](img/ana_scissor.png)
+
+We can see that the average fps of using scissor outweight the method without the scissor in all comparison. When the computation is large(like in motion blur) the performance is not so obvious. But when the computation task is not heavy, the improvement is clear. I believe when the distance of camera to the light is large, the enhance in performance should be more obvious.
+
 
