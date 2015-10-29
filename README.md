@@ -44,3 +44,14 @@ Here the default value is black. I use the color map(texture) as its ambient col
 ![](img/rep4.jpg)
 
 # Part VI: Blinn-Phong Shader(With Lighting Fade Off)
+To implement the bline-phone effect, we need the camera position. Then using the light position we get the result. To improve the performance, we used scissor test to restrict the change of pixes are only within the scissor square. The scissor square is like:
+![](img/scissor.png)
+
+Then in the actual rendering, the lighting fade off is set to be linear. So we get the result here like:
+![](img/rep1.jpg)
+
+The specular coefficient is a random number between 1 and 60, with is passed to the shader with the G-buffer.
+
+# Part V: Bloom Shading(With Two Passes)
+The idea of bloom shading here is to get the result color from the blinn-phong shader first and post processing twice to get the bluring images. Using the Guassian function we first do the texture(color) offset in x direction. Then push the color back and reuse in the second pass, and then we do the texture(color) offset in y direction. The number of offset is 10 in both direction, and the coefficient for Guassian fade off is 0.8. If the color to be add is less than 0.8 in length, then discard it and use the original color. So after blurring, the result is like:
+![](img/rep5.jpg)
