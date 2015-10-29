@@ -7,7 +7,10 @@ var cfg;
         // TODO: Define config fields and defaults here
         this.debugView = -1;
         this.debugScissor = false;
-        this.enableEffect0 = false;
+        this.debugImproveScissor = false;
+        this.toon = false;
+        this.bloom = false;
+        this.motion = false;
     };
 
     var init = function() {
@@ -19,15 +22,17 @@ var cfg;
             'None':             -1,
             '0 Depth':           0,
             '1 Position':        1,
-            '2 Geometry normal': 2,
+            '2 Surface normal': 2,
             '3 Color map':       3,
-            '4 Normal map':      4,
-            '5 Surface normal':  5
+            '4 Velocity' :       4,
         });
         gui.add(cfg, 'debugScissor');
+        gui.add(cfg, 'debugImproveScissor');
 
         var eff0 = gui.addFolder('EFFECT NAME HERE');
-        eff0.add(cfg, 'enableEffect0');
+        eff0.add(cfg, 'toon');
+        eff0.add(cfg, 'bloom');
+        eff0.add(cfg, 'motion');
         // TODO: add more effects toggles and parameters here
     };
 

@@ -6,9 +6,13 @@
     R.pass_debug = {};
     R.pass_deferred = {};
     R.pass_post1 = {};
+    R.pass_toon = {};
+    R.pass_bloom = {};
+    R.pass_bloom2 = {};
+    R.pass_motion = {};
     R.lights = [];
 
-    R.NUM_GBUFFERS = 4;
+    R.NUM_GBUFFERS = 3;
 
     /**
      * Set up the deferred pipeline framebuffer objects and textures.
@@ -21,8 +25,8 @@
     };
 
     // TODO: Edit if you want to change the light initial positions
-    R.light_min = [-6, 0, -14];
-    R.light_max = [6, 18, 14];
+    R.light_min = [-14, 0, -6];
+    R.light_max = [14, 18, 6];
     R.light_dt = -0.03;
     R.LIGHT_RADIUS = 4.0;
     R.NUM_LIGHTS = 20; // TODO: test with MORE lights!
@@ -34,14 +38,14 @@
             for (var i = 0; i < 3; i++) {
                 var mn = R.light_min[i];
                 var mx = R.light_max[i];
-                r = Math.random() * (mx - mn) + mn;
+                r[i] = Math.random() * (mx - mn) + mn;
             }
             return r;
         };
 
         for (var i = 0; i < R.NUM_LIGHTS; i++) {
             R.lights.push({
-                pos: [posfn(), posfn(), posfn()],
+                pos: posfn(),
                 col: [
                     1 + Math.random(),
                     1 + Math.random(),
@@ -110,7 +114,7 @@
                 p.a_position  = gl.getAttribLocation(prog, 'a_position');
                 p.a_normal    = gl.getAttribLocation(prog, 'a_normal');
                 p.a_uv        = gl.getAttribLocation(prog, 'a_uv');
-
+                p.u_material  = gl.getUniformLocation(prog, 'u_material');
                 // Save the object into this variable for access later
                 R.progCopy = p;
             });
@@ -137,21 +141,49 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+            p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
+            p.u_toon = gl.getUniformLocation(p.prog, 'u_toon');
             R.prog_BlinnPhong_PointLight = p;
         });
 
         loadDeferredProgram('debug', function(p) {
             p.u_debug = gl.getUniformLocation(p.prog, 'u_debug');
+            p.u_prevPM = gl.getUniformLocation(p.prog, 'u_prevPM');
+            p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
             // Save the object into this variable for access later
             R.prog_Debug = p;
         });
 
         loadPostProgram('one', function(p) {
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_bloom = gl.getUniformLocation(p.prog, 'u_bloom');
+            p.u_dir = gl.getUniformLocation(p.prog, 'u_dir');
             // Save the object into this variable for access later
             R.progPost1 = p;
         });
 
+        loadPostProgram('toon', function(p) {
+            p.u_color = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_resolution = gl.getUniformLocation(p.prog, 'u_resolution');
+            R.progToon = p;
+        });
+
+        loadPostProgram('bloom', function(p) {
+            p.u_color = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_resolution = gl.getUniformLocation(p.prog, 'u_resolution');
+            p.u_dir = gl.getUniformLocation(p.prog, 'u_dir');
+            R.progBloom = p;
+        });
+
+        loadPostProgram('motion', function(p) {
+            p.u_color = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_prevPM = gl.getUniformLocation(p.prog,'u_prevPM');
+            p.u_invMat = gl.getUniformLocation(p.prog, 'u_invMat');
+            p.u_worldPos = gl.getUniformLocation(p.prog, 'u_worldPos');
+            p.u_depth = gl.getUniformLocation(p.prog, 'u_depth');
+            p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
+            R.progMotion = p;
+        })
         // TODO: If you add more passes, load and set up their shader programs.
     };
 

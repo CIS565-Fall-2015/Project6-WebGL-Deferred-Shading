@@ -79,9 +79,18 @@
             height: 100%;
         }
     </style>
+    #msgbox {
+        font-family: sans-serif;
+        color: white;
+        height: 1.4em;
+        position: fixed;
+        bottom: 2em;
+        left: 0;
+    }
 </head>
 <body>
     <canvas id="canvas" width="800px" height="600px"></canvas>
+    <div id="msgbox"></div>
     <div id="debugmodewarning">
         <strong style="font-size: 150%">DEBUG MODE!</strong>
         (Disable before measuring performance.)

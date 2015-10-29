@@ -17,16 +17,20 @@ var width, height;
             cameraMat: cameraMat,
             projMat: camera.projectionMatrix,
             viewMat: camera.matrixWorldInverse,
-            models: models
+            cameraPos: camera.position,
+            models: models,
+            width: width,
+            height: height
         });
     };
 
     var update = function() {
         controls.update();
+        stats.end();
         stats.begin();
         render();
-        gl.finish();
-        stats.end();
+        //gl.finish();
+        //stats.end();
         if (!aborted) {
             requestAnimationFrame(update);
         }
@@ -88,7 +92,8 @@ var width, height;
         initExtensions();
 
         stats = new Stats();
-        stats.setMode(1); // 0: fps, 1: ms, 2: mb
+        stats.setMode(0);
+        //stats.setMode(1); // 0: fps, 1: ms, 2: mb
         stats.domElement.style.position = 'absolute';
         stats.domElement.style.left = '0px';
         stats.domElement.style.top = '0px';
@@ -133,6 +138,21 @@ var width, height;
                 loadTexture('models/sponza/normal.png').then(function(tex) {
                     m.normap = tex;
                 });
+                m.material = 10000.0;
+                models.push(m);
+            });
+        });
+        loadModel('models/cube.obj', function(o) {
+            scene.add(o);
+            uploadModel(o, function(m) {
+                // CHECKITOUT: load textures
+                loadTexture('models/cow_color.jpg').then(function(tex) {
+                    m.colmap = tex;
+                });
+                loadTexture('models/cow_norm.png').then(function(tex) {
+                    m.normap = tex;
+                });
+                m.material = 0.0;
                 models.push(m);
             });
         });
@@ -200,7 +220,7 @@ var width, height;
                 elemCount: idx.length,
                 position: gposition,
                 normal: gnormal,
-                uv: guv
+                uv: guv,
             };
 
             if (callback) {

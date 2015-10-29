@@ -83,7 +83,9 @@ window.loadModel = function(obj, callback) {
     var onProgress = function(xhr) {
         if (xhr.lengthComputable) {
             var percentComplete = xhr.loaded / xhr.total * 100;
-            console.log(Math.round(percentComplete, 2) + '% downloaded');
+            var msg = obj + ': ' + Math.round(percentComplete, 2) + '% loaded';
+            console.log(msg);
+            $('#msgbox').text(msg);
         }
     };
 
@@ -107,6 +109,9 @@ window.readyModelForDraw = function(prog, m) {
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, m.normap);
         gl.uniform1i(prog.u_normap, 1);
+    }
+    if (m.material !== undefined) {
+        gl.uniform1f(prog.u_material, m.material);
     }
 
     gl.enableVertexAttribArray(prog.a_position);
@@ -162,6 +167,82 @@ window.getScissorForLight = (function() {
 
         minpt.set(Math.max(-1, a.x), Math.max(-1, a.y));
         maxpt.set(Math.min( 1, b.x), Math.min( 1, b.y));
+
+        if (maxpt.x < -1 || 1 < minpt.x ||
+            maxpt.y < -1 || 1 < minpt.y) {
+            return null;
+        }
+
+        minpt.addScalar(1.0); minpt.multiplyScalar(0.5);
+        maxpt.addScalar(1.0); maxpt.multiplyScalar(0.5);
+
+        ret[0] = Math.round(width * minpt.x);
+        ret[1] = Math.round(height * minpt.y);
+        ret[2] = Math.round(width * (maxpt.x - minpt.x));
+        ret[3] = Math.round(height * (maxpt.y - minpt.y));
+        return ret;
+    };
+})();
+
+window.getImprovedScissorForLight = (function() {
+    // Pre-allocate for performance - avoids additional allocation
+    var a = new THREE.Vector4(0, 0, 0, 0);
+    var b = new THREE.Vector4(0, 0, 0, 0);
+    var c = new THREE.Vector4(0, 0, 0, 0);
+    var d = new THREE.Vector4(0, 0, 0, 0);
+    var minpt = new THREE.Vector2(0, 0);
+    var minpt2 = new THREE.Vector2(0, 0);
+    var maxpt = new THREE.Vector2(0, 0);
+    var maxpt2 = new THREE.Vector2(0, 0);
+    var ret = [0, 0, 0, 0];
+
+    return function(view, proj, l) {
+        // front bottom-left corner of sphere's bounding cube
+        a.fromArray(l.pos);
+        a.w = 1;
+        a.applyMatrix4(view);
+        a.x -= l.rad;
+        a.y -= l.rad;
+        a.z -= l.rad;
+        a.applyMatrix4(proj);
+        a.divideScalar(a.w);
+
+        // front upper-right corner of sphere's bounding cube
+        b.fromArray(l.pos);
+        b.w = 1;
+        b.applyMatrix4(view);
+        b.x += l.rad;
+        b.y += l.rad;
+        b.z += l.rad;
+        b.applyMatrix4(proj);
+        b.divideScalar(b.w);
+
+        //back bottom-left corner of sphere's bounding cube
+        /*c.fromArray(l.pos);
+        c.w = 1;
+        c.x -= l.rad;
+        c.y -= l.rad;
+        c.z -= l.rad;
+        c.applyMatrix4(proj);
+        c.divideScalar(c.w);
+
+        //back upper-right corner of sphere's bounding cube
+        d.fromArray(l.pos);
+        d.w = 1;
+        d.applyMatrix4(view);
+        d.x += l.rad;
+        d.y += l.rad;
+        d.z -= l.rad;
+        d.applyMatrix4(proj);
+        d.divideScalar(d.w);*/
+
+        minpt.set(Math.max(-1, a.x), Math.max(-1, a.y));
+        //minpt2.set(Math.max(-1, c.x), Math.max(-1, c.y));
+        maxpt.set(Math.min( 1, b.x), Math.min( 1, b.y));
+        //maxpt2.set(Math.min(1, d.x), Math.min(1, d.y));
+
+        //minpt.set(Math.min(a.x, c.x), Math.min(a.y, c.y));
+        //maxpt.set(Math.max(b.x, d.x), Math.max(b.y, d.y));
 
         if (maxpt.x < -1 || 1 < minpt.x ||
             maxpt.y < -1 || 1 < minpt.y) {
