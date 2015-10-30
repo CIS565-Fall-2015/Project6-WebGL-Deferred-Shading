@@ -98,6 +98,8 @@ QUESTIONS
 	-glsl for loops have to have a determined number of iters right?
 -how to get the lighting shader to only handle the tile it's in?
 	-scissor? -> yeah yeah yeah!
+	-NO. we can render all the tiles at once.
+	-this necessitates a light data per tile list texture
 
 LOOK AT
 -binding textures to uniform pos: util.js -> window.readyModelForDraw
@@ -115,3 +117,17 @@ LOOK AT
 
 TRY
 -overwriting the color pass texture in bindTexturesForLightPass with a float array
+-making a texture the same way as in framework's loadmodels. can we inspect it?
+	-no
+
+TODO
+-add a texture of light info (color, position + radius)
+-add an int texture of light lists -> numLights * numTiles size. biiiiig.
+-add an int texture of light list pointers (per tile thingy) -> actually, can we just bind these as uniforms? lol why not?
+-add a light shader that does blinn phong over each light in the list
+	-needs to compute UV from indices provided, so needs to know how many lights
+	-needs to have enough looping room to do all the lights possible -> uh oh
+		-introduces a restriction on how many lights we can do per pass
+		-should we care about blending? or just artificially limit?
+		-presumably we're hoping you won't have > 100 lights in one tile
+	-aaaaand all the stupid messy binding and stuff that's associated with this

@@ -2,6 +2,9 @@
     'use strict';
     // deferredSetup.js must be loaded first
 
+    var TILE_SIZE = 16;
+    var MAX_LIGHTS_PER_TILE = 10;
+
     R.deferredRender = function(state) {
         if (!aborted && (
             !R.progCopy ||
@@ -41,12 +44,21 @@
             renderFullScreenQuad(R.progRed);
             return;
         } */
+
+        // copy pass
         if (cfg.compressedGbuffers) {
             R.pass_copy_compressed.render(state);
         } else {
             R.pass_copy.render(state);
         }
 
+        // set up info for tiling
+        if (cfg.enableTiling) {
+            R.updateLightTextures();
+            R.updateLightTileDatastructure();
+        }
+
+        // deferred and post process passes
         if (cfg.compressedGbuffers && cfg.debugView >= 0) {
             R.pass_debug_compressed.render(state);
         } else if (cfg.compressedGbuffers) {
@@ -72,6 +84,66 @@
             // OPTIONAL TODO: call more postprocessing passes, if any
         }
     };
+
+    // update light info texture, tile light lists, etc.
+    R.updateLightTextures = function() {
+        if (!R.light_colors_texture) {
+            R.light_colors_texture = gl.createTexture();
+        }
+        if (!R.lights_pos_rad_texture) {
+            R.lights_pos_rad_texture = gl.createTexture();
+        }
+
+        var dataColors = new Float32Array(R.NUM_LIGHTS * 4);
+        var dataPosRad = new Float32Array(R.NUM_LIGHTS * 4);
+
+        for (var i = 0; i < R.NUM_LIGHTS; i += 4) {
+            dataColors[i]     = R.lights[i].col[0];
+            dataColors[i + 1] = R.lights[i].col[1];
+            dataColors[i + 2] = R.lights[i].col[2];
+            dataColors[i + 3] = 1.0; // fake alpha. maybe someday it will be real alpha.
+
+            dataPosRad[i    ] = R.lights[i].pos[0];
+            dataPosRad[i + 1] = R.lights[i].pos[1];
+            dataPosRad[i + 2] = R.lights[i].pos[2];
+            dataPosRad[i + 3] = R.lights[i].rad;
+        }
+        gl.bindTexture(gl.TEXTURE_2D, R.light_colors_texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, R.NUM_LIGHTS, 1, 0, gl.RGBA, gl.FLOAT, dataColors);
+
+        gl.bindTexture(gl.TEXTURE_2D, R.lights_pos_rad_texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, R.NUM_LIGHTS, 1, 0, gl.RGBA, gl.FLOAT, dataPosRad);
+
+        gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
+    R.updateLightTileDatastructure = function() {
+        if (!R.NUM_TILES) {
+            var tilesWide = parseInt((width + TILE_SIZE - 1) / TILE_SIZE);
+            var tilesTall = parseInt((height + TILE_SIZE - 1) / TILE_SIZE);
+            R.NUM_TILES = tilesWide * tilesTall;
+        }
+
+        if (!R.tile_light_lists_tex) {
+            R.tile_light_lists_tex = gl.createTexture();
+        }
+
+        if (!R.tile_light_lists_indices_tex) {
+            R.tile_light_lists_indices_tex = gl.createTexture();;
+        }
+
+        dataLightLists = new IntArray(R.NUM_TILES * MAX_LIGHTS_PER_TILE);
+        dataLightListIndices = new IntArray(R.NUM_TIMES * 2);
+
+        var dataLightListsIndex = 0;
+        for (var i = 0; i < numTiles; i++) {
+            // compute tile 1's box in pix coordinates
+
+            for (var j = 0; j < MAX_LIGHTS_PER_TILE; j++) {
+                // check each light's scissor box against this tile
+            }
+        }
+    }
 
     /**
      * 'copy' pass: Render into g-buffers
@@ -406,17 +478,17 @@
         gl.useProgram(prog.prog);
 
         // testing updating textures with an array during runtime
-        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.gbufs[0]); // texture mapped color  
-        var data = new Float32Array(width * height * 4);
-        for (var i = 0; i < width * height * 4; i += 4) {
-            data[i] = 1.0;
-            data[i + 1] = 0.0;
-            data[i + 2] = 0.0;
-            data[i + 3] = 1.0;
-        }
+        //gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.gbufs[0]); // texture mapped color  
+        //var data = new Float32Array(width * height * 4);
+        //for (var i = 0; i < width * height * 4; i += 4) {
+        //    data[i] = 1.0;
+        //    data[i + 1] = 0.0;
+        //    data[i + 2] = 0.0;
+        //    data[i + 3] = 1.0;
+        //}
 
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, data);
-        gl.bindTexture(gl.TEXTURE_2D, null);
+        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, data);
+        //gl.bindTexture(gl.TEXTURE_2D, null);
 
         // * Bind all of the g-buffers and depth buffer as texture uniform
         //   inputs to the shader

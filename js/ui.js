@@ -9,8 +9,9 @@ var cfg;
         this.debugScissor = false;
         this.enableScissor = false;        
         this.enableBloom = false;
-        this.enableToon = true;        
+        this.enableToon = false;        
         this.compressedGbuffers = false;
+        this.enableTiling = true;
     };
 
     var init = function() {
@@ -29,6 +30,7 @@ var cfg;
         });
         gui.add(cfg, 'debugScissor');
         gui.add(cfg, 'enableScissor');
+        gui.add(cfg, 'enableTiling');
 
         var eff0 = gui.addFolder('effects');
         eff0.add(cfg, 'enableBloom');

@@ -63,6 +63,18 @@
                 rad: R.LIGHT_RADIUS
             });
         }
+
+        // set up light textures for tiling
+        var texColors = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texColors);
+        var dataColors = new Float32Array(R.NUM_LIGHTS * 4);
+
+        
+        
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, R.NUM_LIGHTS, 1, 0, gl.RGBA, gl.FLOAT, dataColors);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+        R.light_colors_texture = texColors;
+
     };
 
     /**
