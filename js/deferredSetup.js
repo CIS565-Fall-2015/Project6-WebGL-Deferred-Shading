@@ -137,7 +137,7 @@
         // contains lights per tile
         R.pass_tiled.lightTileTex = createAndBindLightDataTexture();
         // contains indices into lightTileTex
-        R.pass_tiled.tileIndexTex = createAndBindLightDataTexture();
+        R.pass_tiled.tileOffsetTex = createAndBindLightDataTexture();
     };
 
     /**
@@ -191,10 +191,15 @@
 
         loadDeferredProgram('tile', function(p) {
             // Save the object into this variable for access later
-            p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
-            p.u_toon      = gl.getUniformLocation(p.prog, 'u_toon');
-            p.u_lightsPR = gl.getUniformLocation(p.prog, 'u_lightsPR');
-            p.u_lightsC  = gl.getUniformLocation(p.prog, 'u_lightsC');
+            p.u_cameraPos    = gl.getUniformLocation(p.prog, 'u_cameraPos');
+            p.u_toon         = gl.getUniformLocation(p.prog, 'u_toon');
+
+            p.u_lightsPR     = gl.getUniformLocation(p.prog, 'u_lightsPR');
+            p.u_lightsC      = gl.getUniformLocation(p.prog, 'u_lightsC');
+            p.u_lightIndices = gl.getUniformLocation(p.prog, 'u_lightIndices');
+            p.u_tileOffsets  = gl.getUniformLocation(p.prog, 'u_tileOffsets');
+
+            p.u_tileIdx      = gl.getUniformLocation(p.prog, 'u_tileIdx');
             R.progTiled = p;
         });
 

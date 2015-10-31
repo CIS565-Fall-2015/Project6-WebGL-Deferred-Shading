@@ -29,20 +29,21 @@
         gl.uniform1i(prog.u_depth, R.NUM_GBUFFERS);
     };
 
-    var bindTexturePR = function(prog, tex, data, textureID, numLights) {
+    var bindTexturePR = function(prog, tex, data, textureID, size) {
         gl.activeTexture(gl['TEXTURE' + textureID]);
         gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, numLights, 1, 0, gl.RGBA, gl.FLOAT, data);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, 1, 0, gl.RGBA, gl.FLOAT, data);
 
         gl.uniform1i(prog.u_lightsPR, textureID);
     };
 
-    var bindTextureC = function(prog, tex, data, textureID, numLights) {
+    var bindTextureRGB = function(prog, uniformTarget, tex, data, textureID, size) {
+        //debugger;
         gl.activeTexture(gl['TEXTURE' + textureID]);
         gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, numLights, 1, 0, gl.RGB, gl.FLOAT, data);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, size, 1, 0, gl.RGB, gl.FLOAT, data);
 
-        gl.uniform1i(prog.u_lightsC, textureID);
+        gl.uniform1i(uniformTarget, textureID);
     };
 
     R.deferredRender = function(state) {
@@ -139,11 +140,9 @@
         renderFullScreenQuad(R.prog_Ambient);
 
         // Constants
-        var WIDTH  = 800;
-        var HEIGHT = 600;
         var TILE_SIZE = 100;
-        var TILES_WIDTH  = WIDTH  / TILE_SIZE;
-        var TILES_HEIGHT = HEIGHT / TILE_SIZE;
+        var TILES_WIDTH  = width  / TILE_SIZE;
+        var TILES_HEIGHT = height / TILE_SIZE;
         var NUM_TILES = TILES_WIDTH * TILES_HEIGHT;
 
         // [ tiles ] [ lights per tile ].
@@ -167,7 +166,7 @@
 
                 for (var x = tileX; x < tileX + tileW; x++) {
                     for (var y = tileY; y < tileY + tileH; y++) {
-                        var idx = x + y * TILES_WIDTH;
+                        var idx = x + (TILES_HEIGHT - y) * TILES_WIDTH;
                         if (idx < TILES_WIDTH * TILES_HEIGHT) {
                             tileLights[idx].push(lightIdx);
                         }
@@ -179,8 +178,8 @@
         }
 
         // Generate textures from tileLights.
-        var lightsForTile     = new Float32Array(10 * NUM_TILES);
-        var lightArrayIndices = new Float32Array(2 * NUM_TILES);
+        var lightIndices = new Float32Array(10 * NUM_TILES);
+        var tileOffsets  = new Float32Array( 3 * NUM_TILES);
 
         // Loop over tiles
         var totalOffset = 0;
@@ -189,11 +188,11 @@
             var len = lights.length;
             totalOffset += len;
 
-            lightArrayIndices[2*tile] = totalOffset;
-            lightArrayIndices[2*tile+1] = len;
+            tileOffsets[2*tile] = len;
+            tileOffsets[2*tile+1] = totalOffset;
 
             for (var lightIdx = 0; lightIdx < len; lightIdx++) {
-                // TODO store into lightsForTile
+                // TODO store into lightIndices
             }
         }
 
@@ -208,15 +207,25 @@
         gl.uniform1i(program.u_toon, cfg.toon ? 1 : 0);
         var cam = state.cameraPos;
 
-        bindTexturePR(program, R.pass_tiled.lightDataPosRad, R.lightTexturePosRad, R.NUM_GBUFFERS+1, R.lights.length);
-        bindTextureC (program, R.pass_tiled.lightDataCol,    R.lightTextureCol,    R.NUM_GBUFFERS+2, R.lights.length);
-        //bindTexture(program, R.pass_tiled.lightTileTex, lightsForTile,     R.NUM_GBUFFERS+2);
-        //bindTexture(program, R.pass_tiled.tileIndexTex, lightArrayIndices, R.NUM_GBUFFERS+1);
+        bindTexturePR(program,
+                      R.pass_tiled.lightDataPosRad, R.lightTexturePosRad,
+                      R.NUM_GBUFFERS+1, R.lights.length);
+        bindTextureRGB(program, program.u_lightsPR,
+                       R.pass_tiled.lightDataCol, R.lightTextureCol,
+                       R.NUM_GBUFFERS+2, R.lights.length);
+//        bindTextureRGB(program, program.u_lightTileTex,
+//                       R.pass_tiled.lightTileTex, lightIndices,
+//                       R.NUM_GBUFFERS+3, lightIndices.length);
+        bindTextureRGB(program, program.u_tileOffsets,
+                    R.pass_tiled.tileOffsetTex, tileOffsets,
+                    R.NUM_GBUFFERS+4, NUM_TILES);
 
         // Loop through the tiles and call the program for each.
         for (var x = 0; x < TILES_WIDTH; x++) {
             for (var y = 0; y < TILES_HEIGHT; y++) {
                 gl.scissor(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                var idx = x + y * TILES_WIDTH;
+                gl.uniform1f(program.u_tileIdx, idx / NUM_TILES);
                 renderFullScreenQuad(program);
             }
         }
