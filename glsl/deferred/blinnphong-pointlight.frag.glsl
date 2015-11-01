@@ -44,10 +44,10 @@ vec3 lightTerms(vec3 normal, vec3 pos) {
 float maxDepth(float depth, vec2 v_uv) {
     float u = v_uv.x;
     float v = v_uv.y;
-    float d1 = texture2D(u_depth, vec2(u+(1./800.), v)).x;
-    float d2 = texture2D(u_depth, vec2(u-(1./800.), v)).x;
-    float d3 = texture2D(u_depth, vec2(u, (v+1./600.))).x;
-    float d4 = texture2D(u_depth, vec2(u, (v-1./600.))).x;
+    float d1 = texture2D(u_depth, vec2(u+(2./800.), v)).x;
+    float d2 = texture2D(u_depth, vec2(u-(2./800.), v)).x;
+    float d3 = texture2D(u_depth, vec2(u, (v+2./600.))).x;
+    float d4 = texture2D(u_depth, vec2(u, (v-2./600.))).x;
     return max(
                 max(
                     max(
@@ -89,7 +89,7 @@ void main() {
     if (u_toon == 1) {
         diff = float(int(diff * TOON_STEPS)) / TOON_STEPS;
         float surroundingDepth = maxDepth(depth, v_uv);
-        if (surroundingDepth > .001) {
+        if (surroundingDepth > .01) {
             gl_FragColor = vec4(0, 0, 0, 1);
             return;
         }

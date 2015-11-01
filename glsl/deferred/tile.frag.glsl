@@ -14,6 +14,9 @@ uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
 uniform sampler2D u_lightsPR;
 uniform sampler2D u_lightsC;
+uniform sampler2D u_lightIndices;
+uniform sampler2D u_tileOffsets;
+uniform float u_tileIdx;
 
 varying vec2 v_uv;
 
@@ -66,11 +69,17 @@ void main() {
     vec4 gb3 = texture2D(u_gbufs[3], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
 
+    // len of lights, array offset
+    vec4 tileOffset = texture2D(u_tileOffsets, vec2(u_tileIdx, 0));
+    // (x, y, z)-pos, radius
     vec4 lightPosRad = texture2D(u_lightsPR, vec2(0, 0));
+    // (r, g, b)
     vec4 lightc = texture2D(u_lightsC, vec2(0, 0));
 
-    gl_FragColor = vec4(vec3(lightPosRad).xyz, 0);
-    gl_FragColor = vec4(lightc);
+    gl_FragColor = vec4(vec3(u_tileIdx), 1);
+    //gl_FragColor = vec4(vec3(lightc/2.), 1);
+    gl_FragColor = vec4(tileOffset.x / 10.0);
+    //gl_FragColor = vec4(abs(vec3(lightPosRad).xyz) / 13., 1);
     return;
 
     // worldspace positions

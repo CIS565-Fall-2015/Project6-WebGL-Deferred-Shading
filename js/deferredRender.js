@@ -67,6 +67,9 @@
             R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
         }
 
+        // Update light textures with new position values
+        R.writeLightTextures();
+
         // Execute deferred shading pipeline
         R.pass_copy.render(state);
 
@@ -137,12 +140,12 @@
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
         gl.uniform1f(R.prog_Ambient.u_ambientTerm, cfg.ambient);
-        renderFullScreenQuad(R.prog_Ambient);
+        //renderFullScreenQuad(R.prog_Ambient);
 
         // Constants
-        var TILE_SIZE = 100;
-        var TILES_WIDTH  = width  / TILE_SIZE;
-        var TILES_HEIGHT = height / TILE_SIZE;
+        var TILE_SIZE = 50;
+        var TILES_WIDTH  = Math.ceil(width  / TILE_SIZE);
+        var TILES_HEIGHT = Math.ceil(height / TILE_SIZE);
         var NUM_TILES = TILES_WIDTH * TILES_HEIGHT;
 
         // [ tiles ] [ lights per tile ].
@@ -159,15 +162,15 @@
             var sc = getScissorForLight(state.viewMat, state.projMat, light);
             // xmin, ymin, xwidth, ywidth
             if (sc !== null && sc[2] > 0 && sc[3] > 0) {
-                var tileX = Math.round(sc[0] / TILE_SIZE);
-                var tileY = Math.round(sc[1] / TILE_SIZE);
-                var tileW = Math.round(sc[2] / TILE_SIZE);
-                var tileH = Math.round(sc[3] / TILE_SIZE);
+                var tileX = Math.floor(sc[0] / TILE_SIZE);
+                var tileY = Math.floor(sc[1] / TILE_SIZE);
+                var tileW = Math.ceil (sc[2] / TILE_SIZE);
+                var tileH = Math.ceil (sc[3] / TILE_SIZE);
 
-                for (var x = tileX; x < tileX + tileW; x++) {
-                    for (var y = tileY; y < tileY + tileH; y++) {
-                        var idx = x + (TILES_HEIGHT - y) * TILES_WIDTH;
-                        if (idx < TILES_WIDTH * TILES_HEIGHT) {
+                for (var y = tileY; y <= tileY + tileH; y++) {
+                    for (var x = tileX; x <= tileX + tileW; x++) {
+                        var idx = x + (y - 1) * TILES_WIDTH;
+                        if (idx >= 0 && idx < TILES_WIDTH * TILES_HEIGHT) {
                             tileLights[idx].push(lightIdx);
                         }
                     }
@@ -183,13 +186,14 @@
 
         // Loop over tiles
         var totalOffset = 0;
-        for (var tile = 0; tile < TILES_WIDTH * TILES_HEIGHT; tile++) {
-            var lights = tileLights[tile];
+        for (var tileIdx = 0; tileIdx < TILES_WIDTH * TILES_HEIGHT; tileIdx++) {
+            var lights = tileLights[tileIdx];
             var len = lights.length;
-            totalOffset += len;
 
-            tileOffsets[2*tile] = len;
-            tileOffsets[2*tile+1] = totalOffset;
+            tileOffsets[3*tileIdx] = len;
+            tileOffsets[3*tileIdx+1] = totalOffset;
+
+            totalOffset += len;
 
             for (var lightIdx = 0; lightIdx < len; lightIdx++) {
                 // TODO store into lightIndices
@@ -210,21 +214,22 @@
         bindTexturePR(program,
                       R.pass_tiled.lightDataPosRad, R.lightTexturePosRad,
                       R.NUM_GBUFFERS+1, R.lights.length);
-        bindTextureRGB(program, program.u_lightsPR,
+        bindTextureRGB(program, program.u_lightsC,
                        R.pass_tiled.lightDataCol, R.lightTextureCol,
                        R.NUM_GBUFFERS+2, R.lights.length);
 //        bindTextureRGB(program, program.u_lightTileTex,
 //                       R.pass_tiled.lightTileTex, lightIndices,
 //                       R.NUM_GBUFFERS+3, lightIndices.length);
+
         bindTextureRGB(program, program.u_tileOffsets,
-                    R.pass_tiled.tileOffsetTex, tileOffsets,
-                    R.NUM_GBUFFERS+4, NUM_TILES);
+                       R.pass_tiled.tileOffsetTex, tileOffsets,
+                       R.NUM_GBUFFERS+4, tileOffsets.length / 3);
 
         // Loop through the tiles and call the program for each.
         for (var x = 0; x < TILES_WIDTH; x++) {
             for (var y = 0; y < TILES_HEIGHT; y++) {
                 gl.scissor(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                var idx = x + y * TILES_WIDTH;
+                var idx = x + (TILES_HEIGHT - 1 - y) * TILES_WIDTH;
                 gl.uniform1f(program.u_tileIdx, idx / NUM_TILES);
                 renderFullScreenQuad(program);
             }

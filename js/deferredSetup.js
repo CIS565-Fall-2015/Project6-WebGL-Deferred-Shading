@@ -60,23 +60,31 @@
             });
         }
         // And slice to size, if you're removing lights
-        R.lights.lights = numLights;
+        R.lights.length = numLights;
+        //R.lights = R.lights.slice(0, numLights);
 
-        // Write to lightTextures
         R.lightTexturePosRad = new Float32Array(4 * numLights);
         R.lightTextureCol    = new Float32Array(3 * numLights);
+        // Store colors
         for (i = 0; i < numLights; i++) {
+            var light = R.lights[i];
+            var idxC  = 3*i;
+            R.lightTextureCol[idxC+0] = light.col[0];
+            R.lightTextureCol[idxC+1] = light.col[1];
+            R.lightTextureCol[idxC+2] = light.col[2];
+        }
+        R.writeLightTextures();
+    };
+
+    // Write new position values values into R.lightTexturePosRad.
+    R.writeLightTextures = function() {
+        for (var i = 0; i < R.lights.length; i++) {
             var light = R.lights[i];
             var idxPR = 4*i;
             R.lightTexturePosRad[idxPR+0] = light.pos[0];
             R.lightTexturePosRad[idxPR+1] = light.pos[1];
             R.lightTexturePosRad[idxPR+2] = light.pos[2];
             R.lightTexturePosRad[idxPR+3] = light.rad;
-
-            var idxC  = 3*i;
-            R.lightTexturePosRad[idxC+0] = light.col[0];
-            R.lightTexturePosRad[idxC+1] = light.col[1];
-            R.lightTexturePosRad[idxC+2] = light.col[2];
         }
     };
 

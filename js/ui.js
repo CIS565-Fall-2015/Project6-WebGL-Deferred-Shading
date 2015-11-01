@@ -12,7 +12,7 @@ var cfg;
 
         this.ambient = 0.2;
         this.lightRadius = 4.0;
-        this.numLights = 25;
+        this.numLights = 10;
     };
 
     var init = function() {
@@ -54,6 +54,7 @@ var cfg;
         consts.add(cfg, 'numLights').min(25).max(500).step(5).onFinishChange(updateLights);
 
         consts.open();
+        updateLights();
     };
 
     window.handle_load.push(init);
