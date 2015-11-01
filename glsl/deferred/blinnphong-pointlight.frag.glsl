@@ -3,6 +3,8 @@ precision highp float;
 precision highp int;
 
 #define NUM_GBUFFERS 4
+#define WIDTH 600
+#define HEIGHT 800
 
 uniform vec3 u_lightCol;
 uniform vec3 u_lightPos;
@@ -83,6 +85,11 @@ void main() {
 		}
 		else diff = 0.0;
 	}
-
+	
+	else if(u_mode == 2.0)
+	{
+		//Bloom filtering
+	}
+	
     gl_FragColor = vec4(attenuation * colmap * u_lightCol * (diff + spec), 1.0);
 }
