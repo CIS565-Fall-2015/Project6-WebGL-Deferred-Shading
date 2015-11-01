@@ -160,10 +160,11 @@
         for (var i = 0; i < R.lights.length; i++) {
             var light = R.lights[i];
             
+            //TODO: Fix this.
             var sc = getScissorForLight(state.viewMat, state.projMat, light);
             if(sc != null)
                 gl.scissor(sc[0], sc[1], sc[2], sc[3]);
-            
+                
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, light.pos);
             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, light.col);
             gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, light.rad);
