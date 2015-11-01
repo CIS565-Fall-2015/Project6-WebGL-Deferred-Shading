@@ -7,6 +7,8 @@ precision highp int;
 uniform vec3 u_lightCol;
 uniform vec3 u_lightPos;
 uniform float u_lightRad;
+uniform vec3 u_camPos;
+
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
 
@@ -37,16 +39,25 @@ void main() {
 
     // If nothing was rendered to this pixel, set alpha to 0 so that the
     // postprocessing step can render the sky color.
+
     if (depth == 1.0) {
         gl_FragColor = vec4(0, 0, 0, 0);
         return;
     }
 	
-  	vec3 lightdiff = u_lightPos - pos;
-    float lightdist = length(lightdiff);
-    vec3 lightdir = lightdiff / lightdist;
-    vec3 diff = u_lightCol
-         * max(0.0, dot(nor, lightdir))
-         * max(0.0, u_lightRad - lightdist);
-    gl_FragColor = vec4(colmap * diff, 1.0);
+	vec3 lightVector = u_lightPos - pos;
+	float attenuation = max (0.0, u_lightRad- length(lightVector));
+	
+	lightVector = normalize(lightVector);
+	vec3 lightReflectVector = reflect(-lightVector, nor);
+	vec3 camVector = normalize(u_camPos - pos);
+
+	vec3 H = normalize(lightVector + camVector);
+		
+	//Assuming Kspec = 0.01 and shininess = 0.01
+	float spec = 0.01 * pow(clamp(0.0, 1.0, dot(nor, H)), 0.01);
+	
+	float diff =  max(0.0,dot(nor, lightVector));
+		
+    gl_FragColor = vec4(attenuation * colmap * u_lightCol * (diff + spec), 1.0);
 }

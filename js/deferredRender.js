@@ -1,3 +1,4 @@
+
 (function() {
     'use strict';
     // deferredSetup.js must be loaded first
@@ -6,6 +7,7 @@
         if (!aborted && (
             !R.progCopy ||
             !R.progRed ||
+			!R.progSphere ||
             !R.progClear ||
             !R.prog_Ambient ||
             !R.prog_BlinnPhong_PointLight ||
@@ -49,7 +51,7 @@
      */
     R.pass_copy.render = function(state) {
         // * Bind the framebuffer R.pass_copy.fbo
-		gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_copy.fbo);
 
         // * Clear screen using R.progClear
         renderFullScreenQuad(R.progClear);
@@ -127,28 +129,57 @@
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
 		
 
-	    for (var i = 0; i < R.lights.length; i++) {
-	             var l = R.lights[i];
-	             var pos = l.pos;
-	             var col = l.col;
-	             var rad = l.rad;
-	  
-	             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, pos);
-	             gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, col);
-	             gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, rad);
+	    for (var i = 0; i < R.NUM_LIGHTS; i++) 
+		{
+			var l = R.lights[i];
+			
+			if (cfg.debug)
+			{
+				if(cfg.primitive == 0)
+				{
+					// debugger;
+					gl.enable(gl.SCISSOR_TEST);
+					var scissor = getScissorForLight(state.viewMat, state.projMat, l);
+					if(scissor!=null)
+					{
+						gl.scissor(scissor[0],scissor[1],scissor[2],scissor[3]);
+						renderFullScreenQuad(R.progRed);
+					}
+					gl.disable(gl.SCISSOR_TEST);
+				}
 
-	             var sc = getScissorForLight(state.viewMat, state.projMat, l);
-	             if (sc) {
-	              gl.scissor(sc[0], sc[1], sc[2], sc[3]);
-	              if (cfg.debugScissor) {
-	                 renderFullScreenQuad(R.progRed);
-			 	} else {
-	             renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
-	           	 	}
-			 	}
-	         }
-	         gl.disable(gl.SCISSOR_TEST);
-			 
+				else
+				{
+				    var translationMatrix = new THREE.Matrix4().makeTranslation(l.pos[0], l.pos[1], l.pos[2]);
+				    var scaleMatrix = new THREE.Matrix4().makeScale(l.rad, l.rad, l.rad);
+					var modelMatrix = new THREE.Matrix4().multiplyMatrices(translationMatrix, scaleMatrix);
+
+					//debugger;
+					gl.uniformMatrix4fv(R.progSphere.u_viewMatrix, false, state.viewMat.elements);
+					gl.uniformMatrix4fv(R.progSphere.u_projMatrix, false, state.projMat.elements);
+					gl.uniformMatrix4fv(R.progSphere.u_modelMatrix, false, modelMatrix.elements);
+					gl.uniform3fv(R.progSphere.u_pos, l.pos);
+					gl.uniform1f(R.progSphere.u_scale, l.rad.x);
+
+					readyModelForDraw(R.progSphere, R.sphereModel);
+					//gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+					drawReadyModel(R.sphereModel);
+				}
+			}
+
+	
+			else
+			{
+				gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, l.pos);
+				gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, l.col);
+				gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, l.rad);
+				gl.uniform3f(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos.x, state.cameraPos.y, state.cameraPos.z);
+				renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+			}
+		}
+			
+
+//
 		// TODO: In the lighting loop, use the scissor test optimization
         // Enable gl.SCISSOR_TEST, render all lights, then disable it.
         //
@@ -251,7 +282,7 @@
 			
             // Use gl.vertexAttribPointer to tell WebGL the type/layout for
             // prog.a_position's access pattern.
-			gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, false, 0, 0);
+			gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, gl.FALSE, 0, 0);
 
 			// Use gl.drawArrays (or gl.drawElements) to draw your quad.
 			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -260,4 +291,5 @@
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
         };
     })();
+	
 })();

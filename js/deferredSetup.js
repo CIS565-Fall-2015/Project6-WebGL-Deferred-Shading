@@ -124,6 +124,17 @@
                 // Create an object to hold info about this shader program
                 R.progRed = { prog: prog };
             });
+			
+        loadShaderProgram(gl, 'glsl/sphere.vert.glsl', 'glsl/red.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                prog.u_viewMatrix = gl.getUniformLocation(prog, 'u_viewMatrix');
+                prog.u_modelMatrix = gl.getUniformLocation(prog, 'u_modelMatrix');
+				prog.u_projMatrix = gl.getUniformLocation(prog, 'u_projMatrix');
+				prog.u_pos = gl.getUniformLocation(prog, 'u_pos');
+				prog.u_scale = gl.getUniformLocation(prog, 'u_scale');
+                R.progSphere = { prog: prog };
+            });
 
         loadShaderProgram(gl, 'glsl/quad.vert.glsl', 'glsl/clear.frag.glsl',
             function(prog) {
@@ -141,6 +152,7 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+            p.u_camPos = gl.getUniformLocation(p.prog, 'u_camPos');
             R.prog_BlinnPhong_PointLight = p;
         });
 

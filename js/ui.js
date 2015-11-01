@@ -6,15 +6,20 @@ var cfg;
     var Cfg = function() {
         // TODO: Define config fields and defaults here
         this.debugView = -1;
-        this.debugScissor = false;
-        this.enableEffect0 = false;
+		this.debug = false;
+        this.primitive = 0;
+				
+//        this.enableEffect0 = false;
+		
+		this.toon = false;
+		this.bloom = false;
     };
 
     var init = function() {
         cfg = new Cfg();
 
         var gui = new dat.GUI();
-        // TODO: Define any other possible config values
+
         gui.add(cfg, 'debugView', {
             'None':             -1,
             '0 Depth':           0,
@@ -24,11 +29,19 @@ var cfg;
             '4 Normal map':      4,
             '5 Surface normal':  5
         });
-        gui.add(cfg, 'debugScissor');
+		
+		gui.add(cfg, 'debug');
 
-        var eff0 = gui.addFolder('EFFECT NAME HERE');
+		
+        gui.add(cfg, 'primitive', {
+            '0 Scissor':  0,
+            '1 Sphere':   1
+        });
+		
+        var eff0 = gui.addFolder('Effects');
         eff0.open();
-        eff0.add(cfg, 'enableEffect0');
+        eff0.add(cfg, 'toon');
+		eff0.add(cfg, 'bloom');
         // TODO: add more effects toggles and parameters here
     };
 
