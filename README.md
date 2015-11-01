@@ -34,17 +34,15 @@ This did not have any measurable performace impact.
 #### Debug Views
 
 <img src="images/depth.png" height="200" width="266.666666667">
-Depth view
 <img src="images/points.png" height="200" width="266.666666667">
-Points view
+
+Depth view                     Points view
 <img src="images/colormap.png" height="200" width="266.666666667">
-Color Map view
 <img src="images/normalMap.png" height="200" width="266.666666667">
-Normal Map view
+Color Map view                 Normal Map view
 <img src="images/geomNorm.png" height="200" width="266.666666667">
-Geometry Normals view
 <img src="images/surfaceNormals.png" height="200" width="266.666666667">
-Surface Normals view
+Geometry Normals view          Surface Normals view
 
 ===============================================================
 
