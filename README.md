@@ -36,17 +36,17 @@ This did not have any measurable performace impact.
 <img src="images/depth.png" height="200" width="266.666666667">
 <img src="images/points.png" height="200" width="266.666666667">
 
-Depth view  ....................... Points view
+Depth view  ............................. Points view
 
 <img src="images/colormap.png" height="200" width="266.666666667">
 <img src="images/normalMap.png" height="200" width="266.666666667">
 
-Color Map view .................... Normal Map view
+Color Map view .......................... Normal Map view
 
 <img src="images/geomNorm.png" height="200" width="266.666666667">
 <img src="images/surfaceNormals.png" height="200" width="266.666666667">
 
-Geometry Normals view .............. Surface Normals view
+Geometry Normals view ................... Surface Normals view
 
 ===============================================================
 
