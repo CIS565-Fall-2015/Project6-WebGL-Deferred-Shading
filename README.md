@@ -17,3 +17,13 @@ WebGL Deferred Shading
 
 ### Deferred Shader
 
+Implemented the scissor test, toon shader, sphere proxy in WebGL.
+
+#### Debug Views
+
+<img src="images/depth.png" height="150" width="200">
+<img src="images/points.png" height="150" width="200">
+<img src="images/colormap.png" height="150" width="200">
+<img src="images/normalMap.png" height="150" width="200">
+<img src="images/geomMap.png" height="150" width="200">
+<img src="images/surfaceNormals.png" height="150" width="200">
