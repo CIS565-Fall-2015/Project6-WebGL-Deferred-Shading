@@ -23,10 +23,9 @@ Implemented the scissor test, toon shader, sphere proxy in WebGL.
 
 ### Toon Shader
 
-I implemented a ramp based toon shader. The comparion between simple Blinn Phong shading and a Toon shader can be seen below
+I implemented a ramp based toon shader.
 
-<img src="images/toonShader.png" height="300" width="400">
-<img src="images/blinnPhong2.png" height="300" width="400">
+<img src="images/toonShader.png">
 
 This did not have any measurable performace impact.
 
