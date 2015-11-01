@@ -148,7 +148,7 @@ window.getScissorForLight = (function() {
     var b = new THREE.Vector4(0, 0, 0, 0);
     var min = new THREE.Vector3(1, 1, 1);
     var max = new THREE.Vector3(-1, -1, -1);
-    var ret = [0, 0, 0, 0];
+    var ret = [0.0, 0.0, 0.0, 0.0];
 
     return function(view, proj, l) {
         min.x = 1;
@@ -165,10 +165,10 @@ window.getScissorForLight = (function() {
         a.z -= l.rad;
         
         for(var i = 0; i < 2; i++){
-            b.x = a.x + i * 2 * l.rad;
             for(var j = 0; j < 2; j++){
-                b.y = a.y + j * 2 * l.rad;
                 for(var k = 0; k < 2; k++){
+                    b.x = a.x + i * 2 * l.rad;
+                    b.y = a.y + j * 2 * l.rad;
                     b.z = a.z + k * 2 * l.rad;
                     b.w = 1;
                     b.applyMatrix4(view);
@@ -184,16 +184,13 @@ window.getScissorForLight = (function() {
             max.x < -1 || max.y < -1 || max.z < 0) 
             return null;
         
-        min.x = Math.min(Math.max((min.x + 1.0) / 2.0, 0), 1);
-        min.y = Math.min(Math.max((1.0 - min.y) / 2.0, 0), 1);
-        max.x = Math.max(Math.min((max.x + 1.0) / 2.0, 1), 0);
-        max.y = Math.max(Math.min((1.0 - max.y) / 2.0, 1), 0);
+        ret[0] = Math.round(width * Math.max((min.x + 1.0) / 2.0, 0));
+        ret[1] = Math.round(height * Math.min((min.y + 1.0) / 2.0, 1));
+        ret[2] = Math.round(width * Math.max((max.x + 1.0) / 2.0, 0)) - ret[0];
+        ret[3] = Math.round(height * Math.min((max.y + 1.0) / 2.0, 1)) - ret[1];  
         
-        ret[0] = Math.round(width * min.x);
-        ret[1] = Math.round(height * min.y);
-        ret[2] = Math.round(width * (max.x - min.x));
-        ret[3] = Math.round(height * (max.y - min.y));
-        return ret;
+        if(ret[2] <= 0 || ret[3] <= 0) return null;
+        else return ret;
     };
 })();
 
