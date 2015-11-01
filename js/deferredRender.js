@@ -159,7 +159,7 @@
 					gl.uniformMatrix4fv(R.progSphere.u_projMatrix, false, state.projMat.elements);
 					gl.uniformMatrix4fv(R.progSphere.u_modelMatrix, false, modelMatrix.elements);
 					gl.uniform3fv(R.progSphere.u_pos, l.pos);
-					gl.uniform1f(R.progSphere.u_scale, l.rad.x);
+					gl.uniform1f(R.progSphere.u_scale, l.rad);
 
 					readyModelForDraw(R.progSphere, R.sphereModel);
 					//gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -170,9 +170,27 @@
 	
 			else
 			{
+				var mode;
+				if(cfg.toon)
+				{
+					mode = 1.0;
+				}
+				
+				else if(cfg.bloom)
+				{
+					mode = 2.0;
+				}
+				
+				else
+				{
+					mode = 0.0;
+				}
+				
 				gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, l.pos);
 				gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, l.col);
 				gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, l.rad);
+				gl.uniform1f(R.prog_BlinnPhong_PointLight.u_mode, mode);
+				
 				gl.uniform3f(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos.x, state.cameraPos.y, state.cameraPos.z);
 				renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
 			}

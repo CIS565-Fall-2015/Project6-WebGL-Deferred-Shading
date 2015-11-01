@@ -153,6 +153,7 @@
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
             p.u_camPos = gl.getUniformLocation(p.prog, 'u_camPos');
+			p.u_mode = gl.getUniformLocation(p.prog, 'u_mode');
             R.prog_BlinnPhong_PointLight = p;
         });
 
