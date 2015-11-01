@@ -21,12 +21,18 @@ Implemented the scissor test, toon shader, sphere proxy in WebGL.
 
 #### Debug Views
 
-<img src="images/depth.png" height="150" width="200">
-<img src="images/points.png" height="150" width="200">
-<img src="images/colormap.png" height="150" width="200">
-<img src="images/normalMap.png" height="150" width="200">
-<img src="images/geomNorm.png" height="150" width="200">
-<img src="images/surfaceNormals.png" height="150" width="200">
+<img src="images/depth.png" height="200" width="266.666666667">
+Depth view
+<img src="images/points.png" height="200" width="266.666666667">
+Points view
+<img src="images/colormap.png" height="200" width="266.666666667">
+Color Map view
+<img src="images/normalMap.png" height="200" width="266.666666667">
+Normal Map view
+<img src="images/geomNorm.png" height="200" width="266.666666667">
+Geometry Normals view
+<img src="images/surfaceNormals.png" height="200" width="266.666666667">
+Surface Normals view
 
 #### Performance Analysis
 
