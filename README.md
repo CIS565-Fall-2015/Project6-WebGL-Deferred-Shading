@@ -52,7 +52,7 @@ Geometry Normals view ................... Surface Normals view
 
 ###Performance Analysis
 
-I used the default scissor test. It gives a speed up of arounf 2x.
+I used the default scissor test. It gives a speed up of about 2x. This was tested with 20 lights. The time comparison (in ms) is as follows
 
 <img src="analysis/scissorTest.png">
 
