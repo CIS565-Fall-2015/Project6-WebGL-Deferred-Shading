@@ -64,7 +64,7 @@
         // * "Use" the program R.progCopy.prog
 		gl.useProgram(R.progCopy.prog);
 
-        var m = state.cameraMat.elements;
+        //var m = state.cameraMat.elements;
         // * Upload the camera matrix m to the uniform R.progCopy.u_cameraMat
         //   using gl.uniformMatrix4fv
 		gl.uniformMatrix4fv(R.progCopy.u_cameraMat, gl.FALSE, state.cameraMat.elements);
@@ -154,15 +154,13 @@
 				    var scaleMatrix = new THREE.Matrix4().makeScale(l.rad, l.rad, l.rad);
 					var modelMatrix = new THREE.Matrix4().multiplyMatrices(translationMatrix, scaleMatrix);
 
-					//debugger;
-					gl.uniformMatrix4fv(R.progSphere.u_viewMatrix, false, state.viewMat.elements);
-					gl.uniformMatrix4fv(R.progSphere.u_projMatrix, false, state.projMat.elements);
-					gl.uniformMatrix4fv(R.progSphere.u_modelMatrix, false, modelMatrix.elements);
+					// debugger;
+					
+					readyModelForDraw(R.progSphere, R.sphereModel);
+					gl.uniformMatrix4fv(R.progSphere.u_cameraMatrix, false, state.cameraMat.elements);
 					gl.uniform3fv(R.progSphere.u_pos, l.pos);
 					gl.uniform1f(R.progSphere.u_scale, l.rad);
-
-					readyModelForDraw(R.progSphere, R.sphereModel);
-					//gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+					
 					drawReadyModel(R.sphereModel);
 				}
 			}
@@ -186,13 +184,47 @@
 					mode = 0.0;
 				}
 				
-				gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, l.pos);
-				gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, l.col);
-				gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, l.rad);
-				gl.uniform1f(R.prog_BlinnPhong_PointLight.u_mode, mode);
+				if(cfg.primitive == 0)
+				{
+					gl.enable(gl.SCISSOR_TEST);
+					var scissor = getScissorForLight(state.viewMat, state.projMat, l);
+					if(scissor!=null)
+					{
+						console.log(scissor);
+						gl.scissor(scissor[0],scissor[1],scissor[2],scissor[3]);
+						
+						gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, l.pos);
+						gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, l.col);
+						gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, l.rad);
+						gl.uniform1f(R.prog_BlinnPhong_PointLight.u_mode, mode);
 				
-				gl.uniform3f(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos.x, state.cameraPos.y, state.cameraPos.z);
-				renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+						gl.uniform3f(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos.x, state.cameraPos.y, state.cameraPos.z);
+						renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+					}
+					gl.disable(gl.SCISSOR_TEST);
+				}
+				
+				else if(cfg.primitive == 1)
+				{
+					gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, l.pos);
+					gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, l.col);
+					gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, l.rad);
+					gl.uniform1f(R.prog_BlinnPhong_PointLight.u_mode, mode);
+			
+					gl.uniform3f(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos.x, state.cameraPos.y, state.cameraPos.z);
+					renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+				}
+				
+				else
+				{
+					gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, l.pos);
+					gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, l.col);
+					gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, l.rad);
+					gl.uniform1f(R.prog_BlinnPhong_PointLight.u_mode, mode);
+			
+					gl.uniform3f(R.prog_BlinnPhong_PointLight.u_camPos, state.cameraPos.x, state.cameraPos.y, state.cameraPos.z);
+					renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+				}
 			}
 		}
 			

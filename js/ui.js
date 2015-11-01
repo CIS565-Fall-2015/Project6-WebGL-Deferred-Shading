@@ -7,7 +7,7 @@ var cfg;
         // TODO: Define config fields and defaults here
         this.debugView = -1;
 		this.debug = false;
-        this.primitive = 0;
+        this.primitive = -1;
 				
 //        this.enableEffect0 = false;
 		
@@ -34,6 +34,7 @@ var cfg;
 
 		
         gui.add(cfg, 'primitive', {
+			'None':       -1,
             '0 Scissor':  0,
             '1 Sphere':   1
         });

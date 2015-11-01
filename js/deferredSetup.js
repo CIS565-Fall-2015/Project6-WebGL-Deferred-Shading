@@ -127,13 +127,13 @@
 			
         loadShaderProgram(gl, 'glsl/sphere.vert.glsl', 'glsl/red.frag.glsl',
             function(prog) {
+				// debugger;
                 // Create an object to hold info about this shader program
-                prog.u_viewMatrix = gl.getUniformLocation(prog, 'u_viewMatrix');
-                prog.u_modelMatrix = gl.getUniformLocation(prog, 'u_modelMatrix');
-				prog.u_projMatrix = gl.getUniformLocation(prog, 'u_projMatrix');
-				prog.u_pos = gl.getUniformLocation(prog, 'u_pos');
-				prog.u_scale = gl.getUniformLocation(prog, 'u_scale');
+                
                 R.progSphere = { prog: prog };
+				R.progSphere.u_cameraMatrix = gl.getUniformLocation(prog, 'u_cameraMatrix');
+				R.progSphere.u_pos = gl.getUniformLocation(prog, 'u_pos');
+				R.progSphere.u_scale = gl.getUniformLocation(prog, 'u_scale');
             });
 
         loadShaderProgram(gl, 'glsl/quad.vert.glsl', 'glsl/clear.frag.glsl',

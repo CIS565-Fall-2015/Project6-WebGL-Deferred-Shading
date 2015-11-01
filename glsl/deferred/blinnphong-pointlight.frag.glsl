@@ -50,7 +50,7 @@ void main() {
 	vec3 lightReflectVector = reflect(-lightVector, nor);
 	vec3 camVector = normalize(u_camPos - pos);
 	
-	if(u_mode == 1.0 && (dot(nor, camVector) < 0.2 && dot(nor, camVector) > 0.1))
+	if(u_mode == 1.0 && (dot(nor, camVector) < 0.1 && dot(nor, camVector) > -0.1))
 	{
 		//Make silhouettes pop
 		gl_FragColor = vec4(vec3(0.0), 1.0);
@@ -60,32 +60,29 @@ void main() {
 	vec3 H = normalize(lightVector + camVector);
 		
 	//Assuming Kspec = 0.01 and shininess = 0.01
-	float spec = 0.01 * pow(clamp(dot(nor, H), 0.0, 1.0), 0.01);
-	
+	float spec = 0.001 * pow(clamp(dot(nor, H), 0.0, 1.0), 0.01);
 	float diff =  max(0.0,dot(nor, lightVector));
-	
-	float colFactor = diff + spec;
 	
 	if(u_mode == 1.0)
 	{
 		//toon shading
 		
-		if(colFactor > 0.6)
-			colFactor = 0.6;
-		else if(colFactor > 0.58)
+		if(diff > 0.6)
+			diff = 1.0;
+		else if(diff > 0.58)
 		{
 			gl_FragColor = vec4(vec3(0.0), 1.0);
 			return;
 		}
-		else if(colFactor > 0.2)
-			colFactor = 0.2;
-		else if(colFactor > 0.18)
+		else if(diff > 0.2)
+			diff = 0.2;
+		else if(diff > 0.18)
 		{
 			gl_FragColor = vec4(vec3(0.0), 1.0);
 			return;
 		}
-		else colFactor = 0.0;
+		else diff = 0.0;
 	}
 
-    gl_FragColor = vec4(attenuation * colmap * u_lightCol * (colFactor), 1.0);
+    gl_FragColor = vec4(attenuation * colmap * u_lightCol * (diff + spec), 1.0);
 }
