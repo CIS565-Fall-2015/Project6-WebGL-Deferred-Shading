@@ -25,5 +25,16 @@ Implemented the scissor test, toon shader, sphere proxy in WebGL.
 <img src="images/points.png" height="150" width="200">
 <img src="images/colormap.png" height="150" width="200">
 <img src="images/normalMap.png" height="150" width="200">
-<img src="images/geomMap.png" height="150" width="200">
+<img src="images/geomNorm.png" height="150" width="200">
 <img src="images/surfaceNormals.png" height="150" width="200">
+
+#### Performance Analysis
+
+I used the default scissor test. It gives a speed up of arounf 2x.
+
+<img src="analysis/scissorTest.png">
+
+Looking at the impact of number of lights, we see that as we increse the number of lights, the FPS drops. A comparison of the FPS between with scissor test and without can be seen below.
+
+<img src="analysis/ImpactOfNumLight.png">
+
