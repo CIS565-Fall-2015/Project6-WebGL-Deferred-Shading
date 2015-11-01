@@ -6,6 +6,7 @@
     R.pass_debug = {};
     R.pass_deferred = {};
     R.pass_post1 = {};
+    R.pass_toonShade = {};
     R.lights = [];
 
     R.NUM_GBUFFERS = 3;
@@ -141,8 +142,6 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
-            p.u_width = gl.getUniformLocation(p.prog, 'u_width');
-            p.u_height = gl.getUniformLocation(p.prog, 'u_height');
             R.prog_BlinnPhong_PointLight = p;
         });
 
@@ -159,6 +158,14 @@
         });
 
         // TODO: If you add more passes, load and set up their shader programs.
+        loadPostProgram('toon', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_depth    = gl.getUniformLocation(p.prog, 'u_depth');
+            p.u_width    = gl.getUniformLocation(p.prog, 'u_width');
+            p.u_height   = gl.getUniformLocation(p.prog, 'u_height');
+            // Save the object into this variable for access later
+            R.prog_toonShade = p;
+        });
     };
 
     var loadDeferredProgram = function(name, callback) {

@@ -3,16 +3,12 @@ precision highp float;
 precision highp int;
 
 #define NUM_GBUFFERS 4
-#define OUTLINE_DEPTH 0.001
 
 uniform vec3 u_lightCol;
 uniform vec3 u_lightPos;
 uniform float u_lightRad;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
-
-uniform int u_width;
-uniform int u_height;
 
 varying vec2 v_uv;
 
@@ -42,32 +38,10 @@ void main() {
         return;
     }
     
-    float xPixel = 2.0/float(u_width);
-    float yPixel = 2.0/float(u_height);
-    
-    //edge detection
-    if(abs(texture2D(u_depth, vec2(v_uv.x + xPixel, v_uv.y)).x - depth) > OUTLINE_DEPTH ||
-       abs(texture2D(u_depth, vec2(v_uv.x - xPixel, v_uv.y)).x - depth) > OUTLINE_DEPTH || 
-       abs(texture2D(u_depth, vec2(v_uv.x, v_uv.y + yPixel)).x - depth) > OUTLINE_DEPTH ||
-       abs(texture2D(u_depth, vec2(v_uv.x, v_uv.y - yPixel)).x - depth) > OUTLINE_DEPTH ){
-        gl_FragColor = vec4(0, 0, 0, 1);
-        return;
-    }
-    
     vec3 lightDir = normalize(u_lightPos - pos);
     float lightDist = distance(u_lightPos, pos);
     float attenuation = max(0.0, u_lightRad - lightDist);
-    float lambertian = clamp(dot(lightDir, nor), 0.0, 1.0) * attenuation;
+    float lambertian = clamp(dot(lightDir, nor), 0.0, 1.0);
     
-    //ramp shading
-    float step1 = 0.25;
-    float step2 = 0.5;
-    float step3 = 0.75;
-    
-    if(lambertian < step1) lambertian = 0.0;
-    else if(lambertian < step2) lambertian = step1;
-    else if(lambertian < step3) lambertian = step2;
-    else lambertian = step3;
-    
-    gl_FragColor.xyz = lambertian * col * u_lightCol;
+    gl_FragColor.xyz = lambertian * col * u_lightCol * attenuation;
 }

@@ -47,9 +47,13 @@
             // * Deferred pass and postprocessing pass(es)
             // TODO: uncomment these
             R.pass_deferred.render(state);
-            //R.pass_post1.render(state);
 
-            // OPTIONAL TODO: call more postprocessing passes, if any
+            if(cfg.enableToonShade){
+                R.pass_toonShade.render(state);
+            }
+            else{
+                R.pass_post1.render(state);
+            }
         }
     };
 
@@ -116,7 +120,7 @@
      */
     R.pass_deferred.render = function(state) {
         // * Bind R.pass_deferred.fbo to write into for later postprocessing
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
 
         // * Clear depth to 1.0 and color to black
         gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -138,8 +142,6 @@
 
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
-        gl.uniform1i(R.prog_BlinnPhong_PointLight.u_width, width);
-        gl.uniform1i(R.prog_BlinnPhong_PointLight.u_height, height);
 
         // TODO: add a loop here, over the values in R.lights, which sets the
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
@@ -210,10 +212,39 @@
         // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
         // TODO: ^
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
         gl.uniform1i(R.progPost1.u_color, 0);
 
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);
+    };
+    
+    R.pass_toonShade.render = function(state) {
+        // * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.prog_toonShade.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        gl.uniform1i(R.prog_toonShade.u_color, 0);
+        
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
+        gl.uniform1i(R.prog_toonShade.u_depth, 1);
+        
+        gl.uniform1i(R.prog_toonShade.u_width, width);
+        gl.uniform1i(R.prog_toonShade.u_height, height);
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.prog_toonShade);
     };
 
     var renderFullScreenQuad = (function() {
