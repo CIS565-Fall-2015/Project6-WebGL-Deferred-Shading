@@ -71,7 +71,7 @@
         for (var i = 0; i < R.lights.length; i++) {
             var mn = R.light_min[1];
             var mx = R.light_max[1];
-            //R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
+            R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
         }
 
         // Update light textures with new position values
@@ -151,8 +151,8 @@
 
         // Constants
         var TILE_SIZE = cfg.tileSize;
-        var TILES_WIDTH  = Math.ceil((width+1)  / TILE_SIZE)-1;
-        var TILES_HEIGHT = Math.ceil((height+1) / TILE_SIZE)-1;
+        var TILES_WIDTH  = Math.ceil((width+1)  / TILE_SIZE);
+        var TILES_HEIGHT = Math.ceil((height+1) / TILE_SIZE);
         var NUM_TILES = TILES_WIDTH * TILES_HEIGHT;
         var MAX_LIGHTS = 200;
 

@@ -114,6 +114,17 @@ void main() {
         float diff = terms.x;
         float spec = terms.y;
         float atten = terms.z;
+        float lightColorTerm = diff + spec;
+
+        if (u_toon == 1) {
+            lightColorTerm = float(int(lightColorTerm * TOON_STEPS)) / TOON_STEPS;
+            float surroundingDepth = maxDepth(depth, v_uv);
+            if (surroundingDepth > .01) {
+                gl_FragColor = vec4(0, 0, 0, 1);
+                return;
+            }
+        }
+
         vec3 lightColor = 0.3 * atten * color * lightCol * (diff + spec);
 
         fullColor += lightColor;
@@ -124,15 +135,5 @@ void main() {
         }
     }
 
-    //if (u_toon == 1) {
-    //    diff = float(int(diff * TOON_STEPS)) / TOON_STEPS;
-    //    float surroundingDepth = maxDepth(depth, v_uv);
-    //    if (surroundingDepth > .001) {
-    //        gl_FragColor = vec4(0, 0, 0, 1);
-    //        return;
-    //    }
-    //}
-
-    //vec3 fullColor = 0.4 * fall * color * u_lightCol * (diff + spec);
     gl_FragColor = vec4(fullColor, 1);
 }

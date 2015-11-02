@@ -59,7 +59,7 @@ var cfg;
         consts.open();
 
         var tileOpts = gui.addFolder('Tile Options');
-        tileOpts.add(cfg, 'tileSize').min(10).max(200).step(5);
+        tileOpts.add(cfg, 'tileSize').min(10).max(100).step(5);
         tileOpts.add(cfg, 'tileDebugView', {
             'None': -1,
             '# Lights': 0
