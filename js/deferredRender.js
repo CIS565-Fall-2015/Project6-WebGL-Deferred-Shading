@@ -147,10 +147,10 @@
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
         gl.uniform1f(R.prog_Ambient.u_ambientTerm, cfg.ambient);
-        //renderFullScreenQuad(R.prog_Ambient);
+        renderFullScreenQuad(R.prog_Ambient);
 
         // Constants
-        var TILE_SIZE = 100;
+        var TILE_SIZE = cfg.tileSize;
         var TILES_WIDTH  = Math.ceil((width+1)  / TILE_SIZE)-1;
         var TILES_HEIGHT = Math.ceil((height+1) / TILE_SIZE)-1;
         var NUM_TILES = TILES_WIDTH * TILES_HEIGHT;
@@ -176,7 +176,6 @@
 
                 for (var y = tileY; y < tileY + tileH; y++) {
                     for (var x = tileX; x < tileX + tileW; x++) {
-                        //var idx = x + (y - 1) * TILES_WIDTH;
                         var idx = x + y * TILES_WIDTH;
                         if (idx >= 0 && idx < TILES_WIDTH * TILES_HEIGHT) {
                             tileLights[idx].push(lightIdx / R.lights.length);
@@ -237,6 +236,7 @@
                        R.NUM_GBUFFERS+4, tileOffsets.length / 3);
 
         gl.uniform1f(program.u_lightStep, 1 / totalOffset);
+        gl.uniform1i(program.u_debugView, cfg.tileDebugView);
 
         // Loop through the tiles and call the program for each.
         for (var x = 0; x < TILES_WIDTH; x++) {

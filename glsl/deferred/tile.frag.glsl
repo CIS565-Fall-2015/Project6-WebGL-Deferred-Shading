@@ -5,6 +5,7 @@ precision highp int;
 #define NUM_GBUFFERS 4
 
 uniform int u_toon;
+uniform int u_debug;
 
 uniform vec3 u_cameraPos;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
@@ -80,8 +81,10 @@ void main() {
     int lightCount = int(tileOffsetPair.x);  // number of lights to consider
     float lightOffset = tileOffsetPair.y; // index to start at
 
-    //gl_FragColor = vec4(vec3(float(lightCount) / 10.), 1);
-    //return;
+    if (u_debug == 0) {
+        gl_FragColor = vec4(vec3(float(lightCount) / 10.), 1);
+        return;
+    }
     //gl_FragColor = vec4(vec3(lightOffset * u_lightStep), 1);
     //return;
 

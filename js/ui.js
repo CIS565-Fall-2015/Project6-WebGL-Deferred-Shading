@@ -10,9 +10,12 @@ var cfg;
         this.optimization = 1;
         this.toon = false;
 
-        this.ambient = 0.2;
+        this.ambient = 0.1;
         this.lightRadius = 4.0;
         this.numLights = 10;
+
+        this.tileSize = 100;
+        this.tileDebugView = -1;
     };
 
     var init = function() {
@@ -54,6 +57,15 @@ var cfg;
         consts.add(cfg, 'numLights').min(5).max(500).step(5).onFinishChange(updateLights);
 
         consts.open();
+
+        var tileOpts = gui.addFolder('Tile Options');
+        tileOpts.add(cfg, 'tileSize').min(10).max(200).step(5);
+        tileOpts.add(cfg, 'tileDebugView', {
+            'None': -1,
+            '# Lights': 0
+        });
+        tileOpts.open();
+
         updateLights();
     };
 
