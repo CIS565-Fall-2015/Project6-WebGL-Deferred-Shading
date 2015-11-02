@@ -227,6 +227,9 @@ if (cfg.enableTiling || cfg.debugTiling) {
                 //lightData[lightDataIndex + width * 4 + 3] = 1;  // debug
             }
         }
+        lightData[0] = 1000.0;
+        lightData[1] = 0.0;
+        lightData[2] = 0.0;
 
         gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.gbufs[4]); // light params
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA,
