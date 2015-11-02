@@ -2,8 +2,11 @@
     'use strict';
     // deferredSetup.js must be loaded first
 
-    var TILE_SIZE = 16;
+    var TILE_SIZE = 32;
     var MAX_LIGHTS_PER_TILE = 10;
+    var NUM_TILES_WIDE;
+    var NUM_TILES_TALL;
+    var NUM_TILES;
 
     R.deferredRender = function(state) {
         if (!aborted && (
@@ -55,7 +58,7 @@
         // set up info for tiling
         if (cfg.enableTiling) {
             R.updateLightTextures();
-            R.updateLightTileDatastructure();
+            R.updateLightTileDatastructure(state);
         }
 
         // deferred and post process passes
@@ -101,7 +104,7 @@
             dataColors[i]     = R.lights[i].col[0];
             dataColors[i + 1] = R.lights[i].col[1];
             dataColors[i + 2] = R.lights[i].col[2];
-            dataColors[i + 3] = 1.0; // fake alpha. maybe someday it will be real alpha.
+            dataColors[i + 3] = 1.0; // fake alpha. maybe someday it'll be real.
 
             dataPosRad[i    ] = R.lights[i].pos[0];
             dataPosRad[i + 1] = R.lights[i].pos[1];
@@ -109,40 +112,117 @@
             dataPosRad[i + 3] = R.lights[i].rad;
         }
         gl.bindTexture(gl.TEXTURE_2D, R.light_colors_texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, R.NUM_LIGHTS, 1, 0, gl.RGBA, gl.FLOAT, dataColors);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, R.NUM_LIGHTS, 1, 0, gl.RGBA,
+            gl.FLOAT, dataColors);
 
         gl.bindTexture(gl.TEXTURE_2D, R.lights_pos_rad_texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, R.NUM_LIGHTS, 1, 0, gl.RGBA, gl.FLOAT, dataPosRad);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, R.NUM_LIGHTS, 1, 0, gl.RGBA,
+            gl.FLOAT, dataPosRad);
 
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
-    R.updateLightTileDatastructure = function() {
-        if (!R.NUM_TILES) {
-            var tilesWide = parseInt((width + TILE_SIZE - 1) / TILE_SIZE);
-            var tilesTall = parseInt((height + TILE_SIZE - 1) / TILE_SIZE);
-            R.NUM_TILES = tilesWide * tilesTall;
+
+    R.bounded = function(point, min, max) {
+        var boundedX = min[0] < point[0] && point[0] < max[0];
+        var boundedY = min[1] < point[1] && point[1] < max[1];
+        return boundedX && boundedY;        
+    }
+
+    // takes boxes like what getScissorForLight returns and returns if
+    // they overlap or not.
+    R.boxOverlap = function(box1, box2) {
+        // the boxes are given as bottom left x, y, width, height
+        // check each corner of box1 against box2
+        var minX = box2[0];
+        var minY = box2[1];        
+        var maxX = box2[0] + box2[2];
+        var maxY = box2[1] + box2[3];
+        if (R.bounded([box1[0], box1[1]], [minX, minY], [maxX, maxY])) {
+            return true;
+        }
+        if (R.bounded([box1[0] + box1[2], box1[1]], [minX, minY], [maxX, maxY])) {
+            return true;
+        }
+        if (R.bounded([box1[0] + box1[2], box1[1] + box1[3]], [minX, minY], [maxX, maxY])) {
+            return true;
+        }
+        if (R.bounded([box1[0], box1[1] + box1[3]], [minX, minY], [maxX, maxY])) {
+            return true;
+        }
+        // check one corner of box2 against box1 for the ""
+        minX = box1[0];
+        minY = box1[1];        
+        maxX = box1[0] + box1[2];
+        maxY = box1[1] + box1[3];
+        if (R.bounded([box2[0], box2[1]], [minX, minY], [maxX, maxY])) {
+            return true;
+        }
+        return false;
+    }
+
+    R.updateLightTileDatastructure = function(state) {
+        if (!NUM_TILES_WIDE || !NUM_TILES_TALL) {
+            NUM_TILES_WIDE = Math.floor((width + TILE_SIZE - 1) / TILE_SIZE);
+            NUM_TILES_TALL = Math.floor((height + TILE_SIZE - 1) / TILE_SIZE);
+            NUM_TILES = NUM_TILES_WIDE * NUM_TILES_TALL;
         }
 
         if (!R.tile_light_lists_tex) {
             R.tile_light_lists_tex = gl.createTexture();
         }
 
-        if (!R.tile_light_lists_indices_tex) {
-            R.tile_light_lists_indices_tex = gl.createTexture();;
+        if (!R.tile_light_lists_lengths_tex) {
+            R.tile_light_lists_lengths_tex = gl.createTexture();;
         }
 
-        dataLightLists = new IntArray(R.NUM_TILES * MAX_LIGHTS_PER_TILE);
-        dataLightListIndices = new IntArray(R.NUM_TIMES * 2);
+        // concatenation of lists of lights
+        var dataLightLists = new Float32Array(NUM_TILES * MAX_LIGHTS_PER_TILE);
 
-        var dataLightListsIndex = 0;
-        for (var i = 0; i < numTiles; i++) {
-            // compute tile 1's box in pix coordinates
+        // each entry indicates how long this tile's light list is
+        var dataLightListLengths = new Float32Array(NUM_TILES);
 
-            for (var j = 0; j < MAX_LIGHTS_PER_TILE; j++) {
-                // check each light's scissor box against this tile
+        for (var x = 0; x < NUM_TILES_WIDE; x++) {
+            for (var y = 0; y < NUM_TILES_TALL; y++) {
+                // compute start index for this tile
+                var dataLightListsIndex = (y + x * NUM_TILES_TALL) * MAX_LIGHTS_PER_TILE;
+                var lightsInThisTile = 0;
+
+                // compute tile 1's box in pix coordinates. same format as what
+                // getScissorForLight returns.
+                // x, y, width, height
+                // check against each light's scissor box
+                var tileBox = [x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE];
+                for (var j = 0; j < MAX_LIGHTS_PER_TILE; j++) {
+                    // check each light's scissor box against this tile's box
+                    if (j < R.NUM_LIGHTS) {
+                        var lightScissorBox = getScissorForLight(state.viewMat,
+                            state.projMat, R.lights[j]);
+                        if (!lightScissorBox) continue;
+                        if (R.boxOverlap(tileBox, lightScissorBox)) {
+                            dataLightLists[dataLightListsIndex] = j / 100.0;
+                            dataLightListsIndex++;
+                            lightsInThisTile++;
+                        }
+                    }
+                }
+                // set the number of lights in the dataLightListLengths
+                dataLightListLengths[y + x * NUM_TILES_TALL] = lightsInThisTile / 100.0;
             }
         }
+        //console.log(dataLightListLengths);
+        //console.log(dataLightLists);
+        //console.log("debug");
+        // upload as textures
+        gl.bindTexture(gl.TEXTURE_2D, R.tile_light_lists_tex);
+        gl.texImage2D(
+            gl.TEXTURE_2D, 0, gl.ALPHA, NUM_TILES * MAX_LIGHTS_PER_TILE, 1, 0,
+            gl.ALPHA, gl.FLOAT, dataLightLists);
+
+        gl.bindTexture(gl.TEXTURE_2D, R.tile_light_lists_lengths_tex);
+        gl.texImage2D(
+            gl.TEXTURE_2D, 0, gl.ALPHA, NUM_TILES, 1, 0,
+            gl.ALPHA, gl.FLOAT, dataLightListLengths);
     }
 
     /**
