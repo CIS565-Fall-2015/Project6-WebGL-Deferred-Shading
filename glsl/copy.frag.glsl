@@ -12,12 +12,15 @@ varying vec2 v_uv;
 
 void main() {
 
-    //position
-    gl_FragData[0] = vec4(v_position, 1.0);
+	 // color/albedo
+    gl_FragData[0] = texture2D(u_colmap, v_uv);
 
-    // color/albedo
-    gl_FragData[1] = texture2D(u_colmap, v_uv);
+    // position
+    gl_FragData[1] = vec4(v_position, 1.0);
 
     // surface normal
     gl_FragData[2] = texture2D(u_normap, v_uv);
+
+    // normal
+    gl_FragData[3] = vec4(v_normal, 1.0);
 }

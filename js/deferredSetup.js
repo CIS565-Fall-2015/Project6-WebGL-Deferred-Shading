@@ -4,6 +4,7 @@
     window.R = {};
     R.pass_copy = {};
     R.pass_debug = {};
+    R.pass_debug_scissor = {};
     R.pass_deferred = {};
     R.pass_post1 = {};
     R.lights = [];
@@ -24,8 +25,8 @@
     R.light_min = [-14, 0, -6];
     R.light_max = [14, 18, 6];
     R.light_dt = -0.03;
-    R.LIGHT_RADIUS = 4.0;
-    R.NUM_LIGHTS = 20; // TODO: test with MORE lights!
+    R.LIGHT_RADIUS = 3.0;
+    R.NUM_LIGHTS = 50; // TODO: test with MORE lights!
     var setupLights = function() {
         Math.seedrandom(0);
 
@@ -141,6 +142,7 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+            p.u_cameraPos = gl.getUniformLocation(p.prog, 'u_cameraPos');
             R.prog_BlinnPhong_PointLight = p;
         });
 

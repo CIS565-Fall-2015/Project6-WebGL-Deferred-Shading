@@ -33,7 +33,6 @@
             R.pass_debug.render(state);
         } else {
             // * Deferred pass and postprocessing pass(es)
-            // TODO: uncomment these
             R.pass_deferred.render(state);
             R.pass_post1.render(state);
 
@@ -45,8 +44,10 @@
      * 'copy' pass: Render into g-buffers
      */
     R.pass_copy.render = function(state) {
-        // * Bind the framebuffer R.pass_copy.fbo
-        // TODO: ^
+        // * Bind the framebuffer R.pass_copy.fbo 
+
+        //turns black when this is uncommented
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_copy.fbo);
 
         // * Clear screen using R.progClear
         renderFullScreenQuad(R.progClear);
@@ -86,9 +87,8 @@
         // * Tell shader which debug view to use
         bindTexturesForLightPass(R.prog_Debug);
         gl.uniform1i(R.prog_Debug.u_debug, cfg.debugView);
-
-        // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.prog_Debug);
+        
     };
 
     /**
@@ -107,7 +107,8 @@
 
         // Enable blending and use gl.blendFunc to blend with:
         //   color = 1 * src_color + 1 * dst_color
-        // TODO: ^
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE);
 
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
@@ -116,19 +117,33 @@
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
 
-        // TODO: add a loop here, over the values in R.lights, which sets the
-        //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
-        //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
+    
+        for (var i = 0; i < R.lights.length; i++) {
 
-        // TODO: In the lighting loop, use the scissor test optimization
-        // Enable gl.SCISSOR_TEST, render all lights, then disable it.
-        //
-        // getScissorForLight returns null if the scissor is off the screen.
-        // Otherwise, it returns an array [xmin, ymin, width, height].
-        //
-        //   var sc = getScissorForLight(state.viewMat, state.projMat, light);
+            gl.enable(gl.SCISSOR_TEST);
+            var light = R.lights[i];
+            var sc = getScissorForLight(state.viewMat, state.projMat, light);
 
-        // Disable blending so that it doesn't affect other code
+            if (sc) {
+
+                gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+                gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightPos, 
+                light.pos[0], light.pos[1], light.pos[2]);
+                gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightCol, 
+                light.col[0], light.col[1], light.col[2]);
+                gl.uniform3f(R.prog_BlinnPhong_PointLight.u_cameraPos, 
+                state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
+                gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, light.rad);
+        
+                if(cfg.debugScissor) {
+                    renderFullScreenQuad(R.progRed);
+                }
+                renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+            }
+            gl.disable(gl.SCISSOR_TEST);
+
+        }
+
         gl.disable(gl.BLEND);
     };
 
@@ -163,9 +178,10 @@
 
         // * Bind the deferred pass's color output as a texture input
         // Set gl.TEXTURE0 as the gl.activeTexture unit
-        // TODO: ^
+        gl.activeTexture(gl.TEXTURE0);
         // Bind the TEXTURE_2D, R.pass_deferred.colorTex to the active texture unit
-        // TODO: ^
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);
 
@@ -199,10 +215,7 @@
             gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
             // Upload the positions array to the currently-bound array buffer
             // using gl.bufferData in static draw mode.
-            gl.bufferData(
-                gl.ARRAY_BUFFER,
-                positions,
-                gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
         };
 
         return function(prog) {
@@ -225,7 +238,7 @@
             gl.vertexAttribPointer(prog.a_position, 3, gl.FLOAT, false, 0, 0);
 
             // Use gl.drawArrays (or gl.drawElements) to draw your quad.
-            gl.drawArrays(gl.TRIANGLES_STRIP, 0, 4);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
             // Unbind the array buffer.
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
