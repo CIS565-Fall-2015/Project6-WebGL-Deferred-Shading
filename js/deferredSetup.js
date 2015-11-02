@@ -10,6 +10,13 @@
     R.lights = [];
     R.lightTexturePosRad = new Float32Array();
     R.lightTextureCol    = new Float32Array();
+    R.quadPositions = new Float32Array([
+            -1.0, -1.0, 0.0,
+             1.0, -1.0, 0.0,
+            -1.0,  1.0, 0.0,
+             1.0,  1.0, 0.0
+        ]);
+    R.lightIndices = new Float32Array(100);
 
     R.NUM_GBUFFERS = 4;
 
@@ -17,22 +24,23 @@
      * Set up the deferred pipeline framebuffer objects and textures.
      */
     R.deferredSetup = function() {
-        R.setupLights(R.NUM_LIGHTS, R.LIGHT_RADIUS);
+        R.setupLights(R.NUM_LIGHTS, R.LIGHT_RADIUS, 48);
         loadAllShaderPrograms();
         R.pass_copy.setup();
         R.pass_deferred.setup();
         R.pass_tiled.setup();
     };
 
-    R.light_min = [-14, 0, -6];
-    R.light_max = [14, 18, 6];
+    R.light_min = [-14, 0, -4];
+    R.light_max = [14, 18, 4];
     R.light_dt = -0.03;
 
     // defaults
     R.LIGHT_RADIUS = 4.0;
     R.NUM_LIGHTS = 20;
+    R.MAX_LIGHTS = 200;
 
-    R.setupLights = function(numLights, lightRadius) {
+    R.setupLights = function(numLights, lightRadius, numTiles) {
         Math.seedrandom(0);
 
         var posfn = function() {
@@ -65,6 +73,9 @@
 
         R.lightTexturePosRad = new Float32Array(4 * numLights);
         R.lightTextureCol    = new Float32Array(3 * numLights);
+
+        R.lightIndices = new Float32Array(R.MAX_LIGHTS, numTiles);
+
         // Store colors
         for (i = 0; i < numLights; i++) {
             var light = R.lights[i];

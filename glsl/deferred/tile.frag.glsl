@@ -53,10 +53,13 @@ vec3 lightTerms(vec3 normal, vec3 pos, vec3 lightPos, float lightRad) {
 float maxDepth(float depth, vec2 v_uv) {
     float u = v_uv.x;
     float v = v_uv.y;
-    float d1 = texture2D(u_depth, vec2(u+(1./800.), v)).x;
-    float d2 = texture2D(u_depth, vec2(u-(1./800.), v)).x;
-    float d3 = texture2D(u_depth, vec2(u, (v+1./600.))).x;
-    float d4 = texture2D(u_depth, vec2(u, (v-1./600.))).x;
+    float toon_width = 2.0;
+    float c_img_height = 600.0;
+    float c_img_width  = 800.0;
+    float d1 = texture2D(u_depth, vec2(u+(toon_width/c_img_width), v)).x;
+    float d2 = texture2D(u_depth, vec2(u-(toon_width/c_img_width), v)).x;
+    float d3 = texture2D(u_depth, vec2(u, (v+toon_width/c_img_height))).x;
+    float d4 = texture2D(u_depth, vec2(u, (v-toon_width/c_img_height))).x;
     return max(
                 max(
                     max(

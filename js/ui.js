@@ -12,7 +12,7 @@ var cfg;
 
         this.ambient = 0.1;
         this.lightRadius = 4.0;
-        this.numLights = 10;
+        this.numLights = 50;
 
         this.tileSize = 100;
         this.tileDebugView = -1;
@@ -32,7 +32,6 @@ var cfg;
             '[4] Normal map':      4,
             '[5] Surface normal':  5
         });
-        debug.add(cfg, 'debugScissor');
         debug.open();
 
         var opt = gui.addFolder('Optimizations');
@@ -41,6 +40,7 @@ var cfg;
             'Scissor': 0,
             'Tile':    1,
         });
+        opt.add(cfg, 'debugScissor');
         opt.open();
 
         var effects = gui.addFolder('Effects');
@@ -48,18 +48,23 @@ var cfg;
         effects.open();
 
         var updateLights = function() {
-            R.setupLights(cfg.numLights, cfg.lightRadius);
+            var TILE_SIZE = cfg.tileSize;
+            var TILES_WIDTH  = Math.ceil((width+1)  / TILE_SIZE);
+            var TILES_HEIGHT = Math.ceil((height+1) / TILE_SIZE);
+            var NUM_TILES = TILES_WIDTH * TILES_HEIGHT;
+            R.setupLights(cfg.numLights, cfg.lightRadius, NUM_TILES);
         };
 
         var consts = gui.addFolder('Constants');
         consts.add(cfg, 'ambient', 0.1, 1.0);
         consts.add(cfg, 'lightRadius', 0.5, 10.0).onFinishChange(updateLights);
         consts.add(cfg, 'numLights').min(5).max(500).step(5).onFinishChange(updateLights);
+        //consts.add(cfg, 'numLights').min(50).max(100).step(10).onFinishChange(updateLights);
 
         consts.open();
 
         var tileOpts = gui.addFolder('Tile Options');
-        tileOpts.add(cfg, 'tileSize').min(10).max(100).step(5);
+        tileOpts.add(cfg, 'tileSize').min(10).max(150).step(25);
         tileOpts.add(cfg, 'tileDebugView', {
             'None': -1,
             '# Lights': 0

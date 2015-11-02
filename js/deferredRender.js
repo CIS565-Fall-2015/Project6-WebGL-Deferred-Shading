@@ -71,7 +71,7 @@
         for (var i = 0; i < R.lights.length; i++) {
             var mn = R.light_min[1];
             var mx = R.light_max[1];
-            R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
+            //R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
         }
 
         // Update light textures with new position values
@@ -84,7 +84,7 @@
             // Do a debug render instead of a regular render
             // Don't do any post-processing in debug mode
             R.pass_debug.render(state);
-        } else if (cfg.optimization === 1) {
+        } else if (cfg.optimization == 1) {
             R.pass_tiled.render(state);
             R.pass_post1.render(state);
         } else {
@@ -154,7 +154,6 @@
         var TILES_WIDTH  = Math.ceil((width+1)  / TILE_SIZE);
         var TILES_HEIGHT = Math.ceil((height+1) / TILE_SIZE);
         var NUM_TILES = TILES_WIDTH * TILES_HEIGHT;
-        var MAX_LIGHTS = 200;
 
         // [ tiles ] [ lights per tile ].
         var tileLights = [];
@@ -190,7 +189,7 @@
         }
 
         // Generate textures from tileLights.
-        var lightIndices = new Float32Array(MAX_LIGHTS * NUM_TILES);
+        var lightIndices = new Float32Array(R.MAX_LIGHTS * NUM_TILES);
         var tileOffsets  = new Float32Array(3 * NUM_TILES);
 
         // Loop over tiles
@@ -203,7 +202,7 @@
             tileOffsets[3*tileIdx+1] = (totalOffset % 4096) + 0.5;
             tileOffsets[3*tileIdx+2] = Math.floor(totalOffset / 4096) + 0.5;
 
-            for (lightIdx = 0; lightIdx < Math.min(len, MAX_LIGHTS); lightIdx++) {
+            for (lightIdx = 0; lightIdx < Math.min(len, R.MAX_LIGHTS); lightIdx++) {
                 lightIndices[totalOffset] = lights[lightIdx];
                 totalOffset++;
             }
@@ -283,8 +282,9 @@
         gl.uniform1f(R.prog_Ambient.u_ambientTerm, cfg.ambient);
         renderFullScreenQuad(R.prog_Ambient);
 
-        if (cfg.enableScissor) {
+        if (cfg.optimization == 0) {
             gl.enable(gl.SCISSOR_TEST);
+        } else {
         }
 
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
@@ -356,12 +356,7 @@
         // vertex shader doesn't have to do any transformation; draw two
         // triangles which cover the screen over x = -1..1 and y = -1..1.
         // This array is set up to use gl.drawArrays with gl.TRIANGLE_STRIP.
-        var positions = new Float32Array([
-            -1.0, -1.0, 0.0,
-             1.0, -1.0, 0.0,
-            -1.0,  1.0, 0.0,
-             1.0,  1.0, 0.0
-        ]);
+        var positions = R.quadPositions;
 
         var vbo = null;
 
