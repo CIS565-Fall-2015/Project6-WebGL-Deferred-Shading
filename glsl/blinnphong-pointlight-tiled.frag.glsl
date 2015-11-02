@@ -93,24 +93,23 @@ void main() {
     tile_uv.x += uv_xStep * 0.5; // sample from center of pixel
     tile_uv.y += uv_yStep * 0.5; // sample from center of pixel
 
-    vec2 tile_uv_lightPos = tile_uv;
-    tile_uv_lightPos.y += uv_yStep;
+    vec2 tile_uv_lightCol = vec2(tile_uv);
+    tile_uv_lightCol.y += uv_yStep;
 
     vec3 color = vec3(0.0, 0.0, 0.0);
-    float numLights = 0.0;
 
     // compute blynn-phong for each light
     for (int i = 0; i < MAX_LIGHTS; i++) {
         // sample light data
-        vec4 lightCol = texture2D(u_gbufs[4], tile_uv);
-        vec4 lightPos = texture2D(u_gbufs[4], tile_uv_lightPos);
-        tile_uv += uv_xStep;
-        tile_uv_lightPos += uv_xStep;
-        if (lightPos.w < 0.0) break; // end of list
-        numLights += 1.0;
+        vec4 lightCol = texture2D(u_gbufs[4], tile_uv_lightCol);
+        vec4 lightPos = texture2D(u_gbufs[4], tile_uv);
+        if (lightPos.w < 0.0) {
+            break; // end of list
+        }
+        tile_uv.x += uv_xStep;
+        tile_uv_lightCol.x += uv_xStep;
         // compute blynn-phong
         color += blynnPhong(lightPos.xyz, lightPos.w, lightCol.rgb, pos, nor, colmap);
     }
-    if (numLights > 0.0) color /= numLights;
     gl_FragColor = vec4(color, 1.0);
 }
