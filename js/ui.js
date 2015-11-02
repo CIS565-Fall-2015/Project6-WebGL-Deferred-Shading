@@ -11,7 +11,7 @@ var cfg;
         this.enableBloom = false;
         this.enableToon = false;        
         this.compressedGbuffers = false;
-        this.debugTiling = false;        
+        this.debugTiling = true;        
         this.enableTiling = false;
     };
 

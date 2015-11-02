@@ -39,12 +39,29 @@ void main() {
     vec3 geomnor = gb2.xyz;  // Normals of the geometry as defined, without normal mapping
     vec3 colmap = gb0.xyz;  // The color map - unlit "albedo" (surface color)
     vec3 normap = gb3.xyz;  // The raw normal map (normals relative to the surface they're on)
-    vec3 nor = normalize(applyNormalMap(geomnor, normap));     // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
+    vec3 nor = normalize(applyNormalMap(geomnor, normap)); // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
 
-    //gl_FragColor = vec4(vec3(depth), 1.0);
+    // figure out which tile this is
+    // compute the number of tiles
+    int num_tiles_wide = (u_width + u_tileSize - 1) / u_tileSize;
+    int num_tiles_high = (u_height + u_tileSize - 1) / u_tileSize;
+    int num_tiles = num_tiles_wide * num_tiles_high;
 
-    // for looking at the tile/light datastructure directly
-    //gl_FragColor = texture2D(u_gbufs[5], v_uv);
+    // use the uv to compute this's tile coordinates
+    int tile_x = int(v_uv.x * float(u_width)) / u_tileSize;
+    int tile_y = int(v_uv.y * float(u_height)) / u_tileSize;
+    int tile_number = tile_x + tile_y * num_tiles_wide;
+
+
+
+    // for debugging the tile_number calculation
+    //float gradient = float(tile_number) / float (num_tiles);
+    //gl_FragColor = vec4(vec3(gradient * 4.0), 1.0); // need multiplier, or gradient per line is too slight
+
+    // for debugging tile_x and tile_y
+    //float tile_uv_x = float(tile_x) / float(num_tiles_wide);
+    //float tile_uv_y = float(tile_y) / float(num_tiles_high);
+    //gl_FragColor = vec4(vec3(tile_uv_x, tile_uv_y, 0.0), 1.0);
 
     // for looking at the light datastructure directly
     vec4 lightDataStructure = texture2D(u_gbufs[4], v_uv);

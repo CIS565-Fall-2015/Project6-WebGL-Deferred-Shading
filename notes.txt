@@ -145,7 +145,7 @@ Steps
 	-this will heavily change how indexing is handled
 3) write a new bindTexturesForLightPass [done]
 4) write the debug_tile render pass [done]
-5) write a new debug shader
+5) write a new debug shader [done]
 
 notes:
 -to simplify, we're going to clamp the number of lights to resolution width
