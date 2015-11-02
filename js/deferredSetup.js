@@ -20,6 +20,7 @@
     // workflow using tiling
     R.pass_copy_tile = {};
     R.pass_debug_tile = {};
+    R.pass_deferred_tile = {};
 
     R.NUM_GBUFFERS_COMPRESSED = 2;
 
@@ -38,6 +39,7 @@
 
         // tiling
         R.pass_copy_tile.setup();
+        R.pass_deferred_tile.setup();
 
         console.log("setup complete");
     };
@@ -156,6 +158,20 @@
 
         // * Check for framebuffer errors
         abortIfFramebufferIncomplete(R.pass_deferred_compressed.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+    };
+
+    R.pass_deferred_tile.setup = function() {
+        // * Create the FBO
+        R.pass_deferred_tile.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_deferred_tile.colorTex = createAndBindColorTargetTexture(
+            R.pass_deferred_tile.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_deferred_tile.fbo);
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
@@ -366,6 +382,27 @@
                 p.u_numLightsMax = gl.getUniformLocation(p.prog, 'u_numLightsMax');
 
                 R.prog_DebugTiling = p;
+            });
+
+        loadShaderProgram(gl, 'glsl/quad.vert.glsl',
+            'glsl/blinnphong-pointlight-tiled.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                var p = { prog: prog };
+
+                // Retrieve the uniform and attribute locations
+                p.u_gbufs = [];
+                for (var i = 0; i < R.NUM_GBUFFERS + 1; i++) {
+                    p.u_gbufs[i] = gl.getUniformLocation(prog, 'u_gbufs[' + i + ']');
+                }
+                p.u_depth    = gl.getUniformLocation(prog, 'u_depth');
+                p.u_width = gl.getUniformLocation(p.prog, 'u_width');
+                p.u_height = gl.getUniformLocation(p.prog, 'u_height');
+                p.u_tileSize = gl.getUniformLocation(p.prog, 'u_tileSize');
+                p.u_numLightsMax = gl.getUniformLocation(p.prog, 'u_numLightsMax');
+                p.u_camPos = gl.getUniformLocation(p.prog, 'u_camPos');            
+
+                R.prog_BlinnPhongTiling = p;
             });
     };
 

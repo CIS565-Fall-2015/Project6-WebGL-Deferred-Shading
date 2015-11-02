@@ -14,13 +14,9 @@ uniform int u_height;
 uniform int u_tileSize;
 uniform int u_numLightsMax;
 
-uniform sampler2D u_light_list_indices; // an alpha buffer, so need to mul values by 100 and clamp
-//uniform sampler2D u_light_lists; // an alpha buffer, so need to mul values by 100 and clamp
-
 varying vec2 v_uv;
 const float shininess = 16.0;
-
-const vec4 SKY_COLOR = vec4(0.66, 0.73, 1.0, 1.0);
+const int MAX_LIGHTS = 10; // don't forget to change max lights over in deferredRender.js!
 
 vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
@@ -28,6 +24,27 @@ vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     vec3 surftan = normalize(cross(geomnor, up));
     vec3 surfbinor = cross(geomnor, surftan);
     return normap.y * surftan + normap.x * surfbinor + normap.z * geomnor;
+}
+
+vec3 blynnPhong(vec3 lightPos, float radius, vec3 lightCol, vec3 pos, vec3 norm, vec3 col) {
+    vec3 lightDir = normalize(lightPos - pos);
+    float lightDistance = length(lightPos - pos);
+    float lambert = max(dot(lightDir, norm), 0.0);
+    float specular = 0.0;
+    if (lambert > 0.0) {
+        vec3 viewDir = normalize(pos - u_camPos);
+
+        // "blinn phong"
+        vec3 halfDir = normalize(lightDir + viewDir);
+        float specAngle = max(dot(halfDir, norm), 0.0);
+        specular = pow(specAngle, shininess);
+    }
+
+    float attenuation = max(0.0, radius - lightDistance);
+
+    vec3 color = lambert * col * lightCol + specular * lightCol;
+    color *= attenuation;
+    return color;
 }
 
 void main() {
@@ -44,6 +61,16 @@ void main() {
     vec3 normap = gb3.xyz;  // The raw normal map (normals relative to the surface they're on)
     vec3 nor = normalize(applyNormalMap(geomnor, normap)); // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
 
+    // If nothing was rendered to this pixel, set alpha to 0 so that the
+    // postprocessing step can render the sky color.
+    if (depth == 1.0) {
+        gl_FragColor = vec4(0, 0, 0, 0);
+        return;
+    }
+
+    // start reading dem lights!
+    vec4 lightDataStructure = texture2D(u_gbufs[4], v_uv);
+
     // figure out which tile this is
     // compute the number of tiles
     int num_tiles_wide = (u_width + u_tileSize - 1) / u_tileSize;
@@ -55,6 +82,35 @@ void main() {
     int tile_y = int(v_uv.y * float(u_height)) / u_tileSize;
     int tile_number = tile_x + tile_y * num_tiles_wide;
 
-    // figure out the corner of this tile in pixel and UV coordinates
-    // step over the tile, sampling the light data and attenuating the blinn-phong color
+    // use to quickly try out light color sampling. if we can do this, we can sample anything.
+    float tile_uv_x = float(tile_x * u_tileSize) / float(u_width); // corner's pixel coordinates / dimensions
+    float tile_uv_y = float(tile_y * u_tileSize) / float(u_height);
+    vec2 tile_uv = vec2(tile_uv_x, tile_uv_y);
+
+    float uv_xStep = 1.0 / float(u_width);
+    float uv_yStep = 1.0 / float(u_height);
+
+    tile_uv.x += uv_xStep * 0.5; // sample from center of pixel
+    tile_uv.y += uv_yStep * 0.5; // sample from center of pixel
+
+    vec2 tile_uv_lightPos = tile_uv;
+    tile_uv_lightPos.y += uv_yStep;
+
+    vec3 color = vec3(0.0, 0.0, 0.0);
+    float numLights = 0.0;
+
+    // compute blynn-phong for each light
+    for (int i = 0; i < MAX_LIGHTS; i++) {
+        // sample light data
+        vec4 lightCol = texture2D(u_gbufs[4], tile_uv);
+        vec4 lightPos = texture2D(u_gbufs[4], tile_uv_lightPos);
+        tile_uv += uv_xStep;
+        tile_uv_lightPos += uv_xStep;
+        if (lightPos.w < 0.0) break; // end of list
+        numLights += 1.0;
+        // compute blynn-phong
+        color += blynnPhong(lightPos.xyz, lightPos.w, lightCol.rgb, pos, nor, colmap);
+    }
+    if (numLights > 0.0) color /= numLights;
+    gl_FragColor = vec4(color, 1.0);
 }

@@ -3,7 +3,7 @@
     // deferredSetup.js must be loaded first
 
     var TILE_SIZE = 32;
-    var MAX_LIGHTS_PER_TILE = 20;
+    var MAX_LIGHTS_PER_TILE = 10; // don't forget to change max lights over in shader!
     var NUM_TILES_WIDE;
     var NUM_TILES_TALL;
     var NUM_TILES;
@@ -24,7 +24,8 @@
             !R.progClearCompressed ||
             !R.prog_BlinnPhong_PointLightCompressed ||
             !R.prog_AmbientCompressed ||
-            !R.prog_DebugTiling)) {
+            !R.prog_DebugTiling ||
+            !R.prog_BlinnPhongTiling)) {
             console.log('waiting for programs to load...');
             return;
         }
@@ -62,23 +63,32 @@ if (cfg.enableTiling || cfg.debugTiling) {
         if (cfg.debugTiling) {
             R.pass_debug_tile.render(state);
         }
+        else if (cfg.enableTiling) {
+            R.pass_deferred_tile.render(state);
+            R.pass_post1.render(state, R.pass_deferred_tile.colorTex);            
+        }
         else if (cfg.compressedGbuffers && cfg.debugView >= 0) {
             R.pass_debug_compressed.render(state);
-        } else if (cfg.compressedGbuffers) {
+        }
+        else if (cfg.compressedGbuffers) {
             R.pass_deferred_compressed.render(state);
             R.pass_post1.render(state, R.pass_deferred_compressed.colorTex);
-        } else if (cfg && cfg.debugScissor) {
+        }
+        else if (cfg && cfg.debugScissor) {
             // do a scissor debug render instead of a regular render.
             // don't do any post-proccessing in debug mode.
             R.pass_debug.debugScissor(state);
-        } else if (cfg && cfg.debugView >= 0) {
+        }
+        else if (cfg && cfg.debugView >= 0) {
             // Do a debug render instead of a regular render
             // Don't do any post-processing in debug mode
             R.pass_debug.render(state);
-        } else if (cfg && cfg.enableToon){
+        }
+        else if (cfg && cfg.enableToon){
             R.pass_toon.render(state);
             R.pass_post1.render(state, R.pass_deferred.colorTex);
-        } else {
+        }
+        else {
             // * Deferred pass and postprocessing pass(es)
             // TODO: uncomment these
             R.pass_deferred.render(state);
@@ -162,8 +172,8 @@ if (cfg.enableTiling || cfg.debugTiling) {
         // insert the lights themselves        
         // for simplicity, this ONLY works for NUM_LIGHTS < width.
         // assuming we're 2D arraying by rows:
-        // we're having the first row by light colors and the second
-        // be light positions/radii
+        // we're having the first row be positions/radii and the second row
+        // be light color.
         var lightData = new Float32Array(width * height * 4);
         var k = width * 4 * (height - 2); // light data is at the top left of tex
         for (var i = 0; i < R.NUM_LIGHTS; i++) {
@@ -218,8 +228,11 @@ if (cfg.enableTiling || cfg.debugTiling) {
                     if (numLights > MAX_LIGHTS_PER_TILE) break;
 
                 }
-                // add a NULL index (-1) to indicate the end of list
-                lightData[lightDataIndex + width * 4 + 3] = -1;
+                // add a NULL light pos/radius (radius = -1) to indicate the end of list
+                lightData[lightDataIndex]     = 0;
+                lightData[lightDataIndex + 1] = 0;
+                lightData[lightDataIndex + 2] = 10000000.0;            
+                lightData[lightDataIndex + 3] = -1;
 
                 //lightData[lightDataIndex + 2] = 1;              // debug
                 //lightData[lightDataIndex + width * 4 + 2] = 1;  // debug
@@ -227,9 +240,6 @@ if (cfg.enableTiling || cfg.debugTiling) {
                 //lightData[lightDataIndex + width * 4 + 3] = 1;  // debug
             }
         }
-        lightData[0] = 1000.0;
-        lightData[1] = 0.0;
-        lightData[2] = 0.0;
 
         gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.gbufs[4]); // light params
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA,
@@ -243,6 +253,12 @@ if (cfg.enableTiling || cfg.debugTiling) {
         // * Bind all of the g-buffers and depth buffer as texture uniform
         //   inputs to the shader
         for (var i = 0; i < R.NUM_GBUFFERS + 1; i++) {
+            if (!prog.u_gbufs[i]) {
+                gl.activeTexture(gl['TEXTURE' + i]);
+                gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.depthTex);
+                gl.uniform1i(prog.u_depth, i);
+                return;
+            }
             gl.activeTexture(gl['TEXTURE' + i]);
             gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.gbufs[i]);
             gl.uniform1i(prog.u_gbufs[i], i);
@@ -263,14 +279,53 @@ if (cfg.enableTiling || cfg.debugTiling) {
         // * Tell shader which debug view to use
         bindTexturesForLightPassTiled(R.prog_DebugTiling);
 
-        gl.uniform1i(R.prog_DebugTiling.u_width, width);    
-        gl.uniform1i(R.prog_DebugTiling.u_height, height);    
-        gl.uniform1i(R.prog_DebugTiling.u_tileSize, TILE_SIZE);    
-        gl.uniform1i(R.prog_DebugTiling.u_numLightsMax, MAX_LIGHTS_PER_TILE); 
+        gl.uniform1i(R.prog_DebugTiling.u_width, width);  
+        gl.uniform1i(R.prog_DebugTiling.u_height, height);
+        gl.uniform1i(R.prog_DebugTiling.u_tileSize, TILE_SIZE);
+        gl.uniform1i(R.prog_DebugTiling.u_numLightsMax, MAX_LIGHTS_PER_TILE);
 
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.prog_DebugTiling);
     }
+
+    /**
+     * 'deferred' pass: render all the tiles. no need to accumulate lights!
+     */
+    R.pass_deferred_tile.render = function(state) { // "pass 2"
+        // * Bind R.pass_deferred_tile.fbo to write into for later postprocessing
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred_tile.fbo);
+
+        // * Clear depth to 1.0 and color to black
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        gl.clearDepth(1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // Enable blending and use gl.blendFunc to blend with:
+        //   color = 1 * src_color + 1 * dst_color
+        //   goal is to blend each lighting pass into one beautiful frame buffer
+        // still need to blend in the ambient pass!
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE);
+
+        // * Bind/setup the ambient pass, and render using fullscreen quad
+        bindTexturesForLightPassTiled(R.prog_Ambient);
+        renderFullScreenQuad(R.prog_Ambient);
+
+        // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
+        bindTexturesForLightPassTiled(R.prog_BlinnPhongTiling);
+
+        
+        gl.uniform3fv(R.prog_BlinnPhongTiling.u_camPos, state.cameraPos.toArray());
+        gl.uniform1i(R.prog_BlinnPhongTiling.u_width, width);
+        gl.uniform1i(R.prog_BlinnPhongTiling.u_height, height);
+        gl.uniform1i(R.prog_BlinnPhongTiling.u_tileSize, TILE_SIZE);
+        gl.uniform1i(R.prog_BlinnPhongTiling.u_numLightsMax, MAX_LIGHTS_PER_TILE); 
+
+        renderFullScreenQuad(R.prog_BlinnPhongTiling);
+
+        // Disable blending so that it doesn't affect other code
+        gl.disable(gl.BLEND);
+    };
 
     /**
      * 'copy' pass: Render into g-buffers

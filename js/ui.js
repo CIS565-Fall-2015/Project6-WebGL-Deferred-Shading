@@ -11,8 +11,8 @@ var cfg;
         this.enableBloom = false;
         this.enableToon = false;        
         this.compressedGbuffers = false;
-        this.debugTiling = true;        
-        this.enableTiling = false;
+        this.debugTiling = false;        
+        this.enableTiling = true;
     };
 
     var init = function() {

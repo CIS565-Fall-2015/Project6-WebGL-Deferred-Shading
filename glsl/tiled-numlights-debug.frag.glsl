@@ -12,9 +12,6 @@ uniform int u_height;
 uniform int u_tileSize;
 uniform int u_numLightsMax;
 
-uniform sampler2D u_light_list_indices; // an alpha buffer, so need to mul values by 100 and clamp
-//uniform sampler2D u_light_lists; // an alpha buffer, so need to mul values by 100 and clamp
-
 varying vec2 v_uv;
 
 vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
@@ -56,11 +53,13 @@ void main() {
     float tile_uv_x = float(tile_x * u_tileSize) / float(u_width); // corner's pixel coordinates / dimensions
     float tile_uv_y = float(tile_y * u_tileSize) / float(u_height);
     vec2 tile_uv = vec2(tile_uv_x, tile_uv_y);
-    tile_uv.x += 0.0005; // jitter
-    tile_uv.y += 0.0005; // jitter
 
-    float uv_yStep = 1.0 / float(u_height);
     float uv_xStep = 1.0 / float(u_width);
+    float uv_yStep = 1.0 / float(u_height);
+
+    tile_uv.x += uv_xStep * 0.5; // sample from center of pixel
+    tile_uv.y += uv_yStep * 0.5; // sample from center of pixel
+
     tile_uv.y += uv_yStep;
     //tile_uv.x += uv_xStep;
 
@@ -76,7 +75,7 @@ void main() {
     //gl_FragColor = vec4(vec3(tile_uv_x, tile_uv_y, 0.0), 1.0);
 
     // for looking at the light datastructure directly
-    if (lightDataStructure.a > 0.0) {
+    if (abs(lightDataStructure.a) > 0.1) {
         gl_FragColor = vec4(lightDataStructure.rgb * 0.5, 1.0);
     }
 }
