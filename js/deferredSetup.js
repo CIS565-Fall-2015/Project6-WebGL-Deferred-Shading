@@ -204,10 +204,12 @@
 
             p.u_lightsPR     = gl.getUniformLocation(p.prog, 'u_lightsPR');
             p.u_lightsC      = gl.getUniformLocation(p.prog, 'u_lightsC');
+
             p.u_lightIndices = gl.getUniformLocation(p.prog, 'u_lightIndices');
             p.u_tileOffsets  = gl.getUniformLocation(p.prog, 'u_tileOffsets');
 
             p.u_tileIdx      = gl.getUniformLocation(p.prog, 'u_tileIdx');
+            p.u_lightStep    = gl.getUniformLocation(p.prog, 'u_lightStep');
             R.progTiled = p;
         });
 

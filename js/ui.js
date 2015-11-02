@@ -51,7 +51,7 @@ var cfg;
         var consts = gui.addFolder('Constants');
         consts.add(cfg, 'ambient', 0.1, 1.0);
         consts.add(cfg, 'lightRadius', 0.5, 10.0).onFinishChange(updateLights);
-        consts.add(cfg, 'numLights').min(25).max(500).step(5).onFinishChange(updateLights);
+        consts.add(cfg, 'numLights').min(5).max(500).step(5).onFinishChange(updateLights);
 
         consts.open();
         updateLights();
