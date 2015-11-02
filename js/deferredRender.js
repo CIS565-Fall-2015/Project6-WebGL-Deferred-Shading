@@ -23,7 +23,8 @@
             !R.prog_DebugCompressed ||
             !R.progClearCompressed ||
             !R.prog_BlinnPhong_PointLightCompressed ||
-            !R.prog_AmbientCompressed)) {
+            !R.prog_AmbientCompressed ||
+            !R.prog_DebugTiling)) {
             console.log('waiting for programs to load...');
             return;
         }
@@ -49,25 +50,24 @@
         } */
 
         // copy pass
-        if (cfg.compressedGbuffers) {
+if (cfg.enableTiling || cfg.debugTiling) {
+            R.pass_copy_tile.render(state);
+        } else if (cfg.compressedGbuffers) {
             R.pass_copy_compressed.render(state);
         } else {
             R.pass_copy.render(state);
         }
 
-        // set up info for tiling
-        if (cfg.enableTiling) {
-            R.updateLightTextures();
-            R.updateLightTileDatastructure(state);
-        }
-
         // deferred and post process passes
-        if (cfg.compressedGbuffers && cfg.debugView >= 0) {
+        if (cfg.debugTiling) {
+            R.pass_debug_tile.render(state);
+        }
+        else if (cfg.compressedGbuffers && cfg.debugView >= 0) {
             R.pass_debug_compressed.render(state);
         } else if (cfg.compressedGbuffers) {
             R.pass_deferred_compressed.render(state);
             R.pass_post1.render(state, R.pass_deferred_compressed.colorTex);
-        } else if (cfg && cfg.debugScissor){
+        } else if (cfg && cfg.debugScissor) {
             // do a scissor debug render instead of a regular render.
             // don't do any post-proccessing in debug mode.
             R.pass_debug.debugScissor(state);
@@ -87,41 +87,6 @@
             // OPTIONAL TODO: call more postprocessing passes, if any
         }
     };
-
-    // update light info texture, tile light lists, etc.
-    R.updateLightTextures = function() {
-        if (!R.light_colors_texture) {
-            R.light_colors_texture = gl.createTexture();
-        }
-        if (!R.lights_pos_rad_texture) {
-            R.lights_pos_rad_texture = gl.createTexture();
-        }
-
-        var dataColors = new Float32Array(R.NUM_LIGHTS * 4);
-        var dataPosRad = new Float32Array(R.NUM_LIGHTS * 4);
-
-        for (var i = 0; i < R.NUM_LIGHTS; i += 4) {
-            dataColors[i]     = R.lights[i].col[0];
-            dataColors[i + 1] = R.lights[i].col[1];
-            dataColors[i + 2] = R.lights[i].col[2];
-            dataColors[i + 3] = 1.0; // fake alpha. maybe someday it'll be real.
-
-            dataPosRad[i    ] = R.lights[i].pos[0];
-            dataPosRad[i + 1] = R.lights[i].pos[1];
-            dataPosRad[i + 2] = R.lights[i].pos[2];
-            dataPosRad[i + 3] = R.lights[i].rad;
-        }
-        gl.bindTexture(gl.TEXTURE_2D, R.light_colors_texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, R.NUM_LIGHTS, 1, 0, gl.RGBA,
-            gl.FLOAT, dataColors);
-
-        gl.bindTexture(gl.TEXTURE_2D, R.lights_pos_rad_texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, R.NUM_LIGHTS, 1, 0, gl.RGBA,
-            gl.FLOAT, dataPosRad);
-
-        gl.bindTexture(gl.TEXTURE_2D, null);
-    }
-
 
     R.bounded = function(point, min, max) {
         var boundedX = min[0] < point[0] && point[0] < max[0];
@@ -161,38 +126,77 @@
         return false;
     }
 
-    R.updateLightTileDatastructure = function(state) {
+    /**
+     * 'copy' pass: Render into g-buffers, update light datastructure
+     */
+    R.pass_copy_tile.render = function(state) {
+        // * Bind the framebuffer R.pass_copy_tile.fbo
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_copy_tile.fbo);
+
+        // * Clear screen using R.progClear
+        renderFullScreenQuad(R.progClear);
+        // * Clear depth buffer to value 1.0 using gl.clearDepth and gl.clear
+        gl.clearDepth(1.0);
+        // http://webgl.wikia.com/wiki/Clear
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // * "Use" the program R.progCopy.prog
+        gl.useProgram(R.progCopy.prog);
+
+        var m = state.cameraMat.elements;
+        // * Upload the camera matrix m to the uniform R.progCopy.u_cameraMat
+        //   using gl.uniformMatrix4fv
+        gl.uniformMatrix4fv(R.progCopy.u_cameraMat, gl.FALSE, m);
+
+        // * Draw the scene
+        drawScene(state, R.progCopy);
+
+        // update the light datastructure
+
         if (!NUM_TILES_WIDE || !NUM_TILES_TALL) {
             NUM_TILES_WIDE = Math.floor((width + TILE_SIZE - 1) / TILE_SIZE);
             NUM_TILES_TALL = Math.floor((height + TILE_SIZE - 1) / TILE_SIZE);
             NUM_TILES = NUM_TILES_WIDE * NUM_TILES_TALL;
         }
 
-        if (!R.tile_light_lists_tex) {
-            R.tile_light_lists_tex = gl.createTexture();
+        // insert the lights themselves        
+        // for simplicity, this ONLY works for NUM_LIGHTS < width.
+        // assuming we're 2D arraying by rows:
+        // we're havingg the first row by light colors and the second
+        // be light positions/radii
+        var lightData = new Float32Array(width * height * 4);
+        for (var i = 0; i < R.NUM_LIGHTS; i += 4) {
+            lightData[i]     = R.lights[i].col[0];
+            lightData[i + 1] = R.lights[i].col[1];
+            lightData[i + 2] = R.lights[i].col[2];
+            lightData[i + 3] = 1.0;
+
+            lightData[width * 4 + i    ] = R.lights[i].pos[0];
+            lightData[width * 4 + i + 1] = R.lights[i].pos[1];
+            lightData[width * 4 + i + 2] = R.lights[i].pos[2];
+            lightData[width * 4 + i + 3] = R.lights[i].rad;
         }
 
-        if (!R.tile_light_lists_lengths_tex) {
-            R.tile_light_lists_lengths_tex = gl.createTexture();;
-        }
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.gbufs[4]); // light params
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA,
+            gl.FLOAT, lightData);
+        gl.bindTexture(gl.TEXTURE_2D, null);
 
-        // concatenation of lists of lights
-        var dataLightLists = new Float32Array(NUM_TILES * MAX_LIGHTS_PER_TILE);
+        // insert the light lists per tile
+        // for simplicity in indexing, this ONLY works for MAX_LIGHTS < TILE_SIZE
+        var lightLists = new Float32Array(width * height * 4);
 
-        // each entry indicates how long this tile's light list is
-        var dataLightListLengths = new Float32Array(NUM_TILES);
-
-        for (var x = 0; x < NUM_TILES_WIDE; x++) {
-            for (var y = 0; y < NUM_TILES_TALL; y++) {
+        for (var x = 0; x < width; x += TILE_SIZE) {
+            for (var y = 0; y < height; y += TILE_SIZE) {
                 // compute start index for this tile
-                var dataLightListsIndex = (y + x * NUM_TILES_TALL) * MAX_LIGHTS_PER_TILE;
+                var dataLightListsIndex = x + y * height;
                 var lightsInThisTile = 0;
 
                 // compute tile 1's box in pix coordinates. same format as what
                 // getScissorForLight returns.
                 // x, y, width, height
                 // check against each light's scissor box
-                var tileBox = [x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE];
+                var tileBox = [x, y, TILE_SIZE, TILE_SIZE];
                 for (var j = 0; j < MAX_LIGHTS_PER_TILE; j++) {
                     // check each light's scissor box against this tile's box
                     if (j < R.NUM_LIGHTS) {
@@ -200,29 +204,55 @@
                             state.projMat, R.lights[j]);
                         if (!lightScissorBox) continue;
                         if (R.boxOverlap(tileBox, lightScissorBox)) {
-                            dataLightLists[dataLightListsIndex] = j / 100.0;
-                            dataLightListsIndex++;
-                            lightsInThisTile++;
+                            lightLists[dataLightListsIndex] = j;
+                            dataLightListsIndex += 4; // lightLists is a bunch of vec4s
                         }
                     }
                 }
-                // set the number of lights in the dataLightListLengths
-                dataLightListLengths[y + x * NUM_TILES_TALL] = lightsInThisTile / 100.0;
+                // add a NULL index (-1) to indicate the end of list
+                lightLists[dataLightListsIndex] = -1;
             }
         }
-        //console.log(dataLightListLengths);
-        //console.log(dataLightLists);
-        //console.log("debug");
-        // upload as textures
-        gl.bindTexture(gl.TEXTURE_2D, R.tile_light_lists_tex);
-        gl.texImage2D(
-            gl.TEXTURE_2D, 0, gl.ALPHA, NUM_TILES * MAX_LIGHTS_PER_TILE, 1, 0,
-            gl.ALPHA, gl.FLOAT, dataLightLists);
 
-        gl.bindTexture(gl.TEXTURE_2D, R.tile_light_lists_lengths_tex);
-        gl.texImage2D(
-            gl.TEXTURE_2D, 0, gl.ALPHA, NUM_TILES, 1, 0,
-            gl.ALPHA, gl.FLOAT, dataLightListLengths);
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.gbufs[5]); // light params
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA,
+            gl.FLOAT, lightLists);
+        gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
+    var bindTexturesForLightPassTiled = function(prog) {
+        gl.useProgram(prog.prog);
+
+        // * Bind all of the g-buffers and depth buffer as texture uniform
+        //   inputs to the shader
+        for (var i = 0; i < R.NUM_GBUFFERS + 2; i++) {
+            gl.activeTexture(gl['TEXTURE' + i]);
+            gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.gbufs[i]);
+            gl.uniform1i(prog.u_gbufs[i], i);
+        }
+        gl.activeTexture(gl['TEXTURE' + (R.NUM_GBUFFERS + 2)]);
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.depthTex);
+        gl.uniform1i(prog.u_depth, (R.NUM_GBUFFERS + 2));
+    };
+
+    /**
+     * debug
+     */
+    R.pass_debug_tile.render = function(state) {
+        // * Unbind any framebuffer, so we can write to the screen
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Bind/setup the debug "lighting" pass
+        // * Tell shader which debug view to use
+        bindTexturesForLightPassTiled(R.prog_DebugTiling);
+
+        gl.uniform1i(R.prog_DebugTiling.u_width, width);    
+        gl.uniform1i(R.prog_DebugTiling.u_height, height);    
+        gl.uniform1i(R.prog_DebugTiling.u_tileSize, TILE_SIZE);    
+        gl.uniform1i(R.prog_DebugTiling.u_numLightsMax, MAX_LIGHTS_PER_TILE); 
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.prog_DebugTiling);
     }
 
     /**
@@ -256,7 +286,34 @@
 
         // * Draw the scene
         drawScene(state, R.progCopy);
+
+        // testing updating textures with an array during runtime
+        //gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.gbufs[0]); // texture mapped color
+        //var hdiv2 = height;//height / 2; 
+        //var data = new Float32Array(width * hdiv2 * 4);
+        //for (var i = 0; i < width * hdiv2 * 4; i += 4) {
+        //    data[i] = 1.0;
+        //    data[i + 1] = 0.0;
+        //    data[i + 2] = 0.0;
+        //    data[i + 3] = 1.0;
+        //}
+
+        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, hdiv2, 0, gl.RGBA, gl.FLOAT, data);
+        //gl.bindTexture(gl.TEXTURE_2D, null);
     };
+
+    R.pass_debug.render = function(state) {
+        // * Unbind any framebuffer, so we can write to the screen
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Bind/setup the debug "lighting" pass
+        // * Tell shader which debug view to use
+        bindTexturesForLightPass(R.prog_Debug);
+        gl.uniform1i(R.prog_Debug.u_debug, cfg.debugView);
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.prog_Debug);
+    };    
 
     /**
      * 'copy' pass: Render into compressed g-buffers
@@ -319,19 +376,6 @@
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.prog_DebugCompressed);
     };
-
-    R.pass_debug.render = function(state) {
-        // * Unbind any framebuffer, so we can write to the screen
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-        // * Bind/setup the debug "lighting" pass
-        // * Tell shader which debug view to use
-        bindTexturesForLightPass(R.prog_Debug);
-        gl.uniform1i(R.prog_Debug.u_debug, cfg.debugView);
-
-        // * Render a fullscreen quad to perform shading on
-        renderFullScreenQuad(R.prog_Debug);
-    };    
 
     R.pass_debug.debugScissor = function(state) {
         // * Unbind any framebuffer, so we can write to the screen
@@ -488,7 +532,7 @@
         gl.disable(gl.BLEND);
     };
 
-/**
+    /**
      * 'deferred' pass: Add lighting results for each individual light
      */
     R.pass_deferred_compressed.render = function(state) { // "pass 2"
@@ -558,16 +602,17 @@
         gl.useProgram(prog.prog);
 
         // testing updating textures with an array during runtime
-        //gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.gbufs[0]); // texture mapped color  
-        //var data = new Float32Array(width * height * 4);
-        //for (var i = 0; i < width * height * 4; i += 4) {
+        //gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.gbufs[0]); // texture mapped color
+        //var hdiv2 = height;//height / 2; 
+        //var data = new Float32Array(width * hdiv2 * 4);
+        //for (var i = 0; i < width * hdiv2 * 4; i += 4) {
         //    data[i] = 1.0;
         //    data[i + 1] = 0.0;
         //    data[i + 2] = 0.0;
         //    data[i + 3] = 1.0;
         //}
 
-        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, data);
+        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, hdiv2, 0, gl.RGBA, gl.FLOAT, data);
         //gl.bindTexture(gl.TEXTURE_2D, null);
 
         // * Bind all of the g-buffers and depth buffer as texture uniform

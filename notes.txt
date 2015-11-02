@@ -131,3 +131,22 @@ TODO
 		-should we care about blending? or just artificially limit?
 		-presumably we're hoping you won't have > 100 lights in one tile
 	-aaaaand all the stupid messy binding and stuff that's associated with this
+
+new understanding:
+-ok. so the light data structure has to be bound to the fbo
+-but how is this done?! it seems all textures attached to the fbo must be the same dimensions as the fbo!
+-as long as max_lights_per_tile < tile_width, this can still be done... hmmm
+
+Steps
+1) set up a new copy pass for tiling [done, untested]
+	-include a new gbuf for each element in the datastructure
+2) write the new copy pass [done, untested]
+	-must also overwrite the appropriate gbuffers with light datastructure
+	-this will heavily change how indexing is handled
+3) write a new bindTexturesForLightPass
+4) write the debug_tile render pass
+5) write a new debug shader
+
+notes:
+-to simplify, we're going to clamp the number of lights to resolution width
+	-simplifies indexing when reading a light's params

@@ -17,6 +17,10 @@
     R.pass_debug_compressed = {};
     R.pass_deferred_compressed = {};
 
+    // workflow using tiling
+    R.pass_copy_tile = {};
+    R.pass_debug_tile = {};
+
     R.NUM_GBUFFERS_COMPRESSED = 2;
 
     /**
@@ -28,8 +32,12 @@
         R.pass_copy.setup(); // allocate
         R.pass_deferred.setup(); // allocate
 
+        // compressed g-buffers
         R.pass_copy_compressed.setup(); // allocate
         R.pass_deferred_compressed.setup();
+
+        // tiling
+        R.pass_copy_tile.setup();
 
         console.log("setup complete");
     };
@@ -63,19 +71,32 @@
                 rad: R.LIGHT_RADIUS
             });
         }
-
-        // set up light textures for tiling
-        var texColors = gl.createTexture();
-        gl.bindTexture(gl.TEXTURE_2D, texColors);
-        var dataColors = new Float32Array(R.NUM_LIGHTS * 4);
-
-        
-        
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, R.NUM_LIGHTS, 1, 0, gl.RGBA, gl.FLOAT, dataColors);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-        R.light_colors_texture = texColors;
-
     };
+
+    R.pass_copy_tile.setup = function() {
+        // * Create the FBO
+        R.pass_copy_tile.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a depth target texture for the FBO
+        R.pass_copy_tile.depthTex = createAndBindDepthTargetTexture(R.pass_copy_tile.fbo);
+
+        // * Create, bind, and store "color" target textures for the FBO
+        // these are the g buffers
+        // also need a gbuf for lights themselves and a gbuf for tile light lists        
+        R.pass_copy_tile.gbufs = [];
+        var attachments = [];
+        for (var i = 0; i < R.NUM_GBUFFERS + 2; i++) {
+            var attachment = gl_draw_buffers['COLOR_ATTACHMENT' + i + '_WEBGL'];
+            var tex = createAndBindColorTargetTexture(R.pass_copy_tile.fbo, attachment);
+            R.pass_copy_tile.gbufs.push(tex);
+            attachments.push(attachment);
+        }
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_copy_tile.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL(attachments);
+    }
 
     /**
      * Create/configure framebuffer between "copy" and "deferred" stages
@@ -325,6 +346,26 @@
                 p.u_depth    = gl.getUniformLocation(prog, 'u_depth');
 
                 R.prog_AmbientCompressed = p;
+            });
+
+        loadShaderProgram(gl, 'glsl/quad.vert.glsl',
+            'glsl/tiled-numlights-debug.frag.glsl',
+            function(prog) {
+                // Create an object to hold info about this shader program
+                var p = { prog: prog };
+
+                // Retrieve the uniform and attribute locations
+                p.u_gbufs = [];
+                for (var i = 0; i < R.NUM_GBUFFERS + 2; i++) {
+                    p.u_gbufs[i] = gl.getUniformLocation(prog, 'u_gbufs[' + i + ']');
+                }
+                p.u_depth    = gl.getUniformLocation(prog, 'u_depth');
+                p.u_width = gl.getUniformLocation(p.prog, 'u_width');
+                p.u_height = gl.getUniformLocation(p.prog, 'u_height');
+                p.u_tileSize = gl.getUniformLocation(p.prog, 'u_tileSize');
+                p.u_numLightsMax = gl.getUniformLocation(p.prog, 'u_numLightsMax');
+
+                R.prog_DebugTiling = p;
             });
     };
 
