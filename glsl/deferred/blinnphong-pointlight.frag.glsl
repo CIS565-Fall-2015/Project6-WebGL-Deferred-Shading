@@ -86,8 +86,9 @@ void main() {
     float spec = terms.y;
     float fall = terms.z;
 
+    float lightColTotal = diff + spec;
     if (u_toon == 1) {
-        diff = float(int(diff * TOON_STEPS)) / TOON_STEPS;
+        lightColTotal = float(int(lightColTotal * TOON_STEPS)) / TOON_STEPS;
         float surroundingDepth = maxDepth(depth, v_uv);
         if (surroundingDepth > .01) {
             gl_FragColor = vec4(0, 0, 0, 1);
@@ -95,6 +96,6 @@ void main() {
         }
     }
 
-    vec3 litColor = 0.4 * fall * color * u_lightCol * (diff + spec);
+    vec3 litColor = 0.4 * fall * color * u_lightCol * lightColTotal;
     gl_FragColor = vec4(litColor, 1);
 }

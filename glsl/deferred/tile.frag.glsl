@@ -18,7 +18,7 @@ uniform sampler2D u_lightIndices;
 uniform sampler2D u_tileOffsets;
 
 uniform float u_tileIdx;
-uniform float u_lightStep;
+uniform vec2 u_lightStep;
 
 const int c_maxLights = 200;
 
@@ -81,14 +81,12 @@ void main() {
 
     vec4 tileOffsetPair = texture2D(u_tileOffsets, vec2(u_tileIdx, 0));
     int lightCount = int(tileOffsetPair.x);  // number of lights to consider
-    float lightOffset = tileOffsetPair.y; // index to start at
+    vec2 lightOffset = tileOffsetPair.yz; // index to start at
 
     if (u_debug == 0) {
         gl_FragColor = vec4(vec3(float(lightCount) / float(c_maxLights)), 1);
         return;
     }
-    //gl_FragColor = vec4(vec3(lightOffset * u_lightStep), 1);
-    //return;
 
     if (depth == 1.0) {
         gl_FragColor = vec4(0);
@@ -96,13 +94,13 @@ void main() {
     }
 
     vec3 fullColor = vec3(0);
-    float offsetIdx = lightOffset * u_lightStep;
+    vec2 offsetIdx = lightOffset * u_lightStep;
     float lastLightIdx = 0.0;
     for (int i = 0; i < c_maxLights; i++) {
         if (i >= lightCount) {
             break;
         }
-        float lightIdx = texture2D(u_lightIndices, vec2(offsetIdx, 0)).x;
+        float lightIdx = texture2D(u_lightIndices, offsetIdx).x;
         lastLightIdx = lightIdx;
 
         vec4 lightPR = texture2D(u_lightsPR, vec2(lightIdx, 0));
@@ -119,7 +117,11 @@ void main() {
         vec3 lightColor = 0.3 * atten * color * lightCol * (diff + spec);
 
         fullColor += lightColor;
-        offsetIdx += u_lightStep;
+        offsetIdx.x += u_lightStep.x;
+        if (offsetIdx.x >= 1.0) {
+            offsetIdx.x = 0.0;
+            offsetIdx.y += u_lightStep.y;
+        }
     }
 
     //if (u_toon == 1) {

@@ -45,10 +45,10 @@
         gl.uniform1i(uniformTarget, textureID);
     };
 
-    var bindTextureLum = function(prog, uniformTarget, tex, data, textureID, size) {
+    var bindTextureLum = function(prog, uniformTarget, tex, data, textureID, xsize, ysize) {
         gl.activeTexture(gl['TEXTURE' + textureID]);
         gl.bindTexture(gl.TEXTURE_2D, tex);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, size, 1, 0, gl.LUMINANCE, gl.FLOAT, data);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, xsize, ysize, 0, gl.LUMINANCE, gl.FLOAT, data);
 
         gl.uniform1i(uniformTarget, textureID);
     };
@@ -200,8 +200,8 @@
             var len = lights.length;
 
             tileOffsets[3*tileIdx] = len + 0.5;
-            tileOffsets[3*tileIdx+1] = totalOffset + 0.5;
-            tileOffsets[3*tileIdx+2] = 0.0;
+            tileOffsets[3*tileIdx+1] = (totalOffset % 4096) + 0.5;
+            tileOffsets[3*tileIdx+2] = Math.floor(totalOffset / 4096) + 0.5;
 
             for (lightIdx = 0; lightIdx < Math.min(len, MAX_LIGHTS); lightIdx++) {
                 lightIndices[totalOffset] = lights[lightIdx];
@@ -230,16 +230,19 @@
                        R.pass_tiled.lightDataCol, R.lightTextureCol,
                        R.NUM_GBUFFERS+2, R.lights.length);
 
+        var xsize = 4096;
+        var ysize = Math.ceil(totalOffset / 4096);
+
         bindTextureLum(program, program.u_lightIndices,
                        R.pass_tiled.lightTileTex, lightIndices,
-                       R.NUM_GBUFFERS+3, totalOffset);
+                       R.NUM_GBUFFERS+3, xsize, ysize);
+
+        gl.uniform2f(program.u_lightStep, 1 / xsize, 1 / ysize);
+        gl.uniform1i(program.u_debugView, cfg.tileDebugView);
 
         bindTextureRGB(program, program.u_tileOffsets,
                        R.pass_tiled.tileOffsetTex, tileOffsets,
                        R.NUM_GBUFFERS+4, tileOffsets.length / 3);
-
-        gl.uniform1f(program.u_lightStep, 1 / totalOffset);
-        gl.uniform1i(program.u_debugView, cfg.tileDebugView);
 
         // Loop through the tiles and call the program for each.
         for (var x = 0; x < TILES_WIDTH; x++) {
