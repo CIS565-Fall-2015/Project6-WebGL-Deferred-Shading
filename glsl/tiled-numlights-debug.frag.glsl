@@ -47,5 +47,6 @@ void main() {
     //gl_FragColor = texture2D(u_gbufs[5], v_uv);
 
     // for looking at the light datastructure directly
-    gl_FragColor = texture2D(u_gbufs[4], v_uv);    
+    vec4 lightDataStructure = texture2D(u_gbufs[4], v_uv);
+    gl_FragColor = vec4(lightDataStructure.rgb * 0.5, 1.0);
 }

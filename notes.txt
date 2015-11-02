@@ -143,10 +143,12 @@ Steps
 2) write the new copy pass [done, untested]
 	-must also overwrite the appropriate gbuffers with light datastructure
 	-this will heavily change how indexing is handled
-3) write a new bindTexturesForLightPass
-4) write the debug_tile render pass
+3) write a new bindTexturesForLightPass [done]
+4) write the debug_tile render pass [done]
 5) write a new debug shader
 
 notes:
 -to simplify, we're going to clamp the number of lights to resolution width
 	-simplifies indexing when reading a light's params
+-to reduce lookups: since we get a huge amount of memory for a sparse amount of data, let's have each light list literally store the light data.
+-will simplify lookup in shader

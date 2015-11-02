@@ -3,7 +3,7 @@
     // deferredSetup.js must be loaded first
 
     var TILE_SIZE = 32;
-    var MAX_LIGHTS_PER_TILE = 10;
+    var MAX_LIGHTS_PER_TILE = 20;
     var NUM_TILES_WIDE;
     var NUM_TILES_TALL;
     var NUM_TILES;
@@ -34,7 +34,7 @@
             // OPTIONAL TODO: Edit if you want to change how lights move
             var mn = R.light_min[1];
             var mx = R.light_max[1];
-            R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
+            //R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
         }
 
         // Execute deferred shading pipeline
@@ -89,9 +89,9 @@ if (cfg.enableTiling || cfg.debugTiling) {
     };
 
     R.bounded = function(point, min, max) {
-        var boundedX = min[0] < point[0] && point[0] < max[0];
-        var boundedY = min[1] < point[1] && point[1] < max[1];
-        return boundedX && boundedY;        
+        var boundedX = (min[0] <= point[0]) && (point[0] <= max[0]);
+        var boundedY = (min[1] <= point[1]) && (point[1] <= max[1]);
+        return boundedX && boundedY;
     }
 
     // takes boxes like what getScissorForLight returns and returns if
@@ -162,51 +162,69 @@ if (cfg.enableTiling || cfg.debugTiling) {
         // insert the lights themselves        
         // for simplicity, this ONLY works for NUM_LIGHTS < width.
         // assuming we're 2D arraying by rows:
-        // we're havingg the first row by light colors and the second
+        // we're having the first row by light colors and the second
         // be light positions/radii
         var lightData = new Float32Array(width * height * 4);
-        var j = 0;
+        var k = width * 4 * (height - 2); // light data is at the top left of tex
         for (var i = 0; i < R.NUM_LIGHTS; i++) {
-            lightData[j]     = R.lights[i].col[0];
-            lightData[j + 1] = R.lights[i].col[1];
-            lightData[j + 2] = R.lights[i].col[2];
-            lightData[j + 3] = 1.0;
+            lightData[width * 4 + k]     = R.lights[i].col[0];
+            lightData[width * 4 + k + 1] = R.lights[i].col[1];
+            lightData[width * 4 + k + 2] = R.lights[i].col[2];
+            lightData[width * 4 + k + 3] = 1.0;
 
-            lightData[width * 4 + j    ] = R.lights[i].pos[0];
-            lightData[width * 4 + j + 1] = R.lights[i].pos[1];
-            lightData[width * 4 + j + 2] = R.lights[i].pos[2];
-            lightData[width * 4 + j + 3] = R.lights[i].rad;
-            j += 4;
+            lightData[k    ] = R.lights[i].pos[0];
+            lightData[k + 1] = R.lights[i].pos[1];
+            lightData[k + 2] = R.lights[i].pos[2];
+            lightData[k + 3] = R.lights[i].rad;
+            k += 4;
         }
 
         // insert the light lists per tile
         // for simplicity in indexing, this ONLY works for MAX_LIGHTS < TILE_SIZE
-
-        for (var x = 0; x < width; x += TILE_SIZE) {
-            for (var y = 0; y < height; y += TILE_SIZE) {
+        for (var y = 0; y < height; y += TILE_SIZE) {
+            var xi = 0;
+            for (var x = 0; x < width; x += TILE_SIZE) {
                 // compute start index for this tile
-                var dataLightListsIndex = x + y * height;
-                var lightsInThisTile = 0;
+                var lightDataIndex = xi + (y * width * 4);
+                xi += TILE_SIZE * 4;
 
                 // compute tile 1's box in pix coordinates. same format as what
                 // getScissorForLight returns.
                 // x, y, width, height
                 // check against each light's scissor box
                 var tileBox = [x, y, TILE_SIZE, TILE_SIZE];
-                for (var j = 0; j < MAX_LIGHTS_PER_TILE; j++) {
+                var numLights = 0;
+                for (var j = 0; j < R.NUM_LIGHTS; j++) {
                     // check each light's scissor box against this tile's box
-                    if (j < R.NUM_LIGHTS) {
-                        var lightScissorBox = getScissorForLight(state.viewMat,
-                            state.projMat, R.lights[j]);
-                        if (!lightScissorBox) continue;
-                        if (R.boxOverlap(tileBox, lightScissorBox)) {
-                            lightData[dataLightListsIndex] = j;
-                            dataLightListsIndex += 4; // lightLists is a bunch of vec4s
-                        }
+                    var lightScissorBox = getScissorForLight(state.viewMat,
+                        state.projMat, R.lights[j]);
+                    if (!lightScissorBox) continue;
+                    if (R.boxOverlap(tileBox, lightScissorBox)) {
+                        // insert color
+                        lightData[lightDataIndex + width * 4]     = R.lights[j].col[0];
+                        lightData[lightDataIndex + width * 4 + 1] = R.lights[j].col[1];
+                        lightData[lightDataIndex + width * 4 + 2] = R.lights[j].col[2];
+                        lightData[lightDataIndex + width * 4 + 3] = 1;
+
+                        // insert radius and direction
+                        lightData[lightDataIndex]     = R.lights[j].pos[0];
+                        lightData[lightDataIndex + 1] = R.lights[j].pos[1];
+                        lightData[lightDataIndex + 2] = R.lights[j].pos[2];
+                        lightData[lightDataIndex + 3] = R.lights[j].rad;
+
+                        lightDataIndex += 4; // lightLists is a bunch of vec4s
+                        numLights++;
                     }
+                    if (numLights > MAX_LIGHTS_PER_TILE) break;
+
                 }
                 // add a NULL index (-1) to indicate the end of list
-                lightData[dataLightListsIndex] = -1;
+                lightData[lightDataIndex + width * 4 + 3] = -1;
+
+                //lightData[lightDataIndex + 2] = 1;              // debug
+                //lightData[lightDataIndex + width * 4 + 2] = 1;  // debug
+                //lightData[lightDataIndex + 3] = 1;              // debug
+                //lightData[lightDataIndex + width * 4 + 3] = 1;  // debug
             }
         }
 
