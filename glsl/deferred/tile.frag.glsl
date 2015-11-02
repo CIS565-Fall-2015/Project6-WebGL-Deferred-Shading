@@ -80,6 +80,11 @@ void main() {
     int lightCount = int(tileOffsetPair.x);  // number of lights to consider
     float lightOffset = tileOffsetPair.y; // index to start at
 
+    //gl_FragColor = vec4(vec3(float(lightCount) / 10.), 1);
+    //return;
+    //gl_FragColor = vec4(vec3(lightOffset * u_lightStep), 1);
+    //return;
+
     if (depth == 1.0) {
         gl_FragColor = vec4(0);
         return;
@@ -87,9 +92,9 @@ void main() {
 
     vec3 fullColor = vec3(0);
     float offsetIdx = lightOffset * u_lightStep;
-    int count = 0;
     for (int i = 0; i < 10; i++) {
         float lightIdx = texture2D(u_lightIndices, vec2(offsetIdx, 0)).x;
+
         vec4 lightPR = texture2D(u_lightsPR, vec2(lightIdx, 0));
         vec4 lightC  = texture2D(u_lightsC,  vec2(lightIdx, 0));
 
@@ -106,8 +111,7 @@ void main() {
         fullColor += lightColor;
         offsetIdx += u_lightStep;
 
-        count++;
-        if (count > lightCount) {
+        if (i > lightCount) {
             break;
         }
     }

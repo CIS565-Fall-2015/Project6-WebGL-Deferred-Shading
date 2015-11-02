@@ -147,12 +147,12 @@
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
         gl.uniform1f(R.prog_Ambient.u_ambientTerm, cfg.ambient);
-        renderFullScreenQuad(R.prog_Ambient);
+        //renderFullScreenQuad(R.prog_Ambient);
 
         // Constants
-        var TILE_SIZE = 50;
-        var TILES_WIDTH  = Math.ceil(width  / TILE_SIZE);
-        var TILES_HEIGHT = Math.ceil(height / TILE_SIZE);
+        var TILE_SIZE = 100;
+        var TILES_WIDTH  = Math.ceil((width+1)  / TILE_SIZE)-1;
+        var TILES_HEIGHT = Math.ceil((height+1) / TILE_SIZE)-1;
         var NUM_TILES = TILES_WIDTH * TILES_HEIGHT;
 
         // [ tiles ] [ lights per tile ].
@@ -174,9 +174,10 @@
                 var tileW = Math.ceil (sc[2] / TILE_SIZE);
                 var tileH = Math.ceil (sc[3] / TILE_SIZE);
 
-                for (var y = tileY; y <= tileY + tileH; y++) {
-                    for (var x = tileX; x <= tileX + tileW; x++) {
-                        var idx = x + (y - 1) * TILES_WIDTH;
+                for (var y = tileY; y < tileY + tileH; y++) {
+                    for (var x = tileX; x < tileX + tileW; x++) {
+                        //var idx = x + (y - 1) * TILES_WIDTH;
+                        var idx = x + y * TILES_WIDTH;
                         if (idx >= 0 && idx < TILES_WIDTH * TILES_HEIGHT) {
                             tileLights[idx].push(lightIdx / R.lights.length);
                         }
@@ -199,15 +200,13 @@
 
             tileOffsets[3*tileIdx] = len;
             tileOffsets[3*tileIdx+1] = totalOffset;
+            tileOffsets[3*tileIdx+2] = 0.0;
 
-            // TODO: don't have a hard cap on lights
-            for (var lightIdx = 0; lightIdx < Math.min(len, 10); lightIdx++) {
+            // TODO: better cap on lights?
+            for (lightIdx = 0; lightIdx < Math.min(len, 10); lightIdx++) {
                 lightIndices[totalOffset] = lights[lightIdx];
                 totalOffset++;
             }
-        }
-        for (var k = totalOffset; k < lightIndices.length; k++) {
-            lightIndices[k] = 1.0;
         }
 
         // Enable blending and scissor testing
@@ -229,22 +228,22 @@
                        R.pass_tiled.lightDataCol, R.lightTextureCol,
                        R.NUM_GBUFFERS+2, R.lights.length);
 
-        bindTextureLum(program, program.u_lightTileTex,
+        bindTextureLum(program, program.u_lightIndices,
                        R.pass_tiled.lightTileTex, lightIndices,
-                       //R.NUM_GBUFFERS+3, lightIndices.length / 3);
                        R.NUM_GBUFFERS+3, totalOffset);
 
         bindTextureRGB(program, program.u_tileOffsets,
                        R.pass_tiled.tileOffsetTex, tileOffsets,
                        R.NUM_GBUFFERS+4, tileOffsets.length / 3);
 
+        gl.uniform1f(program.u_lightStep, 1 / totalOffset);
+
         // Loop through the tiles and call the program for each.
         for (var x = 0; x < TILES_WIDTH; x++) {
             for (var y = 0; y < TILES_HEIGHT; y++) {
                 gl.scissor(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                 var idx = x + (TILES_HEIGHT - 1 - y) * TILES_WIDTH;
-                gl.uniform1f(program.u_tileIdx, idx / NUM_TILES);
-                gl.uniform1f(program.u_lightStep, 1 / totalOffset);
+                gl.uniform1f(program.u_tileIdx, (idx + 0.5) / NUM_TILES);
                 renderFullScreenQuad(program);
             }
         }
