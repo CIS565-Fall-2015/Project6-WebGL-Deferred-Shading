@@ -3,7 +3,7 @@
     // deferredSetup.js must be loaded first
 
     var TILE_SIZE = 32;
-    var MAX_LIGHTS_PER_TILE = 15; // don't forget to change max lights over in shader!
+    var MAX_LIGHTS_PER_TILE = 31; // don't forget to change max lights over in shader!
     var NUM_TILES_WIDE;
     var NUM_TILES_TALL;
     var NUM_TILES;

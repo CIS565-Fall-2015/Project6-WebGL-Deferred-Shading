@@ -16,7 +16,9 @@ uniform int u_numLightsMax;
 
 varying vec2 v_uv;
 const float shininess = 16.0;
-const int MAX_LIGHTS = 15; // don't forget to change max lights over in deferredRender.js!
+// no larger than TILE_SIZE - 1 for now, b/c my datastructure is not efficient.
+// don't forget to change max lights over in deferredRender.js!
+const int MAX_LIGHTS = 31; 
 
 vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
@@ -98,7 +100,9 @@ void main() {
 
     vec3 color = vec3(0.0, 0.0, 0.0);
 
-    // compute blynn-phong for each light
+    //float numLights = 0.0;
+
+    // compute blinn-phong for each light
     for (int i = 0; i < MAX_LIGHTS; i++) {
         // sample light data
         vec4 lightCol = texture2D(u_gbufs[4], tile_uv_lightCol);
@@ -106,10 +110,13 @@ void main() {
         if (lightPos.w < 0.0) {
             break; // end of list
         }
+        //numLights += 1.0;
         tile_uv.x += uv_xStep;
         tile_uv_lightCol.x += uv_xStep;
         // compute blynn-phong
         color += blynnPhong(lightPos.xyz, lightPos.w, lightCol.rgb, pos, nor, colmap);
     }
     gl_FragColor = vec4(color, 1.0);
+    //gl_FragColor = vec4(vec3(numLights / float(MAX_LIGHTS * 2)), 1.0);
+
 }
