@@ -356,7 +356,7 @@
 
                 // Retrieve the uniform and attribute locations
                 p.u_gbufs = [];
-                for (var i = 0; i < R.NUM_GBUFFERS + 2; i++) {
+                for (var i = 0; i < R.NUM_GBUFFERS + 1; i++) {
                     p.u_gbufs[i] = gl.getUniformLocation(prog, 'u_gbufs[' + i + ']');
                 }
                 p.u_depth    = gl.getUniformLocation(prog, 'u_depth');

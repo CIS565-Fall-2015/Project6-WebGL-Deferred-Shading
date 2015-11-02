@@ -165,26 +165,22 @@ if (cfg.enableTiling || cfg.debugTiling) {
         // we're havingg the first row by light colors and the second
         // be light positions/radii
         var lightData = new Float32Array(width * height * 4);
-        for (var i = 0; i < R.NUM_LIGHTS; i += 4) {
-            lightData[i]     = R.lights[i].col[0];
-            lightData[i + 1] = R.lights[i].col[1];
-            lightData[i + 2] = R.lights[i].col[2];
-            lightData[i + 3] = 1.0;
+        var j = 0;
+        for (var i = 0; i < R.NUM_LIGHTS; i++) {
+            lightData[j]     = R.lights[i].col[0];
+            lightData[j + 1] = R.lights[i].col[1];
+            lightData[j + 2] = R.lights[i].col[2];
+            lightData[j + 3] = 1.0;
 
-            lightData[width * 4 + i    ] = R.lights[i].pos[0];
-            lightData[width * 4 + i + 1] = R.lights[i].pos[1];
-            lightData[width * 4 + i + 2] = R.lights[i].pos[2];
-            lightData[width * 4 + i + 3] = R.lights[i].rad;
+            lightData[width * 4 + j    ] = R.lights[i].pos[0];
+            lightData[width * 4 + j + 1] = R.lights[i].pos[1];
+            lightData[width * 4 + j + 2] = R.lights[i].pos[2];
+            lightData[width * 4 + j + 3] = R.lights[i].rad;
+            j += 4;
         }
-
-        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.gbufs[4]); // light params
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA,
-            gl.FLOAT, lightData);
-        gl.bindTexture(gl.TEXTURE_2D, null);
 
         // insert the light lists per tile
         // for simplicity in indexing, this ONLY works for MAX_LIGHTS < TILE_SIZE
-        var lightLists = new Float32Array(width * height * 4);
 
         for (var x = 0; x < width; x += TILE_SIZE) {
             for (var y = 0; y < height; y += TILE_SIZE) {
@@ -204,19 +200,19 @@ if (cfg.enableTiling || cfg.debugTiling) {
                             state.projMat, R.lights[j]);
                         if (!lightScissorBox) continue;
                         if (R.boxOverlap(tileBox, lightScissorBox)) {
-                            lightLists[dataLightListsIndex] = j;
+                            lightData[dataLightListsIndex] = j;
                             dataLightListsIndex += 4; // lightLists is a bunch of vec4s
                         }
                     }
                 }
                 // add a NULL index (-1) to indicate the end of list
-                lightLists[dataLightListsIndex] = -1;
+                lightData[dataLightListsIndex] = -1;
             }
         }
 
-        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.gbufs[5]); // light params
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.gbufs[4]); // light params
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA,
-            gl.FLOAT, lightLists);
+            gl.FLOAT, lightData);
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
@@ -225,14 +221,14 @@ if (cfg.enableTiling || cfg.debugTiling) {
 
         // * Bind all of the g-buffers and depth buffer as texture uniform
         //   inputs to the shader
-        for (var i = 0; i < R.NUM_GBUFFERS + 2; i++) {
+        for (var i = 0; i < R.NUM_GBUFFERS + 1; i++) {
             gl.activeTexture(gl['TEXTURE' + i]);
             gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.gbufs[i]);
             gl.uniform1i(prog.u_gbufs[i], i);
         }
-        gl.activeTexture(gl['TEXTURE' + (R.NUM_GBUFFERS + 2)]);
+        gl.activeTexture(gl['TEXTURE' + (R.NUM_GBUFFERS + 1)]);
         gl.bindTexture(gl.TEXTURE_2D, R.pass_copy_tile.depthTex);
-        gl.uniform1i(prog.u_depth, (R.NUM_GBUFFERS + 2));
+        gl.uniform1i(prog.u_depth, (R.NUM_GBUFFERS + 1));
     };
 
     /**

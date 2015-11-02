@@ -2,7 +2,7 @@
 precision highp float;
 precision highp int;
 
-#define NUM_GBUFFERS 6
+#define NUM_GBUFFERS 5
 
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
@@ -41,7 +41,11 @@ void main() {
     vec3 normap = gb3.xyz;  // The raw normal map (normals relative to the surface they're on)
     vec3 nor = normalize(applyNormalMap(geomnor, normap));     // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
 
-    gl_FragColor = vec4(vec3(depth), 1.0);
+    //gl_FragColor = vec4(vec3(depth), 1.0);
 
-    //gl_FragColor = texture2D(u_gbufs[4], v_uv);
+    // for looking at the tile/light datastructure directly
+    //gl_FragColor = texture2D(u_gbufs[5], v_uv);
+
+    // for looking at the light datastructure directly
+    gl_FragColor = texture2D(u_gbufs[4], v_uv);    
 }
