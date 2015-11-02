@@ -71,7 +71,7 @@
         for (var i = 0; i < R.lights.length; i++) {
             var mn = R.light_min[1];
             var mx = R.light_max[1];
-            R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
+            //R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
         }
 
         // Update light textures with new position values
@@ -88,7 +88,7 @@
             R.pass_tiled.render(state);
             R.pass_post1.render(state);
         } else {
-            // * Deferred pass and postprocessing pass(es)
+            // both unoptimized deferred and scissor pass through here
             R.pass_deferred.render(state);
             R.pass_post1.render(state);
         }
@@ -154,6 +154,7 @@
         var TILES_WIDTH  = Math.ceil((width+1)  / TILE_SIZE)-1;
         var TILES_HEIGHT = Math.ceil((height+1) / TILE_SIZE)-1;
         var NUM_TILES = TILES_WIDTH * TILES_HEIGHT;
+        var MAX_LIGHTS = 200;
 
         // [ tiles ] [ lights per tile ].
         var tileLights = [];
@@ -166,19 +167,20 @@
         // Store lights into tileLights.
         for (var lightIdx = 0; lightIdx < R.lights.length; lightIdx++) {
             var light = R.lights[lightIdx];
+            var lightIdxStore = (lightIdx + 0.5) / R.lights.length;
             var sc = getScissorForLight(state.viewMat, state.projMat, light);
             // xmin, ymin, xwidth, ywidth
             if (sc !== null && sc[2] > 0 && sc[3] > 0) {
                 var tileX = Math.floor(sc[0] / TILE_SIZE);
                 var tileY = Math.floor(sc[1] / TILE_SIZE);
-                var tileW = Math.ceil (sc[2] / TILE_SIZE);
-                var tileH = Math.ceil (sc[3] / TILE_SIZE);
+                var tileW = Math.ceil (sc[2] / TILE_SIZE)+1;
+                var tileH = Math.ceil (sc[3] / TILE_SIZE)+1;
 
                 for (var y = tileY; y < tileY + tileH; y++) {
                     for (var x = tileX; x < tileX + tileW; x++) {
-                        var idx = x + y * TILES_WIDTH;
+                        var idx = x + (TILES_HEIGHT - 1 - y) * TILES_WIDTH;
                         if (idx >= 0 && idx < TILES_WIDTH * TILES_HEIGHT) {
-                            tileLights[idx].push(lightIdx / R.lights.length);
+                            tileLights[idx].push(lightIdxStore);
                         }
                     }
                 }
@@ -188,8 +190,8 @@
         }
 
         // Generate textures from tileLights.
-        var lightIndices = new Float32Array(10 * NUM_TILES);
-        var tileOffsets  = new Float32Array( 3 * NUM_TILES);
+        var lightIndices = new Float32Array(MAX_LIGHTS * NUM_TILES);
+        var tileOffsets  = new Float32Array(3 * NUM_TILES);
 
         // Loop over tiles
         var totalOffset = 0;
@@ -197,12 +199,11 @@
             var lights = tileLights[tileIdx];
             var len = lights.length;
 
-            tileOffsets[3*tileIdx] = len;
-            tileOffsets[3*tileIdx+1] = totalOffset;
+            tileOffsets[3*tileIdx] = len + 0.5;
+            tileOffsets[3*tileIdx+1] = totalOffset + 0.5;
             tileOffsets[3*tileIdx+2] = 0.0;
 
-            // TODO: better cap on lights?
-            for (lightIdx = 0; lightIdx < Math.min(len, 10); lightIdx++) {
+            for (lightIdx = 0; lightIdx < Math.min(len, MAX_LIGHTS); lightIdx++) {
                 lightIndices[totalOffset] = lights[lightIdx];
                 totalOffset++;
             }
@@ -216,8 +217,10 @@
         // Bind/setup the tiled program and uniforms that don't change.
         var program = R.progTiled;
         bindTexturesForLightPass(program);
-        gl.uniform1i(program.u_toon, cfg.toon ? 1 : 0);
+
         var cam = state.cameraPos;
+        gl.uniform3f(program.u_cameraPos, cam.x, cam.y, cam.z);
+        gl.uniform1i(program.u_toon, cfg.toon ? 1 : 0);
 
         bindTexturePR(program,
                       R.pass_tiled.lightDataPosRad, R.lightTexturePosRad,
