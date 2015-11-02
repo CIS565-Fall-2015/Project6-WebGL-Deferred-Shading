@@ -3,7 +3,7 @@
     // deferredSetup.js must be loaded first
 
     var TILE_SIZE = 32;
-    var MAX_LIGHTS_PER_TILE = 10; // don't forget to change max lights over in shader!
+    var MAX_LIGHTS_PER_TILE = 20; // don't forget to change max lights over in shader!
     var NUM_TILES_WIDE;
     var NUM_TILES_TALL;
     var NUM_TILES;
@@ -189,24 +189,34 @@ if (cfg.enableTiling || cfg.debugTiling) {
             k += 4;
         }
 
+        var lightScissorBox = [0, 0, 0, 0];
+        var tileBox = [0, 0, 0, 0];
+
+        var lightDataIndex = 0;
+        var numLights = 0;
+        
+        var xi = 0;
+        var x = 0;
+        var j = 0;
+
         // insert the light lists per tile
         // for simplicity in indexing, this ONLY works for MAX_LIGHTS < TILE_SIZE
         for (var y = 0; y < height; y += TILE_SIZE) {
-            var xi = 0;
-            for (var x = 0; x < width; x += TILE_SIZE) {
+            xi = 0;
+            for (x = 0; x < width; x += TILE_SIZE) {
                 // compute start index for this tile
-                var lightDataIndex = xi + (y * width * 4);
+                lightDataIndex = xi + (y * width * 4);
                 xi += TILE_SIZE * 4;
 
                 // compute tile 1's box in pix coordinates. same format as what
                 // getScissorForLight returns.
                 // x, y, width, height
                 // check against each light's scissor box
-                var tileBox = [x, y, TILE_SIZE, TILE_SIZE];
-                var numLights = 0;
-                for (var j = 0; j < R.NUM_LIGHTS; j++) {
+                tileBox = [x, y, TILE_SIZE, TILE_SIZE];
+                numLights = 0;
+                for (j = 0; j < R.NUM_LIGHTS; j++) {
                     // check each light's scissor box against this tile's box
-                    var lightScissorBox = getScissorForLight(state.viewMat,
+                    lightScissorBox = getScissorForLight(state.viewMat,
                         state.projMat, R.lights[j]);
                     if (!lightScissorBox) continue;
                     if (R.boxOverlap(tileBox, lightScissorBox)) {

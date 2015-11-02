@@ -16,7 +16,7 @@ uniform int u_numLightsMax;
 
 varying vec2 v_uv;
 const float shininess = 16.0;
-const int MAX_LIGHTS = 10; // don't forget to change max lights over in deferredRender.js!
+const int MAX_LIGHTS = 20; // don't forget to change max lights over in deferredRender.js!
 
 vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
