@@ -21,6 +21,9 @@
         loadAllShaderPrograms();
         R.pass_copy.setup();
         R.pass_deferred.setup();
+        R.pass_toonShade.setup();
+        R.pass_mBlur.setup();
+        
     };
 
     // TODO: Edit if you want to change the light initial positions
@@ -100,6 +103,38 @@
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     };
+    
+    R.pass_toonShade.setup = function() {
+        // * Create the FBO
+        R.pass_toonShade.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_toonShade.colorTex = createAndBindColorTargetTexture(
+            R.pass_toonShade.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_toonShade.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    };
+    
+    R.pass_mBlur.setup = function() {
+        // * Create the FBO
+        R.pass_mBlur.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_mBlur.colorTex = createAndBindColorTargetTexture(
+            R.pass_mBlur.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_mBlur.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    };
 
     /**
      * Loads all of the shader programs used in the pipeline.
@@ -164,14 +199,14 @@
             R.prog_tilebased_light = p;
             
             //setup for tile-based render
-            p.tileSize = 32.0;
+            p.tileSize = 40.0;
             p.tx = Math.ceil(width / p.tileSize);
             p.ty = Math.ceil(height / p.tileSize);
             p.total = p.tx * p.ty;
             p.lightPos = new Float32Array(R.lights.length * 3);
             p.lightCol = new Float32Array(R.lights.length * 4);
-            p.lightOffset = new Int32Array(p.total);
-            p.lightNo = new Int32Array(p.total);
+            p.lightOffset = new Float32Array(p.total);
+            p.lightNo = new Float32Array(p.total);
             for (var i = 0; i < R.lights.length; i++) {
                 var light = R.lights[i];
                         

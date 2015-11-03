@@ -50,14 +50,17 @@
             // * Deferred pass and postprocessing pass(es)
             R.pass_deferred.render(state, cfg.tiledBased);
             
+            var previousPass = R.pass_deferred;
             if(cfg.enableToonShade){
-                R.pass_toonShade.render(state);
+                R.pass_toonShade.render(state, previousPass);
+                previousPass = R.pass_toonShade;
             }
-            else if(cfg.enableMBlur){
-                R.pass_mBlur.render(state);
+            if(cfg.enableMBlur){
+                R.pass_mBlur.render(state, previousPass);
+                previousPass = R.pass_mBlur;
             }
-            else
-                R.pass_post1.render(state);
+            
+            R.pass_post1.render(state, previousPass);
         }
     };
 
@@ -265,8 +268,8 @@
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, indexListTData.length/3, 1, 0, gl.RGB, gl.FLOAT, indexListTData);
             gl.uniform1i(R.prog_tilebased_light.u_lightList, textureNo);
             
-            gl.uniform1i(R.prog_tilebased_light.u_lightOffsetLength, indexListTData.length/3);
-            gl.uniform1i(p.u_totalLight, R.lights.length);
+            gl.uniform1f(R.prog_tilebased_light.u_lightOffsetLength, indexListTData.length/3);
+            gl.uniform1f(p.u_totalLight, R.lights.length);
              
             for(var i = 0; i < p.tx; i++){
                 for(var j = 0; j < p.ty; j++){
@@ -322,7 +325,7 @@
     /**
      * 'post1' pass: Perform (first) pass of post-processing
      */
-    R.pass_post1.render = function(state) {
+    R.pass_post1.render = function(state, previousPass) {
         // * Unbind any existing framebuffer (if there are no more passes)
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -340,16 +343,16 @@
         // TODO: ^
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        gl.bindTexture(gl.TEXTURE_2D, previousPass.colorTex);
         gl.uniform1i(R.progPost1.u_color, 0);
 
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);
     };
     
-    R.pass_toonShade.render = function(state) {
+    R.pass_toonShade.render = function(state, previousPass) {
         // * Unbind any existing framebuffer (if there are no more passes)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_toonShade.fbo);
 
         // * Clear the framebuffer depth to 1.0
         gl.clearDepth(1.0);
@@ -360,7 +363,7 @@
 
         // * Bind the deferred pass's color output as a texture input
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        gl.bindTexture(gl.TEXTURE_2D, previousPass.colorTex);
         gl.uniform1i(R.prog_toonShade.u_color, 0);
         
         gl.activeTexture(gl.TEXTURE1);
@@ -374,9 +377,9 @@
         renderFullScreenQuad(R.prog_toonShade);
     };
 
-    R.pass_mBlur.render = function(state) {
+    R.pass_mBlur.render = function(state, previousPass) {
         // * Unbind any existing framebuffer (if there are no more passes)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_mBlur.fbo);
 
         // * Clear the framebuffer depth to 1.0
         gl.clearDepth(1.0);
@@ -387,7 +390,7 @@
 
         // * Bind the deferred pass's color output as a texture input
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        gl.bindTexture(gl.TEXTURE_2D, previousPass.colorTex);
         gl.uniform1i(R.prog_mBlur.u_color, 0);
         
         gl.activeTexture(gl.TEXTURE1);

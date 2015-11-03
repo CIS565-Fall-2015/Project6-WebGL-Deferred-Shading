@@ -10,8 +10,8 @@ uniform sampler2D u_lightList;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
 
-uniform int u_lightOffsetLength;
-uniform int u_totalLight;
+uniform float u_lightOffsetLength;
+uniform float u_totalLight;
 
 uniform int u_lightOffset;
 uniform int u_lightNo;
@@ -32,36 +32,34 @@ void main() {
     vec4 gb2 = texture2D(u_gbufs[2], v_uv);
     float depth = texture2D(u_depth, v_uv).x;
     
+    if (depth == 1.0) {
+        gl_FragColor = vec4(0, 0, 0, 0);
+        return;
+    }
+    
     // TODO: Extract needed properties from the g-buffers into local variables
     vec3 pos        = gb0.xyz;                      // World-space position
     vec3 geomnor    = vec3(gb0.w, gb1.x, gb1.y);      // Normals of the geometry as defined, without normal mapping
     vec3 normap     = vec3(gb1.z, gb1.w, gb2.x);       // The color map - unlit "albedo" (surface color)
     vec3 col        = vec3(gb2.y, gb2.z, gb2.w);       // The raw normal map (normals relative to the surface they're on)
     vec3 nor        = applyNormalMap(geomnor, normap);     // The true normals as we want to light them - with the normal map applied to the geometry normals (applyNormalMap above)
-
-    if (depth == 1.0) {
-        gl_FragColor = vec4(0, 0, 0, 0);
-        return;
-    }
    
     gl_FragColor.a = 1.0;
-    //gl_FragColor.x = float(u_lightNo)/float(u_totalLight);
     for(int i = 0; i < 1000; i++){
         if(i >= u_lightNo) return;
         
-        float currLight = (float(u_lightOffset + i) + 0.5)/float(u_lightOffsetLength);
-        float light_uv = texture2D(u_lightList, vec2(currLight,0.5)).x;
-        gl_FragColor.x += (light_uv + 0.5)/float(u_totalLight);
+        float currLight = (float(u_lightOffset + i) + 0.5)/u_lightOffsetLength;
+        float light_uv = texture2D(u_lightList, vec2(currLight,0.5)).x + 0.5;
+        light_uv /= u_totalLight;
         
         vec4 lightPos = texture2D(u_lightPos, vec2(light_uv,0.5));
         vec4 lightcol = texture2D(u_lightCol, vec2(light_uv,0.5));
-        //gl_FragColor.xyz = lightcol.xyz;
         
         vec3 lightDir = normalize(lightPos.xyz - pos);
         float lightDist = distance(lightPos.xyz, pos);
         float attenuation = max(0.0, lightcol.w - lightDist);
         float lambertian = clamp(dot(lightDir, nor), 0.0, 1.0);
         
-        //gl_FragColor.xyz += lambertian * col * lightcol.xyz * attenuation;
+        gl_FragColor.xyz += lambertian * col * lightcol.xyz * attenuation;
     }
 }
