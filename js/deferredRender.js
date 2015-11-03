@@ -198,6 +198,11 @@ if (cfg.enableTiling || cfg.debugTiling) {
         var xi = 0;
         var x = 0;
         var j = 0;
+        var lightIdx = 0;
+
+        if (cfg.sortLightsBeforeTiling) {
+            R.sortLightsByZDepth(state);
+        }
 
         // insert the light lists per tile
         // for simplicity in indexing, this ONLY works for MAX_LIGHTS < TILE_SIZE
@@ -215,22 +220,27 @@ if (cfg.enableTiling || cfg.debugTiling) {
                 tileBox = [x, y, TILE_SIZE, TILE_SIZE];
                 numLights = 0;
                 for (j = 0; j < R.NUM_LIGHTS; j++) {
+                    lightIdx = j;
+                    if (cfg.sortLightsBeforeTiling) {
+                        lightIdx = R.lights_z_sorted[j][1];
+                    }
+
                     // check each light's scissor box against this tile's box
                     lightScissorBox = getScissorForLight(state.viewMat,
-                        state.projMat, R.lights[j]);
+                        state.projMat, R.lights[lightIdx]);
                     if (!lightScissorBox) continue;
                     if (R.boxOverlap(tileBox, lightScissorBox)) {
                         // insert color
-                        lightData[lightDataIndex + width * 4]     = R.lights[j].col[0];
-                        lightData[lightDataIndex + width * 4 + 1] = R.lights[j].col[1];
-                        lightData[lightDataIndex + width * 4 + 2] = R.lights[j].col[2];
+                        lightData[lightDataIndex + width * 4]     = R.lights[lightIdx].col[0];
+                        lightData[lightDataIndex + width * 4 + 1] = R.lights[lightIdx].col[1];
+                        lightData[lightDataIndex + width * 4 + 2] = R.lights[lightIdx].col[2];
                         lightData[lightDataIndex + width * 4 + 3] = 1;
 
                         // insert radius and direction
-                        lightData[lightDataIndex]     = R.lights[j].pos[0];
-                        lightData[lightDataIndex + 1] = R.lights[j].pos[1];
-                        lightData[lightDataIndex + 2] = R.lights[j].pos[2];
-                        lightData[lightDataIndex + 3] = R.lights[j].rad;
+                        lightData[lightDataIndex]     = R.lights[lightIdx].pos[0];
+                        lightData[lightDataIndex + 1] = R.lights[lightIdx].pos[1];
+                        lightData[lightDataIndex + 2] = R.lights[lightIdx].pos[2];
+                        lightData[lightDataIndex + 3] = R.lights[lightIdx].rad;
 
                         lightDataIndex += 4; // lightLists is a bunch of vec4s
                         numLights++;
@@ -258,6 +268,27 @@ if (cfg.enableTiling || cfg.debugTiling) {
     }
 
     R.sortLightsByZDepth = function(state) {
+        // build R.lights_z_sorted (unsorted)
+        var pos_camSpace = new THREE.Vector4(0, 0, 0, 1);
+        for (var i = 0; i < R.NUM_LIGHTS; i++) {
+            pos_camSpace.x = R.lights[i].pos[0];
+            pos_camSpace.y = R.lights[i].pos[1];
+            pos_camSpace.z = R.lights[i].pos[2];
+            pos_camSpace.w = 1.0;
+            pos_camSpace.applyMatrix4(state.viewMat);
+            pos_camSpace.applyMatrix4(state.projMat);
+            pos_camSpace.divideScalar(pos_camSpace.w);
+            // we want negative values (light behind camera) to not even get considered.
+            if (pos_camSpace.z < 0.0) {
+                pos_camSpace.z += 10000.0;
+            }           
+            R.lights_z_sorted[i] = [pos_camSpace.z, i];
+        }
+        
+        // sort R.lights_z_sorted
+        R.lights_z_sorted.sort(function(a, b) {
+            return a[0] - b[0];
+        });
         
     }
 

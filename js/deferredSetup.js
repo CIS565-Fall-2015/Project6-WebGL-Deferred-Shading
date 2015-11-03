@@ -9,7 +9,7 @@
     R.pass_post1 = {};
     R.pass_post1_compressed = {};
     R.lights = [];
-    R.lights_z_sorted = []; // this is just a list of indices
+    R.lights_z_sorted = []; // this is just a list of depth/index tuples
 
     R.NUM_GBUFFERS = 4;
 
@@ -50,7 +50,7 @@
     R.light_max = [14, 18, 6];
     R.light_dt = -0.03;
     R.LIGHT_RADIUS = 4.0;
-    R.NUM_LIGHTS = 120; // TODO: test with MORE lights!
+    R.NUM_LIGHTS = 60; // TODO: test with MORE lights!
     var setupLights = function() {
         Math.seedrandom(0);
 
@@ -73,6 +73,7 @@
                     1 + Math.random()],
                 rad: R.LIGHT_RADIUS
             });
+            R.lights_z_sorted.push([0.0, 0]);
         }
     };
 
