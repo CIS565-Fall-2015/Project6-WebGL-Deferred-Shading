@@ -78,7 +78,7 @@ void main() {
         //blinn phong
         vec3 halfDir = normalize(lightDir + viewDir);
         float specAngle = max(dot(normal, halfDir), 0.0);
-        specular = pow(specAngle, 4.0);
+        specular = pow(specAngle, 4.0) / 10.0;
     }
 
     vec3 color = (lambertian + specular) * u_lightCol * vec3(1.0);

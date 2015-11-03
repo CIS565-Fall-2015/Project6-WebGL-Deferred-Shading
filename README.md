@@ -15,21 +15,17 @@ WebGL Deferred Shading
 
 [![](img/video.png)]
 
+###Toon Shading
+* With Ramp Shading and Outlines
+![](img/toonShading.png)
+
+###Scissor Test
+![](img/scissor_test.png)
+
 ### Debug Images
 
-####Depth
-![](img/depth.png)
-####Position
-![](img/position.png)
-####Geometry Normal
-![](img/geom_normal.png)
-####Color Map
-![](img/color_map.png)
-####Normal Map
-![](img/normal_map.png)
-####Surface Normal
-![](img/surface_normal.png)
-####Scissor Test
-![](img/scissor_test.png)
-####Toon Shading
-![](img/toonShading.png)
+Depth | Position | Geometry Normal
+![](img/depth.png) | ![](img/position.png) | ![](img/geom_normal.png)
+Color Map | Normal Map | Surface Normal
+![](img/color_map.png) | ![](img/normal_map.png) | ![](img/surface_normal.png)
+
