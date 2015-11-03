@@ -257,6 +257,10 @@ if (cfg.enableTiling || cfg.debugTiling) {
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
+    R.sortLightsByZDepth = function(state) {
+        
+    }
+
     var bindTexturesForLightPassTiled = function(prog) {
         gl.useProgram(prog.prog);
 

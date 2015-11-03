@@ -9,6 +9,7 @@
     R.pass_post1 = {};
     R.pass_post1_compressed = {};
     R.lights = [];
+    R.lights_z_sorted = []; // this is just a list of indices
 
     R.NUM_GBUFFERS = 4;
 

@@ -13,6 +13,7 @@ var cfg;
         this.compressedGbuffers = false;
         this.debugTiling = false;        
         this.enableTiling = true;
+        this.sortLightsBeforeTiling = true;
     };
 
     var init = function() {
@@ -33,6 +34,7 @@ var cfg;
         gui.add(cfg, 'enableScissor');
         gui.add(cfg, 'debugTiling');
         gui.add(cfg, 'enableTiling');
+        gui.add(cfg, 'sortLightsBeforeTiling');
 
         var eff0 = gui.addFolder('effects');
         eff0.add(cfg, 'enableBloom');

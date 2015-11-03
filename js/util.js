@@ -152,7 +152,7 @@ window.getScissorForLight = (function() {
         a.applyMatrix4(proj);
         a.divideScalar(a.w);
 
-        // front bottom-left corner of sphere's bounding cube
+        // other corner of sphere's bounding cube
         b.fromArray(l.pos);
         b.w = 1;
         b.applyMatrix4(view);

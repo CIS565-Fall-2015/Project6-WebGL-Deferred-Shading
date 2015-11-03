@@ -152,3 +152,14 @@ notes:
 	-simplifies indexing when reading a light's params
 -to reduce lookups: since we get a huge amount of memory for a sparse amount of data, let's have each light list literally store the light data.
 -will simplify lookup in shader
+
+PROBLEMS
+-so at the moment, the limit on number of tiles means that some lights very obviously end up missing from tiles
+-let's add an option to toggle a different kind of light input: it will sort the lights based on distance along the camera's view and then bin them using that sort
+
+-wtf is going on with github.io? how do we do stuff there? do we have to host the same code in 2 places on github?!
+
+TODO:
+-add appropriate global structures
+-figger out how to z sort -> transformations?
+-look at js sort: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
