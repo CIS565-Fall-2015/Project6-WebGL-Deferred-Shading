@@ -205,11 +205,11 @@
             
             //pack light
             var indexList = [];
+            var indexTextureWidth = 0;
             for (var i = 0; i < p.total; i++) {
-                indexList.push([]);
+                indexList[i] = [];
             }
               
-            var indexSize = 0;
             for (i = 0; i < R.lights.length; i++) {
                 var light = R.lights[i];
                     
@@ -229,59 +229,62 @@
                     
                     for(var y = yStart; y < yEnd; y++){
                         for(var x = xStart; x < xEnd; x++){
-                            indexList[y * p.tx + x].push(i);
-                            indexSize++;
+                            var tmp = indexList[y * p.tx + x];
+                            tmp.push(i);
+                            
+                            if(indexTextureWidth < tmp.length)
+                                indexTextureWidth = tmp.length;
                         }
                     }
                 }
             }
-
-            var indexListTData = new Float32Array(indexSize * 3);
-            var firstIndex = 0;
-            var lastIndex = 0;
-            for (i = 0; i < p.total; i++) {
+            
+            //create a texture array!
+            var index = 0;
+            var indexArray = new Float32Array(p.total * indexTextureWidth);
+            for (var i = 0; i < p.total; i++) {
                 var tmp = indexList[i];
-                for(var j = 0; j < tmp.length; j++){
-                    indexListTData[lastIndex * 3] = tmp[j];
-                    indexListTData[lastIndex * 3 + 1] = 0;
-                    indexListTData[lastIndex * 3 + 2] = 0;
-                    lastIndex++;
+                for (var j = 0; j < tmp.length; j++) {
+                    indexArray[index++] = tmp[j];
                 }
-                
-                p.lightOffset[i] = firstIndex;
-                p.lightNo[i] = tmp.length;
-                firstIndex = lastIndex;
+                for (var j = tmp.length; j < indexTextureWidth; j++) {
+                    indexArray[index++] = 0;
+                }
             }
+            
             //pack them!
             var textureNo = R.NUM_GBUFFERS + 1;
             gl.activeTexture(gl['TEXTURE' + textureNo]);
             gl.bindTexture(gl.TEXTURE_2D, p.lightPosTexture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, R.lights.length, 1, 0, gl.RGB, gl.FLOAT, p.lightPos);
             gl.uniform1i(R.prog_tilebased_light.u_lightPos, textureNo);
-            
             textureNo++;
+            
             gl.activeTexture(gl['TEXTURE' + textureNo]);
             gl.bindTexture(gl.TEXTURE_2D, p.lightColTexture);
             gl.uniform1i(R.prog_tilebased_light.u_lightCol, textureNo);
-            
             textureNo++;
+            
             gl.activeTexture(gl['TEXTURE' + textureNo]);
             gl.bindTexture(gl.TEXTURE_2D, p.lightListTexture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, indexListTData.length/3, 1, 0, gl.RGB, gl.FLOAT, indexListTData);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, indexTextureWidth, p.total, 0, gl.ALPHA, gl.FLOAT, indexArray);
             gl.uniform1i(R.prog_tilebased_light.u_lightList, textureNo);
             
-            gl.uniform1f(R.prog_tilebased_light.u_lightOffsetLength, indexListTData.length/3);
-            gl.uniform1f(p.u_totalLight, R.lights.length);
+            gl.uniform1i(R.prog_tilebased_light.u_lightOffsetLength, indexTextureWidth);
+            gl.uniform1f(R.prog_tilebased_light.u_totalLight, R.lights.length);
              
-            var viewpos = new Float32Array([state.cameraPos.x, state.cameraPos.y, state.cameraPos.z]);
-            gl.uniform3fv(R.prog_tilebased_light.u_viewPos, viewpos);
+            p.viewPos[0] = state.cameraPos.x;
+            p.viewPos[1] = state.cameraPos.y;
+            p.viewPos[2] = state.cameraPos.z;
+            gl.uniform3fv(R.prog_tilebased_light.u_viewPos, p.viewPos);
         
             for(var i = 0; i < p.tx; i++){
                 for(var j = 0; j < p.ty; j++){
                     gl.scissor(i * p.tileSize, j * p.tileSize, p.tileSize, p.tileSize);
                     
-                    gl.uniform1i(R.prog_tilebased_light.u_lightOffset, p.lightOffset[j * p.tx + i]);
-                    gl.uniform1i(R.prog_tilebased_light.u_lightNo, p.lightNo[j * p.tx + i]);
+                    gl.uniform1i(R.prog_tilebased_light.u_lightList, textureNo);
+                    gl.uniform1f(R.prog_tilebased_light.u_lightOffsetY, ((j * p.tx + i) + 0.5) / p.total);
+                     
                     renderFullScreenQuad(R.prog_tilebased_light);
                 }
             }
@@ -295,7 +298,6 @@
             for (var i = 0; i < R.lights.length; i++) {
                 var light = R.lights[i];
                 
-                //TODO: Fix this.
                 var sc = getScissorForLight(state.viewMat, state.projMat, light);
                 if(sc != null){
                     gl.scissor(sc[0], sc[1], sc[2], sc[3]);

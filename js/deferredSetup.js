@@ -31,7 +31,7 @@
     R.light_max = [14, 18, 6];
     R.light_dt = -0.03;
     R.LIGHT_RADIUS = 4.0;
-    R.NUM_LIGHTS = 20; // TODO: test with MORE lights!
+    R.NUM_LIGHTS = 500; // TODO: test with MORE lights!
     var setupLights = function() {
         Math.seedrandom(0);
 
@@ -195,18 +195,18 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightList = gl.getUniformLocation(p.prog, 'u_lightList');
-            p.u_lightOffset = gl.getUniformLocation(p.prog, 'u_lightOffset');
-            p.u_lightNo = gl.getUniformLocation(p.prog, 'u_lightNo');
             p.u_lightOffsetLength = gl.getUniformLocation(p.prog, 'u_lightOffsetLength');
+            p.u_lightOffsetY = gl.getUniformLocation(p.prog, 'u_lightOffsetY');
             p.u_totalLight = gl.getUniformLocation(p.prog, 'u_totalLight');
             p.u_viewPos = gl.getUniformLocation(p.prog, 'u_viewPos');
             R.prog_tilebased_light = p;
             
             //setup for tile-based render
-            p.tileSize = 100.0;
+            p.tileSize = 40.0;
             p.tx = Math.ceil(width / p.tileSize);
             p.ty = Math.ceil(height / p.tileSize);
             p.total = p.tx * p.ty;
+            p.viewPos = new Float32Array(3);
             p.lightPos = new Float32Array(R.lights.length * 3);
             p.lightCol = new Float32Array(R.lights.length * 4);
             p.lightOffset = new Float32Array(p.total);
