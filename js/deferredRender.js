@@ -50,23 +50,35 @@
             // * Deferred pass and postprocessing pass(es)
             R.pass_deferred.render(state, cfg.tiledBased);
             
+            var passCount = 0;
+            if(cfg.enableToonShade) passCount++;
+            if(cfg.enableMBlur) passCount++;
+            if(cfg.enableBloomGaussian) passCount++;
+            
+            if(passCount == 0){
+                R.pass_post1.render(state);
+                return;
+            }
+                
             var previousPass = R.pass_deferred;
             if(cfg.enableToonShade){
-                R.pass_toonShade.render(state, previousPass);
+                passCount--;
+                R.pass_toonShade.render(state, previousPass, passCount == 0);
                 previousPass = R.pass_toonShade;
             }
             if(cfg.enableMBlur){
-                R.pass_mBlur.render(state, previousPass);
+                passCount--;
+                R.pass_mBlur.render(state, previousPass, passCount == 0);
                 previousPass = R.pass_mBlur;
             }
             if(cfg.enableBloomGaussian){
+                passCount--;
                 R.pass_bloomGaussian_x.render(state, previousPass);
                 previousPass = R.pass_bloomGaussian_x;
-                R.pass_bloomGaussian_y.render(state, previousPass);
+                R.pass_bloomGaussian_y.render(state, previousPass, passCount == 0);
                 previousPass = R.pass_bloomGaussian_y;
             }
             
-            R.pass_post1.render(state, previousPass);
         }
     };
 
@@ -344,7 +356,7 @@
     /**
      * 'post1' pass: Perform (first) pass of post-processing
      */
-    R.pass_post1.render = function(state, previousPass) {
+    R.pass_post1.render = function(state) {
         // * Unbind any existing framebuffer (if there are no more passes)
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
@@ -362,7 +374,7 @@
         // TODO: ^
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, previousPass.colorTex);
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
         gl.uniform1i(R.progPost1.u_color, 0);
 
         // * Render a fullscreen quad to perform shading on
@@ -391,9 +403,12 @@
         renderFullScreenQuad(R.prog_bloomGaussian_x);
     };
 
-    R.pass_bloomGaussian_y.render = function(state, previousPass) {
+    R.pass_bloomGaussian_y.render = function(state, previousPass, isLast) {
         // * Unbind any existing framebuffer (if there are no more passes)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_bloomGaussian_y.fbo);
+        if(isLast)
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        else
+            gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_bloomGaussian_y.fbo);
 
         // * Clear the framebuffer depth to 1.0
         gl.clearDepth(1.0);
@@ -413,9 +428,12 @@
         renderFullScreenQuad(R.prog_bloomGaussian_y);
     };
 
-    R.pass_toonShade.render = function(state, previousPass) {
+    R.pass_toonShade.render = function(state, previousPass, isLast) {
         // * Unbind any existing framebuffer (if there are no more passes)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_toonShade.fbo);
+        if(isLast)
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        else
+            gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_toonShade.fbo);
 
         // * Clear the framebuffer depth to 1.0
         gl.clearDepth(1.0);
@@ -440,9 +458,12 @@
         renderFullScreenQuad(R.prog_toonShade);
     };
 
-    R.pass_mBlur.render = function(state, previousPass) {
+    R.pass_mBlur.render = function(state, previousPass, isLast) {
         // * Unbind any existing framebuffer (if there are no more passes)
-        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_mBlur.fbo);
+        if(isLast)
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        else
+            gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_mBlur.fbo);
 
         // * Clear the framebuffer depth to 1.0
         gl.clearDepth(1.0);
