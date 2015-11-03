@@ -3,7 +3,7 @@
     // deferredSetup.js must be loaded first
 
     var TILE_SIZE = 32;
-    var MAX_LIGHTS_PER_TILE = 31; // don't forget to change max lights over in shader!
+    var MAX_LIGHTS_PER_TILE =  TILE_SIZE * TILE_SIZE / 2;
     var NUM_TILES_WIDE;
     var NUM_TILES_TALL;
     var NUM_TILES;
@@ -169,31 +169,18 @@ if (cfg.enableTiling || cfg.debugTiling) {
             NUM_TILES = NUM_TILES_WIDE * NUM_TILES_TALL;
         }
 
-        // insert the lights themselves        
-        // for simplicity, this ONLY works for NUM_LIGHTS < width.
-        // assuming we're 2D arraying by rows:
-        // we're having the first row be positions/radii and the second row
-        // be light color.
+        // preallocate
         var lightData = new Float32Array(width * height * 4);
-        var k = width * 4 * (height - 2); // light data is at the top left of tex
-        for (var i = 0; i < R.NUM_LIGHTS; i++) {
-            lightData[width * 4 + k]     = R.lights[i].col[0];
-            lightData[width * 4 + k + 1] = R.lights[i].col[1];
-            lightData[width * 4 + k + 2] = R.lights[i].col[2];
-            lightData[width * 4 + k + 3] = 1.0;
-
-            lightData[k    ] = R.lights[i].pos[0];
-            lightData[k + 1] = R.lights[i].pos[1];
-            lightData[k + 2] = R.lights[i].pos[2];
-            lightData[k + 3] = R.lights[i].rad;
-            k += 4;
-        }
 
         var lightScissorBox = [0, 0, 0, 0];
         var tileBox = [0, 0, 0, 0];
 
-        var lightDataIndex = 0;
+        var rowStart = 0;
+        var rowOffset = 0;
         var numLights = 0;
+
+        var lightColIndex = 0;
+        var lightPosIndex = 0;
         
         var xi = 0;
         var x = 0;
@@ -204,13 +191,17 @@ if (cfg.enableTiling || cfg.debugTiling) {
             R.sortLightsByZDepth(state);
         }
 
+        var lightColorOffset = width * 4 * (TILE_SIZE / 2);
+
         // insert the light lists per tile
         // for simplicity in indexing, this ONLY works for MAX_LIGHTS < TILE_SIZE
         for (var y = 0; y < height; y += TILE_SIZE) {
             xi = 0;
             for (x = 0; x < width; x += TILE_SIZE) {
                 // compute start index for this tile
-                lightDataIndex = xi + (y * width * 4);
+                rowStart = xi + (y * width * 4);
+                rowOffset = 0;;
+
                 xi += TILE_SIZE * 4;
 
                 // compute tile 1's box in pix coordinates. same format as what
@@ -230,29 +221,41 @@ if (cfg.enableTiling || cfg.debugTiling) {
                         state.projMat, R.lights[lightIdx]);
                     if (!lightScissorBox) continue;
                     if (R.boxOverlap(tileBox, lightScissorBox)) {
+                        lightColIndex = rowStart + rowOffset + lightColorOffset;
+                        lightPosIndex = rowStart + rowOffset;
+
                         // insert color
-                        lightData[lightDataIndex + width * 4]     = R.lights[lightIdx].col[0];
-                        lightData[lightDataIndex + width * 4 + 1] = R.lights[lightIdx].col[1];
-                        lightData[lightDataIndex + width * 4 + 2] = R.lights[lightIdx].col[2];
-                        lightData[lightDataIndex + width * 4 + 3] = 1;
+                        lightData[lightColIndex]     = R.lights[lightIdx].col[0];
+                        lightData[lightColIndex + 1] = R.lights[lightIdx].col[1];
+                        lightData[lightColIndex + 2] = R.lights[lightIdx].col[2];
+                        lightData[lightColIndex + 3] = 1;
 
                         // insert radius and direction
-                        lightData[lightDataIndex]     = R.lights[lightIdx].pos[0];
-                        lightData[lightDataIndex + 1] = R.lights[lightIdx].pos[1];
-                        lightData[lightDataIndex + 2] = R.lights[lightIdx].pos[2];
-                        lightData[lightDataIndex + 3] = R.lights[lightIdx].rad;
+                        lightData[lightPosIndex]     = R.lights[lightIdx].pos[0];
+                        lightData[lightPosIndex + 1] = R.lights[lightIdx].pos[1];
+                        lightData[lightPosIndex + 2] = R.lights[lightIdx].pos[2];
+                        lightData[lightPosIndex + 3] = R.lights[lightIdx].rad;
 
-                        lightDataIndex += 4; // lightLists is a bunch of vec4s
+                        rowOffset += 4; // lightLists is a bunch of vec4s
                         numLights++;
+
+                        // if necessary, move down a row
+                        if (rowOffset > TILE_SIZE * 4) {
+                            rowOffset = 0;
+                            rowStart += width * 4;
+                        }
                     }
-                    if (numLights > MAX_LIGHTS_PER_TILE) break;
+
+                    if (numLights >= MAX_LIGHTS_PER_TILE) break;
 
                 }
-                // add a NULL light pos/radius (radius = -1) to indicate the end of list
-                lightData[lightDataIndex]     = 0;
-                lightData[lightDataIndex + 1] = 0;
-                lightData[lightDataIndex + 2] = 10000000.0;            
-                lightData[lightDataIndex + 3] = -1;
+                if (numLights < MAX_LIGHTS_PER_TILE) {
+                    // add a NULL light pos/radius (radius = -1) to indicate the end of list
+                    lightData[lightPosIndex]     = 0;
+                    lightData[lightPosIndex + 1] = 0;
+                    lightData[lightPosIndex + 2] = 10000000.0;            
+                    lightData[lightPosIndex + 3] = -1;
+                }
 
                 //lightData[lightDataIndex + 2] = 1;              // debug
                 //lightData[lightDataIndex + width * 4 + 2] = 1;  // debug

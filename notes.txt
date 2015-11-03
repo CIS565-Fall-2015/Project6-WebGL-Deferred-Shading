@@ -163,3 +163,11 @@ TODO:
 -add appropriate global structures
 -figger out how to z sort -> transformations? durrr hur hur hur
 -look at js sort: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+
+-so light sorting is only sometimes useful. glad I made it a toggleable
+
+TODO: [done] -> but there's still some artifacting, possibly remnant of scissor test?
+-improve indexing so that we can support more lights per tile. 0.5 * TILESIZE * TILESIZE - 1 is ideal
+	-this shouldn't be that hard
+	-we can devote half the tile to colors and half the tile to positions, for better visualization
+	-will need to remove the fake global light list. who needs it anyway?

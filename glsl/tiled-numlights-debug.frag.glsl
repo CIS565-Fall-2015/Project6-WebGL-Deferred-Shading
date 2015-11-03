@@ -10,7 +10,6 @@ uniform sampler2D u_depth;
 uniform int u_width;
 uniform int u_height;
 uniform int u_tileSize;
-uniform int u_numLightsMax;
 
 varying vec2 v_uv;
 
@@ -60,7 +59,7 @@ void main() {
     tile_uv.x += uv_xStep * 0.5; // sample from center of pixel
     tile_uv.y += uv_yStep * 0.5; // sample from center of pixel
 
-    tile_uv.y += uv_yStep;
+    tile_uv.y += uv_yStep * float(u_tileSize / 2);
     //tile_uv.x += uv_xStep;
 
     // for testing sampling

@@ -12,13 +12,12 @@ uniform vec3 u_camPos; // in world space
 uniform int u_width;
 uniform int u_height;
 uniform int u_tileSize;
-uniform int u_numLightsMax;
 
 varying vec2 v_uv;
 const float shininess = 16.0;
 // no larger than TILE_SIZE - 1 for now, b/c my datastructure is not efficient.
 // don't forget to change max lights over in deferredRender.js!
-const int MAX_LIGHTS = 31; 
+const int MAX_LIGHTS = 128; //31; max lights is capped by tileSize * tileSize / 2. for 32 x 32 tiles, 512
 
 vec3 applyNormalMap(vec3 geomnor, vec3 normap) {
     normap = normap * 2.0 - 1.0;
@@ -96,25 +95,39 @@ void main() {
     tile_uv.y += uv_yStep * 0.5; // sample from center of pixel
 
     vec2 tile_uv_lightCol = vec2(tile_uv);
-    tile_uv_lightCol.y += uv_yStep;
+    tile_uv_lightCol.y += uv_yStep * float(u_tileSize / 2);
 
     vec3 color = vec3(0.0, 0.0, 0.0);
 
     //float numLights = 0.0;
+
+    int uv_stepCount = 0;
 
     // compute blinn-phong for each light
     for (int i = 0; i < MAX_LIGHTS; i++) {
         // sample light data
         vec4 lightCol = texture2D(u_gbufs[4], tile_uv_lightCol);
         vec4 lightPos = texture2D(u_gbufs[4], tile_uv);
-        if (lightPos.w < 0.0) {
+        if (lightPos.w < 0.0) { // negative radius
             break; // end of list
         }
         //numLights += 1.0;
-        tile_uv.x += uv_xStep;
-        tile_uv_lightCol.x += uv_xStep;
+
         // compute blynn-phong
         color += blynnPhong(lightPos.xyz, lightPos.w, lightCol.rgb, pos, nor, colmap);
+
+        // update sampling coordinate
+        tile_uv.x += uv_xStep;
+        tile_uv_lightCol.x += uv_xStep;
+        uv_stepCount++;
+
+        if (uv_stepCount >= u_tileSize) {
+            tile_uv.x -= float(uv_stepCount) * uv_xStep;
+            tile_uv_lightCol.x -= float(uv_stepCount) * uv_xStep;
+            tile_uv.y += uv_yStep;
+            tile_uv_lightCol.y += uv_yStep;
+            uv_stepCount = 0;
+        }
     }
     gl_FragColor = vec4(color, 1.0);
     //gl_FragColor = vec4(vec3(numLights / float(MAX_LIGHTS * 2)), 1.0);
