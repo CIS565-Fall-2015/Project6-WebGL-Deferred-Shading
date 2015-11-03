@@ -26,6 +26,10 @@
 
     <style>
         html, body {
+            user-select: none;
+        -ms-user-select: none;
+       -moz-user-select: none;
+    -webkit-user-select: none;
             margin: 0px;
             width: 800px;
             height: 600px;
@@ -36,13 +40,12 @@
         #debugmodewarning {
             text-align: center;
             font-family: sans-serif;
-            background-color: #000000;
             color: #ffff00;
             position: fixed;
-            bottom: 0px;
+            bottom: 0;
             left: 0px;
-            height: 30px;
-            width: calc(100% - 100px);
+            height: 2em;
+            width: 100%;
             display: none;
         }
         #alertcontainer {
@@ -68,11 +71,9 @@
             width: 750px;
         }
         #dlbutton {
-            position: fixed;
-            bottom: 0px;
-            right: 0px;
-            width: 85px;
-            height: 30px;
+            float: right;
+            width: 6em;
+            height: 2em;
         }
         #dlbutton button {
             width: 100%;
@@ -80,10 +81,12 @@
         }
         #msgbox {
             font-family: sans-serif;
+            background-color: black;
             color: white;
-            height: 1.4em;
-            position: fixed;
-            bottom: 2em;
+            height: 2em;
+            width: 100%;
+            position: absolute;
+            bottom: 0;
             left: 0;
         }
     </style>
@@ -94,9 +97,9 @@
     <div id="debugmodewarning">
         <strong style="font-size: 150%">DEBUG MODE!</strong>
         (Disable before measuring performance.)
-    </div>
-    <div id="dlbutton">
-        <button type="button" action="" title="Debug mode only" disabled onclick="downloadCanvas();">Screenshot</button>
+        <div id="dlbutton">
+            <button type="button" action="" disabled onclick="downloadCanvas();">Screenshot</button>
+        </div>
     </div>
     <div id="alertcontainer">
         <div id="alertbox"><pre id="alerttext"></pre></div>

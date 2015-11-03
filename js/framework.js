@@ -77,7 +77,6 @@ var width, height;
         gl = renderer.context;
 
         if (debugMode) {
-            $('#dlbutton button').attr('disabled', false);
             $('#debugmodewarning').css('display', 'block');
             var throwOnGLError = function(err, funcName, args) {
                 abort(WebGLDebugUtils.glEnumToString(err) +
