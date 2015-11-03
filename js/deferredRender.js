@@ -123,10 +123,9 @@
         }
         
 
+        gl.enable(gl.SCISSOR_TEST);
     
         for (var i = 0; i < R.lights.length; i++) {
-
-            gl.enable(gl.SCISSOR_TEST);
             var light = R.lights[i];
             var sc = getScissorForLight(state.viewMat, state.projMat, light);
 
@@ -142,10 +141,14 @@
                     gl.uniform3f(R.prog_ToonShading.u_cameraPos, 
                     state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
                     gl.uniform1f(R.prog_ToonShading.u_lightRad, light.rad);
+                    gl.uniform1f(R.prog_ToonShading.u_width, width);
+                    gl.uniform1f(R.prog_ToonShading.u_height, height);
+
                     if(cfg.debugScissor) {
                         renderFullScreenQuad(R.progRed);
                     }
                     renderFullScreenQuad(R.prog_ToonShading);
+
                 } else {
                     gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightPos, 
                     light.pos[0], light.pos[1], light.pos[2]);
@@ -164,10 +167,9 @@
                 
                 
             }
-            gl.disable(gl.SCISSOR_TEST);
 
         }
-
+         gl.disable(gl.SCISSOR_TEST);
         gl.disable(gl.BLEND);
     };
 
@@ -193,7 +195,7 @@
         // * Unbind any existing framebuffer (if there are no more passes)
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-        // * Clear the framebuffer depth to 1.0
+         // * Clear the framebuffer depth to 1.0
         gl.clearDepth(1.0);
         gl.clear(gl.DEPTH_BUFFER_BIT);
 
@@ -208,9 +210,10 @@
         
         // Configure the R.progPost1.u_color uniform to point at texture unit 0
         gl.uniform1i(R.progPost1.u_color, 0);
-
+        
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.progPost1);
+
     };
 
     var renderFullScreenQuad = (function() {

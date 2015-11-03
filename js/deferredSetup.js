@@ -161,13 +161,20 @@
             R.prog_Debug = p;
         });
 
+    /*        loadDeferredProgram('toon_edge', function(p) {
+            p.u_width    = gl.getUniformLocation(p.prog, 'u_width');
+            p.u_height   = gl.getUniformLocation(p.prog, 'u_height');
+            // Save the object into this variable for access later
+            R.prog_toonEdge = p;
+        });*/
+
         loadPostProgram('one', function(p) {
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
             // Save the object into this variable for access later
             R.progPost1 = p;
         });
 
-        // TODO: If you add more passes, load and set up their shader programs.
+        
     };
 
     var loadDeferredProgram = function(name, callback) {
