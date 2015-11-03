@@ -59,6 +59,12 @@
                 R.pass_mBlur.render(state, previousPass);
                 previousPass = R.pass_mBlur;
             }
+            if(cfg.enableBloomGaussian){
+                R.pass_bloomGaussian_x.render(state, previousPass);
+                previousPass = R.pass_bloomGaussian_x;
+                R.pass_bloomGaussian_y.render(state, previousPass);
+                previousPass = R.pass_bloomGaussian_y;
+            }
             
             R.pass_post1.render(state, previousPass);
         }
@@ -360,6 +366,50 @@
         renderFullScreenQuad(R.progPost1);
     };
     
+    R.pass_bloomGaussian_x.render = function(state, previousPass) {
+        // * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_bloomGaussian_x.fbo);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.prog_bloomGaussian_x.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, previousPass.colorTex);
+        gl.uniform1i(R.prog_bloomGaussian_x.u_color, 0);
+        
+        gl.uniform1i(R.prog_bloomGaussian_x.u_width, width);
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.prog_bloomGaussian_x);
+    };
+
+    R.pass_bloomGaussian_y.render = function(state, previousPass) {
+        // * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_bloomGaussian_y.fbo);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.prog_bloomGaussian_y.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, previousPass.colorTex);
+        gl.uniform1i(R.prog_bloomGaussian_y.u_color, 0);
+        
+        gl.uniform1i(R.prog_bloomGaussian_y.u_height, height);
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.prog_bloomGaussian_y);
+    };
+
     R.pass_toonShade.render = function(state, previousPass) {
         // * Unbind any existing framebuffer (if there are no more passes)
         gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_toonShade.fbo);

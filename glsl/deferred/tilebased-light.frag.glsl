@@ -35,7 +35,7 @@ void main() {
     float specularCoeff   = gb1.w;   
    
     gl_FragColor.a = 1.0;
-    for(int i = 0; i < 2000; i++){
+    for(int i = 0; i < 3000; i++){
         if(i >= u_lightOffsetLength) return;
         
         float currLight = (float(i) + 0.5)/float(u_lightOffsetLength);

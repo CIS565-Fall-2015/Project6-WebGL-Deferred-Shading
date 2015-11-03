@@ -10,6 +10,7 @@ var cfg;
         this.enableToonShade = false;
         this.enableMBlur = false;
         this.tiledBased = false;
+        this.enableBloomGaussian = false;
     };
 
     var init = function() {
@@ -34,6 +35,7 @@ var cfg;
         eff0.add(cfg, 'enableToonShade');
         // TODO: add more effects toggles and parameters here
         eff0.add(cfg, 'enableMBlur');
+        eff0.add(cfg, 'enableBloomGaussian');
     };
 
     window.handle_load.push(init);

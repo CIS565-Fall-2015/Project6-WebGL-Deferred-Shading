@@ -9,6 +9,8 @@
     R.pass_toonShade = {};
     R.pass_mBlur = {};
     R.pass_scissor = {};
+    R.pass_bloomGaussian_x = {};
+    R.pass_bloomGaussian_y = {};
     R.lights = [];
 
     R.NUM_GBUFFERS = 3;
@@ -23,6 +25,8 @@
         R.pass_deferred.setup();
         R.pass_toonShade.setup();
         R.pass_mBlur.setup();
+        R.pass_bloomGaussian_x.setup();
+        R.pass_bloomGaussian_y.setup();
         
     };
 
@@ -31,7 +35,7 @@
     R.light_max = [14, 18, 6];
     R.light_dt = -0.03;
     R.LIGHT_RADIUS = 4.0;
-    R.NUM_LIGHTS = 500; // TODO: test with MORE lights!
+    R.NUM_LIGHTS = 20; // TODO: test with MORE lights!
     var setupLights = function() {
         Math.seedrandom(0);
 
@@ -129,6 +133,39 @@
 
         // * Check for framebuffer errors
         abortIfFramebufferIncomplete(R.pass_mBlur.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    };
+    
+    
+    R.pass_bloomGaussian_x.setup = function() {
+        // * Create the FBO
+        R.pass_bloomGaussian_x.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_bloomGaussian_x.colorTex = createAndBindColorTargetTexture(
+            R.pass_bloomGaussian_x.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_bloomGaussian_x.fbo);
+        // * Tell the WEBGL_draw_buffers extension which FBO attachments are
+        //   being used. (This extension allows for multiple render targets.)
+        gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    };
+
+    R.pass_bloomGaussian_y.setup = function() {
+        // * Create the FBO
+        R.pass_bloomGaussian_y.fbo = gl.createFramebuffer();
+        // * Create, bind, and store a single color target texture for the FBO
+        R.pass_bloomGaussian_y.colorTex = createAndBindColorTargetTexture(
+            R.pass_bloomGaussian_y.fbo, gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL);
+
+        // * Check for framebuffer errors
+        abortIfFramebufferIncomplete(R.pass_bloomGaussian_y.fbo);
         // * Tell the WEBGL_draw_buffers extension which FBO attachments are
         //   being used. (This extension allows for multiple render targets.)
         gl_draw_buffers.drawBuffersWEBGL([gl_draw_buffers.COLOR_ATTACHMENT0_WEBGL]);
@@ -259,8 +296,21 @@
             // Save the object into this variable for access later
             R.progPost1 = p;
         });
+        
+        loadPostProgram('gblur_x', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_width    = gl.getUniformLocation(p.prog, 'u_width');
+            // Save the object into this variable for access later
+            R.prog_bloomGaussian_x = p;
+        });
+        
+        loadPostProgram('gblur_y', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_height    = gl.getUniformLocation(p.prog, 'u_height');
+            // Save the object into this variable for access later
+            R.prog_bloomGaussian_y = p;
+        });
 
-        // TODO: If you add more passes, load and set up their shader programs.
         loadPostProgram('toon', function(p) {
             p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
             p.u_depth    = gl.getUniformLocation(p.prog, 'u_depth');
