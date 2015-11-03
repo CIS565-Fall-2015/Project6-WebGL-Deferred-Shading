@@ -13,7 +13,7 @@ WebGL Deferred Shading
 
 ### Demo Video
 
-[![](img/video.png)]
+[![](img/deferredShading.gif)]
 
 ###Toon Shading
 * With Ramp Shading and Outlines
@@ -24,8 +24,9 @@ WebGL Deferred Shading
 
 ### Debug Images
 
-Depth | Position | Geometry Normal
-![](img/depth.png) | ![](img/position.png) | ![](img/geom_normal.png)
-Color Map | Normal Map | Surface Normal
-![](img/color_map.png) | ![](img/normal_map.png) | ![](img/surface_normal.png)
+|Depth | Position | Geometry Normal|
+|:-------------:|:-------------:|:-------------:|
+|![](img/depth.png) | ![](img/position.png) | ![](img/geom_normal.png)|
+|Color Map | Normal Map | Surface Normal|
+|![](img/color_map.png) | ![](img/normal_map.png) | ![](img/surface_normal.png)|
 
