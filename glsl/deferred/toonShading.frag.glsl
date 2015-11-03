@@ -49,11 +49,31 @@ void main() {
     vec3 lightDir = normalize(u_lightPos - pos);
     vec3 normal = applyNormalMap(geomnor, normap);
 
+    //outline
+    if (dot(normal, u_cameraPos) < 0.1 && dot(normal, u_cameraPos) > -0.1) {
+        gl_FragColor = vec4(vec3(0.0), 1.0);
+        return;
+    }
 
     float lambertian = max(dot(lightDir, normal), 0.0);
     float specular = 0.0;
 
     if (lambertian > 0.0) {
+
+        if (lambertian > 0.75) {
+            lambertian = 1.0;
+        } else if (lambertian > 0.73) {
+            gl_FragColor = vec4(vec3(0.0), 1.0);
+            return;
+        } else if (lambertian > 0.45) {
+            lambertian = 0.4; 
+        } else if (lambertian > 0.42) {
+            gl_FragColor = vec4(vec3(0.0), 1.0);
+            return;
+        } else {
+            lambertian = 0.0;
+        }
+
         vec3 viewDir = normalize(u_cameraPos - pos);
 
         //blinn phong

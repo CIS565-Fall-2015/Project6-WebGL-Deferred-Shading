@@ -9,7 +9,7 @@ WebGL Deferred Shading
 
 ### Live Online
 
-[![](img/thumb.png)]
+![](img/thumb.png)
 
 ### Demo Video
 
@@ -31,3 +31,5 @@ WebGL Deferred Shading
 ![](img/surface_normal.png)
 ####Scissor Test
 ![](img/scissor_test.png)
+####Toon Shading
+![](img/toonShading.png)

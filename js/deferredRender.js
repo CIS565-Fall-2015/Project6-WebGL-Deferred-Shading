@@ -115,7 +115,13 @@
         renderFullScreenQuad(R.prog_Ambient);
 
         // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
-        bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
+
+        if(cfg.toonShading) {
+            bindTexturesForLightPass(R.prog_ToonShading);
+        } else {
+            bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
+        }
+        
 
     
         for (var i = 0; i < R.lights.length; i++) {
@@ -127,18 +133,36 @@
             if (sc) {
 
                 gl.scissor(sc[0], sc[1], sc[2], sc[3]);
-                gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightPos, 
-                light.pos[0], light.pos[1], light.pos[2]);
-                gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightCol, 
-                light.col[0], light.col[1], light.col[2]);
-                gl.uniform3f(R.prog_BlinnPhong_PointLight.u_cameraPos, 
-                state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
-                gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, light.rad);
-        
-                if(cfg.debugScissor) {
-                    renderFullScreenQuad(R.progRed);
+
+                if (cfg.toonShading) {
+                    gl.uniform3f(R.prog_ToonShading.u_lightPos, 
+                    light.pos[0], light.pos[1], light.pos[2]);
+                    gl.uniform3f(R.prog_ToonShading.u_lightCol, 
+                    light.col[0], light.col[1], light.col[2]);
+                    gl.uniform3f(R.prog_ToonShading.u_cameraPos, 
+                    state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
+                    gl.uniform1f(R.prog_ToonShading.u_lightRad, light.rad);
+                    if(cfg.debugScissor) {
+                        renderFullScreenQuad(R.progRed);
+                    }
+                    renderFullScreenQuad(R.prog_ToonShading);
+                } else {
+                    gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightPos, 
+                    light.pos[0], light.pos[1], light.pos[2]);
+                    gl.uniform3f(R.prog_BlinnPhong_PointLight.u_lightCol, 
+                    light.col[0], light.col[1], light.col[2]);
+                    gl.uniform3f(R.prog_BlinnPhong_PointLight.u_cameraPos, 
+                    state.cameraPos[0], state.cameraPos[1], state.cameraPos[2]);
+                    gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, light.rad);
+                    if(cfg.debugScissor) {
+                        renderFullScreenQuad(R.progRed);
+                    }
+                    renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
                 }
-                renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+               
+        
+                
+                
             }
             gl.disable(gl.SCISSOR_TEST);
 
