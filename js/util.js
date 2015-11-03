@@ -135,62 +135,56 @@ window.drawReadyModel = function(m) {
 
 function union(min, max, vec){
     if(min.x > vec.x) min.x = vec.x;
-    else if(max.x < vec.x) max.x = vec.x;
+    if(max.x < vec.x) max.x = vec.x;
     if(min.y > vec.y) min.y = vec.y;
-    else if(max.y < vec.y) max.y = vec.y;
-    if(min.z > vec.z) min.z = vec.z;
-    else if(max.z < vec.z) max.z = vec.z;
+    if(max.y < vec.y) max.y = vec.y;
 }
 
 window.getScissorForLight = (function() {
     // Pre-allocate for performance - avoids additional allocation
     var a = new THREE.Vector4(0, 0, 0, 0);
     var b = new THREE.Vector4(0, 0, 0, 0);
-    var min = new THREE.Vector3(1, 1, 1);
-    var max = new THREE.Vector3(-1, -1, -1);
-    var ret = [0.0, 0.0, 0.0, 0.0];
+    var minpt = new THREE.Vector2(0, 0);
+    var maxpt = new THREE.Vector2(0, 0);
+    var ret = [0, 0, 0, 0];
 
     return function(view, proj, l) {
-        min.x = 1;
-        min.y = 1;
-        min.z = 1;
-        max.x = -1;
-        max.y = -1;
-        max.z = -1;
-        
+        // front bottom-left corner of sphere's bounding cube
         a.fromArray(l.pos);
         a.w = 1;
+        a.applyMatrix4(view);
         a.x -= l.rad;
         a.y -= l.rad;
-        a.z -= l.rad;
+        a.applyMatrix4(proj);
+        a.divideScalar(a.w);
+
+        // front bottom-left corner of sphere's bounding cube
+        b.fromArray(l.pos);
+        b.w = 1;
+        b.applyMatrix4(view);
+        b.x += l.rad;
+        b.y += l.rad;
+        b.applyMatrix4(proj);
+        b.divideScalar(b.w);
         
-        for(var i = 0; i < 2; i++){
-            for(var j = 0; j < 2; j++){
-                for(var k = 0; k < 2; k++){
-                    b.x = a.x + i * 2 * l.rad;
-                    b.y = a.y + j * 2 * l.rad;
-                    b.z = a.z + k * 2 * l.rad;
-                    b.w = 1;
-                    b.applyMatrix4(view);
-                    b.applyMatrix4(proj);
-                    b.divideScalar(b.w);
-                    
-                    union(min, max, b);
-                }
-            }
-        }
+        if(a.z < 0 || b.z > 1) return null;
         
-        if(min.x > 1 || min.y > 1 || min.z > 1 ||
-            max.x < -1 || max.y < -1 || max.z < 0) 
+        minpt.set(Math.max(-1, a.x), Math.max(-1, a.y));
+        maxpt.set(Math.min( 1, b.x), Math.min( 1, b.y));
+
+        if (maxpt.x < -1 || 1 < minpt.x ||
+            maxpt.y < -1 || 1 < minpt.y) {
             return null;
-        
-        ret[0] = Math.round(width * Math.max((min.x + 1.0) / 2.0, 0));
-        ret[1] = Math.round(height * Math.min((min.y + 1.0) / 2.0, 1));
-        ret[2] = Math.round(width * Math.max((max.x + 1.0) / 2.0, 0)) - ret[0];
-        ret[3] = Math.round(height * Math.min((max.y + 1.0) / 2.0, 1)) - ret[1];  
-        
-        if(ret[2] <= 0 || ret[3] <= 0) return null;
-        else return ret;
+        }
+
+        minpt.addScalar(1.0); minpt.multiplyScalar(0.5);
+        maxpt.addScalar(1.0); maxpt.multiplyScalar(0.5);
+
+        ret[0] = Math.round(width * minpt.x);
+        ret[1] = Math.round(height * minpt.y);
+        ret[2] = Math.round(width * (maxpt.x - minpt.x));
+        ret[3] = Math.round(height * (maxpt.y - minpt.y));
+        return ret;
     };
 })();
 

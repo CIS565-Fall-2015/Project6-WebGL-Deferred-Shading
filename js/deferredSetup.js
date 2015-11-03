@@ -7,6 +7,8 @@
     R.pass_deferred = {};
     R.pass_post1 = {};
     R.pass_toonShade = {};
+    R.pass_mBlur = {};
+    R.pass_scissor = {};
     R.lights = [];
 
     R.NUM_GBUFFERS = 3;
@@ -137,12 +139,74 @@
             R.prog_Ambient = p;
         });
 
+        loadDeferredProgram('red', function(p) {
+            // Save the object into this variable for access later
+            R.prog_scissor = p;
+        });
+        
         loadDeferredProgram('blinnphong-pointlight', function(p) {
             // Save the object into this variable for access later
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
             R.prog_BlinnPhong_PointLight = p;
+        });
+
+        loadDeferredProgram('tilebased-light', function(p) {
+            // Save the object into this variable for access later
+            p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
+            p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
+            p.u_lightList = gl.getUniformLocation(p.prog, 'u_lightList');
+            p.u_lightOffset = gl.getUniformLocation(p.prog, 'u_lightOffset');
+            p.u_lightNo = gl.getUniformLocation(p.prog, 'u_lightNo');
+            p.u_lightOffsetLength = gl.getUniformLocation(p.prog, 'u_lightOffsetLength');
+            p.u_totalLight = gl.getUniformLocation(p.prog, 'u_totalLight');
+            R.prog_tilebased_light = p;
+            
+            //setup for tile-based render
+            p.tileSize = 32.0;
+            p.tx = Math.ceil(width / p.tileSize);
+            p.ty = Math.ceil(height / p.tileSize);
+            p.total = p.tx * p.ty;
+            p.lightPos = new Float32Array(R.lights.length * 3);
+            p.lightCol = new Float32Array(R.lights.length * 4);
+            p.lightOffset = new Int32Array(p.total);
+            p.lightNo = new Int32Array(p.total);
+            for (var i = 0; i < R.lights.length; i++) {
+                var light = R.lights[i];
+                        
+                p.lightCol[i*4] = light.col[0];
+                p.lightCol[i*4 + 1] = light.col[1];
+                p.lightCol[i*4 + 2] = light.col[2];
+                p.lightCol[i*4 + 3] = light.rad;
+                
+            }
+            
+            p.lightColTexture = gl.createTexture();
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, p.lightColTexture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, R.lights.length, 1, 0, gl.RGBA, gl.FLOAT, p.lightCol);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            
+            p.lightPosTexture = gl.createTexture();
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, p.lightPosTexture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            
+            p.lightListTexture = gl.createTexture();
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, p.lightListTexture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            
         });
 
         loadDeferredProgram('debug', function(p) {
@@ -165,6 +229,15 @@
             p.u_height   = gl.getUniformLocation(p.prog, 'u_height');
             // Save the object into this variable for access later
             R.prog_toonShade = p;
+        });
+        
+        loadPostProgram('mblur', function(p) {
+            p.u_color    = gl.getUniformLocation(p.prog, 'u_color');
+            p.u_depth    = gl.getUniformLocation(p.prog, 'u_depth');
+            p.u_inverseVProj   = gl.getUniformLocation(p.prog, 'u_inverseVProj');
+            p.u_previousVProj   = gl.getUniformLocation(p.prog, 'u_previousVProj');
+            // Save the object into this variable for access later
+            R.prog_mBlur = p;
         });
     };
 

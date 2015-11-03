@@ -36,24 +36,28 @@
             return;
         }
  */
-
         R.pass_copy.render(state);
 
         if (cfg && cfg.debugView >= 0) {
             // Do a debug render instead of a regular render
             // Don't do any post-processing in debug mode
             R.pass_debug.render(state);
-        } else {
+        }
+        else if(cfg.debugScissor){
+            R.pass_scissor.render(state);
+        }
+        else {
             // * Deferred pass and postprocessing pass(es)
-            // TODO: uncomment these
-            R.pass_deferred.render(state);
-
+            R.pass_deferred.render(state, cfg.tiledBased);
+            
             if(cfg.enableToonShade){
                 R.pass_toonShade.render(state);
             }
-            else{
-                R.pass_post1.render(state);
+            else if(cfg.enableMBlur){
+                R.pass_mBlur.render(state);
             }
+            else
+                R.pass_post1.render(state);
         }
     };
 
@@ -114,11 +118,46 @@
         // * Render a fullscreen quad to perform shading on
         renderFullScreenQuad(R.prog_Debug);
     };
+    
+    R.pass_scissor.render = function(state){
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Clear depth to 1.0 and color to black
+        gl.clearColor(0.0, 0.0, 0.0, 0.0);
+        gl.clearDepth(1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // Enable blending and use gl.blendFunc to blend with:
+        //   color = 1 * src_color + 1 * dst_color
+        // TODO: ^
+        gl.enable( gl.BLEND );
+        gl.blendEquation( gl.FUNC_ADD );
+        gl.blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA );
+        
+        //draw bg ambient
+        bindTexturesForLightPass(R.prog_Ambient);
+        renderFullScreenQuad(R.prog_Ambient);
+        
+        gl.enable( gl.SCISSOR_TEST );
+            
+        for (var i = 0; i < R.lights.length; i++) {
+            var light = R.lights[i];
+            var sc = getScissorForLight(state.viewMat, state.projMat, light);
+            if(sc != null){
+                gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+                renderFullScreenQuad(R.prog_scissor);
+            }
+        }
+
+        // Disable blending so that it doesn't affect other code
+        gl.disable(gl.SCISSOR_TEST);
+        gl.disable(gl.BLEND);
+    }
 
     /**
      * 'deferred' pass: Add lighting results for each individual light
      */
-    R.pass_deferred.render = function(state) {
+    R.pass_deferred.render = function(state, tileBased) {
         // * Bind R.pass_deferred.fbo to write into for later postprocessing
         gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
 
@@ -136,13 +175,11 @@
         gl.blendEquation( gl.FUNC_ADD );
         gl.blendFunc( gl.ONE, gl.ONE );
 
+        
         // * Bind/setup the ambient pass, and render using fullscreen quad
         bindTexturesForLightPass(R.prog_Ambient);
         renderFullScreenQuad(R.prog_Ambient);
-
-        // * Bind/setup the Blinn-Phong pass, and render using fullscreen quad
-        bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
-
+        
         // TODO: add a loop here, over the values in R.lights, which sets the
         //   uniforms R.prog_BlinnPhong_PointLight.u_lightPos/Col/Rad etc.,
         //   then does renderFullScreenQuad(R.prog_BlinnPhong_PointLight).
@@ -157,25 +194,113 @@
 
         gl.enable( gl.SCISSOR_TEST );
         
-        for (var i = 0; i < R.lights.length; i++) {
-            var light = R.lights[i];
+        if(tileBased){
+            bindTexturesForLightPass(R.prog_tilebased_light);
+            var p = R.prog_tilebased_light;
             
-            //TODO: Fix this.
-            var sc = getScissorForLight(state.viewMat, state.projMat, light);
-            if(sc != null){
-                gl.scissor(sc[0], sc[1], sc[2], sc[3]);
-             
-                gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, light.pos);
-                gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, light.col);
-                gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, light.rad);
+            //pack light
+            var indexList = [];
+            for (var i = 0; i < p.total; i++) {
+                indexList.push([]);
+            }
+              
+            var indexSize = 0;
+            for (i = 0; i < R.lights.length; i++) {
+                var light = R.lights[i];
+                    
+                //push into the global light list
+                p.lightPos[i*3] = light.pos[0];
+                p.lightPos[i*3 + 1] = light.pos[1];
+                p.lightPos[i*3 + 2] = light.pos[2];
+
+                var sc = getScissorForLight(state.viewMat, state.projMat, light);
+                if(sc != null){
+                    
+                    //fill the light index list
+                    var xStart = Math.floor(sc[0] / p.tileSize);
+                    var xEnd = xStart + Math.ceil(sc[2] / p.tileSize);
+                    var yStart = Math.floor(sc[1] / p.tileSize);
+                    var yEnd = yStart + Math.ceil(sc[3] / p.tileSize);
+                    
+                    for(var y = yStart; y < yEnd; y++){
+                        for(var x = xStart; x < xEnd; x++){
+                            indexList[y * p.tx + x].push(i);
+                            indexSize++;
+                        }
+                    }
+                }
+            }
+
+            var indexListTData = new Float32Array(indexSize * 3);
+            var firstIndex = 0;
+            var lastIndex = 0;
+            for (i = 0; i < p.total; i++) {
+                var tmp = indexList[i];
+                for(var j = 0; j < tmp.length; j++){
+                    indexListTData[lastIndex * 3] = tmp[j];
+                    indexListTData[lastIndex * 3 + 1] = 0;
+                    indexListTData[lastIndex * 3 + 2] = 0;
+                    lastIndex++;
+                }
                 
-                renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+                p.lightOffset[i] = firstIndex;
+                p.lightNo[i] = tmp.length;
+                firstIndex = lastIndex;
+            }
+            //pack them!
+            var textureNo = R.NUM_GBUFFERS + 1;
+            gl.activeTexture(gl['TEXTURE' + textureNo]);
+            gl.bindTexture(gl.TEXTURE_2D, p.lightPosTexture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, R.lights.length, 1, 0, gl.RGB, gl.FLOAT, p.lightPos);
+            gl.uniform1i(R.prog_tilebased_light.u_lightPos, textureNo);
+            
+            textureNo++;
+            gl.activeTexture(gl['TEXTURE' + textureNo]);
+            gl.bindTexture(gl.TEXTURE_2D, p.lightColTexture);
+            gl.uniform1i(R.prog_tilebased_light.u_lightCol, textureNo);
+            
+            textureNo++;
+            gl.activeTexture(gl['TEXTURE' + textureNo]);
+            gl.bindTexture(gl.TEXTURE_2D, p.lightListTexture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, indexListTData.length/3, 1, 0, gl.RGB, gl.FLOAT, indexListTData);
+            gl.uniform1i(R.prog_tilebased_light.u_lightList, textureNo);
+            
+            gl.uniform1i(R.prog_tilebased_light.u_lightOffsetLength, indexListTData.length/3);
+            gl.uniform1i(p.u_totalLight, R.lights.length);
+             
+            for(var i = 0; i < p.tx; i++){
+                for(var j = 0; j < p.ty; j++){
+                    gl.scissor(i * p.tileSize, j * p.tileSize, p.tileSize, p.tileSize);
+                    
+                    gl.uniform1i(R.prog_tilebased_light.u_lightOffset, p.lightOffset[j * p.tx + i]);
+                    gl.uniform1i(R.prog_tilebased_light.u_lightNo, p.lightNo[j * p.tx + i]);
+                    renderFullScreenQuad(R.prog_tilebased_light);
+                }
             }
         }
-
-        gl.disable( gl.SCISSOR_TEST );
+        else{
+            bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
+            
+            for (var i = 0; i < R.lights.length; i++) {
+                var light = R.lights[i];
+                
+                //TODO: Fix this.
+                var sc = getScissorForLight(state.viewMat, state.projMat, light);
+                if(sc != null){
+                    gl.scissor(sc[0], sc[1], sc[2], sc[3]);
+                
+                    gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightPos, light.pos);
+                    gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_lightCol, light.col);
+                    gl.uniform1f(R.prog_BlinnPhong_PointLight.u_lightRad, light.rad);
+                    
+                    renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
+                }
+            }
+    
+        }
 
         // Disable blending so that it doesn't affect other code
+        gl.disable( gl.SCISSOR_TEST );
         gl.disable(gl.BLEND);
     };
 
@@ -249,6 +374,35 @@
         renderFullScreenQuad(R.prog_toonShade);
     };
 
+    R.pass_mBlur.render = function(state) {
+        // * Unbind any existing framebuffer (if there are no more passes)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+        // * Clear the framebuffer depth to 1.0
+        gl.clearDepth(1.0);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+
+        // * Bind the postprocessing shader program
+        gl.useProgram(R.prog_mBlur.prog);
+
+        // * Bind the deferred pass's color output as a texture input
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_deferred.colorTex);
+        gl.uniform1i(R.prog_mBlur.u_color, 0);
+        
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, R.pass_copy.depthTex);
+        gl.uniform1i(R.prog_mBlur.u_depth, 1);
+
+        var invVProj = new THREE.Matrix4();
+        invVProj.getInverse(state.cameraMat);
+        gl.uniformMatrix4fv(R.prog_mBlur.u_inverseVProj, gl.FALSE, invVProj.elements);
+        gl.uniformMatrix4fv(R.prog_mBlur.u_previousVProj, gl.FALSE, state.prevCameraMat.elements);
+
+        // * Render a fullscreen quad to perform shading on
+        renderFullScreenQuad(R.prog_mBlur);
+    };
+    
     var renderFullScreenQuad = (function() {
         // The variables in this function are private to the implementation of
         // renderFullScreenQuad. They work like static local variables in C++.

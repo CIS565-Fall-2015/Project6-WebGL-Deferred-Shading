@@ -8,6 +8,7 @@ var width, height;
     var models = [];
 
     var cameraMat = new THREE.Matrix4();
+    var prevCameraMat = new THREE.Matrix4();
 
     var render = function() {
         camera.updateMatrixWorld();
@@ -15,6 +16,7 @@ var width, height;
         cameraMat.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
         R.deferredRender({
             cameraMat: cameraMat,
+            prevCameraMat: prevCameraMat,
             projMat: camera.projectionMatrix,
             viewMat: camera.matrixWorldInverse,
             cameraPos: camera.position,
@@ -23,6 +25,7 @@ var width, height;
     };
 
     var update = function() {
+        prevCameraMat.copy(cameraMat);
         controls.update();
         stats.end();
         stats.begin();
