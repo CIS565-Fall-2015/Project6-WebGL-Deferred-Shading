@@ -229,9 +229,9 @@
                     
                     //fill the light index list
                     var xStart = Math.floor(sc[0] / p.tileSize);
-                    var xEnd = xStart + Math.ceil(sc[2] / p.tileSize);
+                    var xEnd = Math.ceil((sc[0] + sc[2]) / p.tileSize);
                     var yStart = Math.floor(sc[1] / p.tileSize);
-                    var yEnd = yStart + Math.ceil(sc[3] / p.tileSize);
+                    var yEnd = Math.ceil((sc[1] + sc[3]) / p.tileSize);
                     
                     for(var y = yStart; y < yEnd; y++){
                         for(var x = xStart; x < xEnd; x++){
@@ -247,7 +247,7 @@
             
             //create a texture array!
             var index = 0;
-            var indexArray = new Float32Array(p.total * indexTextureWidth);
+            var indexArray = new Float32Array(p.total * indexTextureWidth * 3);
             for (var i = 0; i < p.total; i++) {
                 var tmp = indexList[i];
                 for (var j = 0; j < tmp.length; j++) {
@@ -276,7 +276,7 @@
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, indexTextureWidth, p.total, 0, gl.ALPHA, gl.FLOAT, indexArray);
             gl.uniform1i(R.prog_tilebased_light.u_lightList, textureNo);
             
-            gl.uniform1i(R.prog_tilebased_light.u_lightOffsetLength, indexTextureWidth);
+            gl.uniform1f(R.prog_tilebased_light.u_lightTextureWidth, indexTextureWidth);
             gl.uniform1f(R.prog_tilebased_light.u_totalLight, R.lights.length);
              
             p.viewPos[0] = state.cameraPos.x;
@@ -289,7 +289,10 @@
                     gl.scissor(i * p.tileSize, j * p.tileSize, p.tileSize, p.tileSize);
                     
                     gl.uniform1i(R.prog_tilebased_light.u_lightList, textureNo);
-                    gl.uniform1f(R.prog_tilebased_light.u_lightOffsetY, ((j * p.tx + i) + 0.5) / p.total);
+                    
+                    var offsetY = ((j * p.tx + i) + 0.5) / p.total;
+                    gl.uniform1f(R.prog_tilebased_light.u_lightOffsetY, offsetY);
+                    gl.uniform1i(R.prog_tilebased_light.u_lightOffsetX, indexList[j * p.tx + i].length);
                      
                     renderFullScreenQuad(R.prog_tilebased_light);
                 }

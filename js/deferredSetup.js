@@ -35,7 +35,7 @@
     R.light_max = [14, 18, 6];
     R.light_dt = -0.03;
     R.LIGHT_RADIUS = 4.0;
-    R.NUM_LIGHTS = 20; // TODO: test with MORE lights!
+    R.NUM_LIGHTS = 8; // TODO: test with MORE lights!
     var setupLights = function() {
         Math.seedrandom(0);
 
@@ -232,7 +232,8 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightList = gl.getUniformLocation(p.prog, 'u_lightList');
-            p.u_lightOffsetLength = gl.getUniformLocation(p.prog, 'u_lightOffsetLength');
+            p.u_lightTextureWidth = gl.getUniformLocation(p.prog, 'u_lightTextureWidth');
+            p.u_lightOffsetX = gl.getUniformLocation(p.prog, 'u_lightOffsetX');
             p.u_lightOffsetY = gl.getUniformLocation(p.prog, 'u_lightOffsetY');
             p.u_totalLight = gl.getUniformLocation(p.prog, 'u_totalLight');
             p.u_viewPos = gl.getUniformLocation(p.prog, 'u_viewPos');

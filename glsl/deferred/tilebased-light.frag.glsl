@@ -10,7 +10,8 @@ uniform sampler2D u_lightList;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
 uniform sampler2D u_depth;
 
-uniform int u_lightOffsetLength;
+uniform float u_lightTextureWidth;
+uniform int u_lightOffsetX;
 uniform float u_lightOffsetY;
 uniform float u_totalLight;
 uniform vec3 u_viewPos;
@@ -36,13 +37,11 @@ void main() {
    
     gl_FragColor.a = 1.0;
     for(int i = 0; i < 3000; i++){
-        if(i >= u_lightOffsetLength) return;
+        if(i >= u_lightOffsetX) return;
         
-        float currLight = (float(i) + 0.5)/float(u_lightOffsetLength);
+        float currLight = (float(i) + 0.5)/u_lightTextureWidth;
         float light_uv = texture2D(u_lightList, vec2(currLight,u_lightOffsetY)).w + 0.5;
         light_uv /= u_totalLight;
-        
-        //gl_FragColor.x = u_lightOffsetY;
                 
         vec4 lightPos = texture2D(u_lightPos, vec2(light_uv,0.5));
         vec4 lightcol = texture2D(u_lightCol, vec2(light_uv,0.5));
