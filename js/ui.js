@@ -10,6 +10,7 @@ var cfg;
         this.enableToonShade = false;
         this.enableMBlur = false;
         this.tiledBased = false;
+        this.tiledBasedDebug = false;
         this.enableBloomGaussian = false;
     };
 
@@ -29,6 +30,7 @@ var cfg;
         });
         gui.add(cfg, 'debugScissor');
         gui.add(cfg, 'tiledBased');
+        gui.add(cfg, 'tiledBasedDebug');
 
         var eff0 = gui.addFolder('Effects');
         eff0.open();

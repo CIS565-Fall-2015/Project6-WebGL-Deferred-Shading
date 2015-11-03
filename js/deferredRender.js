@@ -48,7 +48,7 @@
         }
         else {
             // * Deferred pass and postprocessing pass(es)
-            R.pass_deferred.render(state, cfg.tiledBased);
+            R.pass_deferred.render(state, cfg.tiledBased, cfg.tiledBasedDebug);
             
             var passCount = 0;
             if(cfg.enableToonShade) passCount++;
@@ -180,7 +180,7 @@
     /**
      * 'deferred' pass: Add lighting results for each individual light
      */
-    R.pass_deferred.render = function(state, tileBased) {
+    R.pass_deferred.render = function(state, tileBased, tiledBasedDebug) {
         // * Bind R.pass_deferred.fbo to write into for later postprocessing
         gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_deferred.fbo);
 
@@ -217,9 +217,9 @@
 
         gl.enable( gl.SCISSOR_TEST );
         
-        if(tileBased){
-            bindTexturesForLightPass(R.prog_tilebased_light);
+        if(tileBased || tiledBasedDebug){
             var p = R.prog_tilebased_light;
+            bindTexturesForLightPass(p);
             
             //pack light
             var indexList = [];
@@ -257,6 +257,28 @@
                 }
             }
             
+ ///DEBUG MODE///////////////////////////////////////////////////
+            if(tiledBasedDebug){
+                console.log("yippy");
+                bindTexturesForLightPass(R.prog_tilebased_debug);
+                for(var i = 0; i < p.tx; i++){
+                    for(var j = 0; j < p.ty; j++){
+                        gl.scissor(i * p.tileSize, j * p.tileSize, p.tileSize, p.tileSize);
+                        
+                        gl.uniform1f(R.prog_tilebased_debug.u_lightOffsetX, indexList[j * p.tx + i].length);
+                        gl.uniform1f(R.prog_tilebased_debug.u_totalLight, R.lights.length);
+                        renderFullScreenQuad(R.prog_tilebased_debug);
+                    }
+                }
+                
+                // Disable blending so that it doesn't affect other code
+                gl.disable( gl.SCISSOR_TEST );
+                gl.disable(gl.BLEND);
+        
+                return;
+            }
+//DEBUG MODE ENDS///////////////////////////////////////////////////
+            
             //create a texture array!
             var index = 0;
             var indexArray = new Float32Array(p.total * indexTextureWidth * 3);
@@ -275,38 +297,38 @@
             gl.activeTexture(gl['TEXTURE' + textureNo]);
             gl.bindTexture(gl.TEXTURE_2D, p.lightPosTexture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, R.lights.length, 1, 0, gl.RGB, gl.FLOAT, p.lightPos);
-            gl.uniform1i(R.prog_tilebased_light.u_lightPos, textureNo);
+            gl.uniform1i(p.u_lightPos, textureNo);
             textureNo++;
             
             gl.activeTexture(gl['TEXTURE' + textureNo]);
             gl.bindTexture(gl.TEXTURE_2D, p.lightColTexture);
-            gl.uniform1i(R.prog_tilebased_light.u_lightCol, textureNo);
+            gl.uniform1i(p.u_lightCol, textureNo);
             textureNo++;
             
             gl.activeTexture(gl['TEXTURE' + textureNo]);
             gl.bindTexture(gl.TEXTURE_2D, p.lightListTexture);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.ALPHA, indexTextureWidth, p.total, 0, gl.ALPHA, gl.FLOAT, indexArray);
-            gl.uniform1i(R.prog_tilebased_light.u_lightList, textureNo);
+            gl.uniform1i(p.u_lightList, textureNo);
             
-            gl.uniform1f(R.prog_tilebased_light.u_lightTextureWidth, indexTextureWidth);
-            gl.uniform1f(R.prog_tilebased_light.u_totalLight, R.lights.length);
+            gl.uniform1f(p.u_lightTextureWidth, indexTextureWidth);
+            gl.uniform1f(p.u_totalLight, R.lights.length);
              
             p.viewPos[0] = state.cameraPos.x;
             p.viewPos[1] = state.cameraPos.y;
             p.viewPos[2] = state.cameraPos.z;
-            gl.uniform3fv(R.prog_tilebased_light.u_viewPos, p.viewPos);
+            gl.uniform3fv(p.u_viewPos, p.viewPos);
         
             for(var i = 0; i < p.tx; i++){
                 for(var j = 0; j < p.ty; j++){
                     gl.scissor(i * p.tileSize, j * p.tileSize, p.tileSize, p.tileSize);
                     
-                    gl.uniform1i(R.prog_tilebased_light.u_lightList, textureNo);
+                    gl.uniform1i(p.u_lightList, textureNo);
                     
                     var offsetY = ((j * p.tx + i) + 0.5) / p.total;
-                    gl.uniform1f(R.prog_tilebased_light.u_lightOffsetY, offsetY);
-                    gl.uniform1i(R.prog_tilebased_light.u_lightOffsetX, indexList[j * p.tx + i].length);
+                    gl.uniform1f(p.u_lightOffsetY, offsetY);
+                    gl.uniform1i(p.u_lightOffsetX, indexList[j * p.tx + i].length);
                      
-                    renderFullScreenQuad(R.prog_tilebased_light);
+                    renderFullScreenQuad(p);
                 }
             }
         }

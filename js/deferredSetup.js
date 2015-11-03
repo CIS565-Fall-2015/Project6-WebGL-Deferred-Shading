@@ -227,6 +227,13 @@
             R.prog_BlinnPhong_PointLight = p;
         });
 
+        loadDeferredProgram('tilebased-debug', function(p) {
+            // Save the object into this variable for access later
+            p.u_lightOffsetX = gl.getUniformLocation(p.prog, 'u_lightOffsetX');
+            p.u_totalLight = gl.getUniformLocation(p.prog, 'u_totalLight');
+            R.prog_tilebased_debug = p;
+        });
+        
         loadDeferredProgram('tilebased-light', function(p) {
             // Save the object into this variable for access later
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
