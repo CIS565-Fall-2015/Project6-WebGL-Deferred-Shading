@@ -152,6 +152,8 @@
                 p.a_position  = gl.getAttribLocation(prog, 'a_position');
                 p.a_normal    = gl.getAttribLocation(prog, 'a_normal');
                 p.a_uv        = gl.getAttribLocation(prog, 'a_uv');
+                p.u_specularExp = gl.getUniformLocation(prog, 'u_specularExp');
+                p.u_specularCoeff = gl.getUniformLocation(prog, 'u_specularCoeff');
 
                 // Save the object into this variable for access later
                 R.progCopy = p;
@@ -184,6 +186,7 @@
             p.u_lightPos = gl.getUniformLocation(p.prog, 'u_lightPos');
             p.u_lightCol = gl.getUniformLocation(p.prog, 'u_lightCol');
             p.u_lightRad = gl.getUniformLocation(p.prog, 'u_lightRad');
+            p.u_viewPos = gl.getUniformLocation(p.prog, 'u_viewPos');
             R.prog_BlinnPhong_PointLight = p;
         });
 
@@ -196,10 +199,11 @@
             p.u_lightNo = gl.getUniformLocation(p.prog, 'u_lightNo');
             p.u_lightOffsetLength = gl.getUniformLocation(p.prog, 'u_lightOffsetLength');
             p.u_totalLight = gl.getUniformLocation(p.prog, 'u_totalLight');
+            p.u_viewPos = gl.getUniformLocation(p.prog, 'u_viewPos');
             R.prog_tilebased_light = p;
             
             //setup for tile-based render
-            p.tileSize = 40.0;
+            p.tileSize = 100.0;
             p.tx = Math.ceil(width / p.tileSize);
             p.ty = Math.ceil(height / p.tileSize);
             p.total = p.tx * p.ty;

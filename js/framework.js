@@ -137,6 +137,24 @@ var width, height;
                 loadTexture('models/sponza/normal.png').then(function(tex) {
                     m.normap = tex;
                 });
+                m.specularExp = 1;
+                m.specularCoeff = 0.0;
+                models.push(m);
+            });
+        });
+        
+        loadModel('models/cow.obj', function(o) {
+            scene.add(o);
+            uploadModel(o, function(m) {
+                // CHECKITOUT: load textures
+                loadTexture('models/color.jpg').then(function(tex) {
+                    m.colmap = tex;
+                });
+                loadTexture('models/normal.png').then(function(tex) {
+                    m.normap = tex;
+                });
+                m.specularExp = 300;
+                m.specularCoeff = 0.5;
                 models.push(m);
             });
         });

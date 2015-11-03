@@ -101,6 +101,8 @@
         for (var i = 0; i < state.models.length; i++) {
             var m = state.models[i];
 
+            gl.uniform1i(R.progCopy.u_specularExp, m.specularExp);
+            gl.uniform1f(R.progCopy.u_specularCoeff, m.specularCoeff);
             // If you want to render one model many times, note:
             // readyModelForDraw only needs to be called once.
             readyModelForDraw(R.progCopy, m);
@@ -271,6 +273,9 @@
             gl.uniform1f(R.prog_tilebased_light.u_lightOffsetLength, indexListTData.length/3);
             gl.uniform1f(p.u_totalLight, R.lights.length);
              
+            var viewpos = new Float32Array([state.cameraPos.x, state.cameraPos.y, state.cameraPos.z]);
+            gl.uniform3fv(R.prog_tilebased_light.u_viewPos, viewpos);
+        
             for(var i = 0; i < p.tx; i++){
                 for(var j = 0; j < p.ty; j++){
                     gl.scissor(i * p.tileSize, j * p.tileSize, p.tileSize, p.tileSize);
@@ -283,6 +288,9 @@
         }
         else{
             bindTexturesForLightPass(R.prog_BlinnPhong_PointLight);
+            
+            var viewpos = new Float32Array([state.cameraPos.x, state.cameraPos.y, state.cameraPos.z]);
+            gl.uniform3fv(R.prog_BlinnPhong_PointLight.u_viewPos, viewpos);
             
             for (var i = 0; i < R.lights.length; i++) {
                 var light = R.lights[i];
@@ -309,7 +317,7 @@
 
     var bindTexturesForLightPass = function(prog) {
         gl.useProgram(prog.prog);
-
+        
         // * Bind all of the g-buffers and depth buffer as texture uniform
         //   inputs to the shader
         for (var i = 0; i < R.NUM_GBUFFERS; i++) {
