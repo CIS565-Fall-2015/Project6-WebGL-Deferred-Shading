@@ -41,3 +41,4 @@ when
 - Motion Blur : http://http.developer.nvidia.com/GPUGems3/gpugems3_ch27.html
 - Bloom : http://http.developer.nvidia.com/GPUGems/gpugems_ch21.html
 - Gaussian blur equation function : https://www.shadertoy.com/view/XdfGDH
+- Sobel Operator for Edge Detection: https://en.wikipedia.org/wiki/Sobel_operator
