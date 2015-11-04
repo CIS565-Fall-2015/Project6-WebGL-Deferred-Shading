@@ -39,14 +39,14 @@ Instead of render the whole scene for each light source (which is expensive), wh
 ##### Tile-based deferred shading
 The previous method has one serious drawback, that is, the amount of time the g-buffers will be passed into the shader program will be equal to the number of lights. This will slow things down if # of lights are large.
 
-![](img/scissor-tile.PNG)
-*Each red box represents the # of light sources of each tiles*
-
 Another way to speed things up is to divide screens into "tiles", say 40x40. Then we *count* how many lights are involved in each tile's calculation. We then create 3 textures to store light information.
 
  1. **A texture containing light colors** : This can be uploaded during the initialization once and doesn't require any update (Unless you want the colors to change over time)
  2. **A texture containing light position** : If the light sources are moving, this needs to be updated in every frame.
  3. **A texture that tells which lights are included in each tile's calculation** : This is basically a 2D texture (each row representing each tile's light source) that contains indexes of the lights in texture 1 and 2. This also needs to be updated if the light sources are moving.
+ 4. 
+![](img/scissor-tile.PNG)
+*Each red box represents the # of light sources of each tiles*
 
 Because of this, the g-buffers will be passed into the program for a fixed amount of time (= total # of tiles) regardless of # of lights. Given that the "light textures" passed into the program should be significantly smaller than the total g-buffer size in the previous method, this should give a significant speed-up to our renderer.
 
