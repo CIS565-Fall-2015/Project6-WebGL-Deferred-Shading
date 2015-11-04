@@ -37,7 +37,7 @@ Instead of render the whole scene for each light source (which is expensive), wh
 *Each red box represents the areas we render for each light source*
 
 ##### Tile-based deferred shading
-The previous method has one serious drawback, that is, the amount of time the g-buffers will be passed into the shader program will be equal to the number of lights. This will slow things down if # of lights are large, while the size of geometries/models (or g-buffer) are relatively small.
+The previous method has one serious drawback, that is, the amount of time the g-buffers will be passed into the shader program will be equal to the number of lights. This will slow things down if # of lights are large.
 
 ![](img/scissor-tile.PNG)
 *Each red box represents the # of light sources of each tiles*
