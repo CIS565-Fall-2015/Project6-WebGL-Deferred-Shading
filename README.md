@@ -86,9 +86,16 @@ Tiling leads to noticeable performance improvements in scenes with large numbers
 
 ![](img/bloom.png)
 
-Bloom works by sampling the area around each pixel of the lighting pass's output for pixels with a luminance greater than 1, indicating a "bright light." Because it is implemented as a post-processing step, it works across all lighting pipelines and adds a constant performance hit over the number of lights in the scene.
+Bloom works by sampling the area around each pixel of the lighting pass's output for pixels with a luminance greater than 1, indicating an area that is "brightly lit." Because it is implemented as a post-processing step, it works across all lighting pipelines and adds a constant performance hit over the number of lights in the scene.
 
 ![](img/charts/bloom.png)
 
 ### Toon Shading
 
+![](img/toon.png)
+
+Toon shading is accomplished in a lighting pass as a variant on the standard, 4-gbuffer, nontiled pipeline. Similar to bloom, toon shading works by sampling at each screen coordinate the surrounding coordinates. However, it does this with the normal g-buffer and depth buffer, allowing depth-based and normal based edge detection. It also computes a ramp for the blinn-phong lighting computation.
+
+The cost of this additional sampling is multiplied by the fact that the toon shader must be called per light, making toon shading and especially edge detection in the lighting pass very expensive in terms of render time. The above scene, which contains 20 lights, could render in about 80 ms normally (no scissor test) but would take about 185 ms with toon shading. Rendering with the scissor test provides an enormous improvement by eliminating unnecessary lights. However, the performance difference is still about 40 ms versus 55 ms. This difference from the scissor test, however, further illustrates that this implementation of toon shading gets even more expensive as more lights are added.
+
+This problem could be sidestepped by passing the normal and depth buffers to the post-processing shader for edge detection and contor drawing, thus making the performance hit constant as with bloom.
