@@ -177,9 +177,26 @@ G-buffer format change performance:
 -20 lights: 65 ms 40 ms
 -40 lights: 110 ms 82 ms
 -80 lights: 210 ms 130 ms
+-160 lights: 402 ms, 
 
 scissor test:
 -10 lights: 15 ms 16 ms
 -20 lights: 20 ms 16 ms
 -40 lights: 30 ms 18 ms
 -80 lights: 49 ms 28 ms
+
+tiling
+-10 lights: 25 ms
+-20 lights: 27 ms
+-40 lights: 30 ms
+-80 lights: 47 ms
+-160 lights: 402 ms, 80 ms, 50 ms
+
+80 lights:
+16x16: 80 ms
+32x32: 47 ms
+64x64: 25 ms
+128x128: 28 ms
+256x256: 32 ms
+
+

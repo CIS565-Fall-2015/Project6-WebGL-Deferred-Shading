@@ -2,8 +2,8 @@
     'use strict';
     // deferredSetup.js must be loaded first
 
-    var TILE_SIZE = 32;
-    var MAX_LIGHTS_PER_TILE =  TILE_SIZE * TILE_SIZE / 2;
+    var TILE_SIZE = 64;
+    var MAX_LIGHTS_PER_TILE = TILE_SIZE * TILE_SIZE / 2;
     var NUM_TILES_WIDE;
     var NUM_TILES_TALL;
     var NUM_TILES;

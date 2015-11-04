@@ -49,10 +49,37 @@ Using "compressed" g-buffers is essentially a tradeoff between memory access and
 
 ### Scissor test
 
-Both the "compressed" and "uncompressed" g-buffer pipelines can restrict the render area of each light using a scissor test, which in most cases speeds up the lighting shader computation for each light. This scissor test also allows us to skip lighting for lights that couldn't possibly be visible in the viewport, which is likely a large part of the performance boost. However, the scissor test is only really useful for the "general" case, where a light's influence covers a relatively small area of the screen. In the case that a light is very close to the camera, the scissor test becomes less beneficial as the light pass for that particular light will essentially span the entire screen.
+Both the "compressed" and "uncompressed" g-buffer pipelines can optionally restrict the screen-space render area of each light using a scissor test, which in most cases speeds up the lighting shader computation for each light. A screen-space bounding box is computed for each light on the CPU, which then restricts the area that the GPU can draw over. This scissor test also allows us to skip lighting for lights that couldn't possibly be visible in the viewport, which is likely a large part of the performance boost.
+
+However, the scissor test is only really useful for the "general" case, where a light's influence covers a relatively small area of the screen. In the case that a light is very close to the camera, the scissor test becomes less beneficial as the light pass for that particular light will essentially span the entire screen.
 
 ![](img/charts/scissor.png)
 
 ### Tile based lighting
+
+![](img/tiling.png)
+
+The lighting pipelines mentioned above all compute each light's influence independently and blend the result, essentially placing one draw-call per light, which leads to repeated access to the g-buffers and the framebuffer being drawn to.
+
+One alternative to this is to inform the shader of the lights that influence an area of the scene and have the shader read the position, normal and color data once and then iterate over the given lights, then write the final accumulated result out to the framebuffer. This technique requires splitting the screen space into tiles and computing a datastructure that the shader can access to check the lights that influence a particular tile.
+
+This implementation of a tiled pipeline stores this datastructure in another gbuffer and stores lists of light positions and colors, which limits the number of lights that can influence each tile based on the tile's resolution. Each screen space tile of this datastructure gbuffer is split, with one half holding a list of light colors as a vec4 and the other half holding the lights' positions and radii. The end of the list is demarkated with a colorless light with a negative influence radius and extreme z position, thus showing as a blue pixel in the debug view. Thus, the limit on the number of lights is TILE_SIZE * TILE_SIZE / 2, which for a 32 x 32 tile is still 512 lights.
+
+This datastructure is computed on the CPU for each light in order, which becomes a performance bottleneck with more lights. Thus, this implementation includes options in the code to set a lower limit on the number of lights that can influence a tile. However, this can lead to undesireable artifacting, as lights that should prominently influence a tile may be omitted when the tile's light list is being computed. This implementation attempts to slightly alleviate this problem with an option to sort the lights based on their z-depth from the camera before computing the light list, thus reducing artifacting in some brightly lit planes that are closer to the camera and roughly parallel with the image plane. 
+
+![](img/depth_sort.png)
+without tiling, with tiling, and depth sorted
+
+However, this does not completely resolve the problem for scenes that have multiple parallel planes at different depths.
+
+![](img/bad_depth_sort.png)
+without tiling, with tiling, and depth sorted
+
+![](img/chargs/tiling_vs.png)
+(all data measured using 32x32 tiles)
+
+Tiling leads to noticeable performance improvements in scenes with large numbers of lights. However, again, the computation of the tile datastructure on the CPU is a major performance bottleneck with scenes that have fewer lights but many tiles.
+
+![](img/chargs/tile_size.png)
 
 

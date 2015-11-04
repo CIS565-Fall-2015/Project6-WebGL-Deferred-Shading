@@ -12,7 +12,7 @@ var cfg;
         this.enableToon = false;        
         this.compressedGbuffers = false;
         this.debugTiling = false;        
-        this.enableTiling = false;
+        this.enableTiling = true;
         this.sortLightsBeforeTiling = false;
     };
 
