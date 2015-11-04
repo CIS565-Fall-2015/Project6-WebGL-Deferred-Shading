@@ -7,7 +7,7 @@ WebGL Deferred Shading
 * Tested on: **Google Chrome 46.0.2490.71 (64-bit)** on Windows**, 2.4 GHz Intel Core i7, 16 GB 1600 MHz DDR3, NVIDIA GeForce GT 650M 1024 MB (rMBP 15" 2013)
 
 ### Demo Video
-[![](img/video.png)](https://youtu.be/1gPLm1cwa8M)
+[![](img/video.PNG)](https://youtu.be/1gPLm1cwa8M)
 
 ### Features
 This is a deferred Blinn-Phong shading with 3 g-buffers as follows 
