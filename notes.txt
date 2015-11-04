@@ -199,4 +199,10 @@ tiling
 128x128: 28 ms
 256x256: 32 ms
 
+bloom, stock pipeline:
+20 lights: 65 ms, 67 ms
+40 lights: 116 ms, 117 ms
+80 lights: 210 ms, 212 ms
+
+
 

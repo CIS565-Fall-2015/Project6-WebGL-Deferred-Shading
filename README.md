@@ -75,11 +75,20 @@ However, this does not completely resolve the problem for scenes that have multi
 ![](img/bad_depth_sort.png)
 without tiling, with tiling, and depth sorted
 
-![](img/chargs/tiling_vs.png)
+![](img/charts/tiling_vs.png)
 (all data measured using 32x32 tiles)
 
 Tiling leads to noticeable performance improvements in scenes with large numbers of lights. However, again, the computation of the tile datastructure on the CPU is a major performance bottleneck with scenes that have fewer lights but many tiles.
 
-![](img/chargs/tile_size.png)
+![](img/charts/tile_size.png)
 
+### Bloom
+
+![](img/bloom.png)
+
+Bloom works by sampling the area around each pixel of the lighting pass's output for pixels with a luminance greater than 1, indicating a "bright light." Because it is implemented as a post-processing step, it works across all lighting pipelines and adds a constant performance hit over the number of lights in the scene.
+
+![](img/charts/bloom.png)
+
+### Toon Shading
 
