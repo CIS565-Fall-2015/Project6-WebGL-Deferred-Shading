@@ -6,13 +6,8 @@ WebGL Deferred Shading
 * Ratchpak (Dome) Pongmongkol
 * Tested on: **Google Chrome 46.0.2490.71 (64-bit)** on Windows**, 2.4 GHz Intel Core i7, 16 GB 1600 MHz DDR3, NVIDIA GeForce GT 650M 1024 MB (rMBP 15" 2013)
 
-### Live Online
-
-[![](img/thumb.png)](http://TODO.github.io/Project6-WebGL-Deferred-Shading)
-
 ### Demo Video
-
-<iframe width="420" height="315" src="https://www.youtube.com/embed/1gPLm1cwa8M" frameborder="0" allowfullscreen></iframe>
+[![](img/video.png)](https://youtu.be/1gPLm1cwa8M)
 
 ### Features
 This is a deferred Blinn-Phong shading with 3 g-buffers as follows 
