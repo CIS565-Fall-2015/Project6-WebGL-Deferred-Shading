@@ -25,9 +25,9 @@ when
 - sCoeff = Specular Coefficient
 
 #### Effects (Each can be stacked on top of each other)
-- Toon Shading
-- 2-pass Gaussian Blur Bloom
-- Screen Space Motion Blur
+- **Toon Shading** : Ramp Shading + Sobel operator (for detecting edges)
+- **2-pass Gaussian Blur Bloom** : use Gaussian function to multiply with color from neighbor pixels that has RGB components larger than 1.0
+- **Screen Space Motion Blur** : For each pixel, convert back to world space, then use the viewProjection matrix of the previous frame to get the previous "screen space" position of each pixel. Calculate a velocity from that and use it to do motion blur.
 
 ### Optimization
 ##### Tile-based deferred shading
