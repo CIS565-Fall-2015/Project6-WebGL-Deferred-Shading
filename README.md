@@ -12,7 +12,7 @@ WebGL Deferred Shading
 
 ### Demo Video
 
-[![](img/video.png)](TODO)
+<iframe width="420" height="315" src="https://www.youtube.com/embed/1gPLm1cwa8M" frameborder="0" allowfullscreen></iframe>
 
 ### Features
 This is a deferred Blinn-Phong shading with 3 g-buffers as follows 
