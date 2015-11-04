@@ -1,0 +1,5 @@
+"";"4 gbuffers";"2 gbuffers";"4 gbuffers + scissor";"2 gbuffers + scissor"
+"10 lights";"32";"30";"15";"16"
+"20 lights";"65";"40";"20";"16"
+"40 lights";"110";"82";"30";"18"
+"80 lights";"210";"130";"49";"28"

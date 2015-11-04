@@ -18,8 +18,10 @@ WebGL Deferred Shading
 This repository contains a WebGL deferred shader with the following features:
 - deferred shading using WEBGL_draw_buffers
 - a toggleable "compressed g-buffer" pipeline
-- toon shading and bloom post processing
+- toggleable scissor testing for both the compressed and uncompressed pipelines
 - a tile-based lighting pipeline
+- toon shading
+- bloom as a post-processing effect
 
 Running the demo above requires support for `OES_texture_float`, `OES_texture_float_linear`, `WEBGL_depth_texture`, and `WEBGL_draw_buffers`. You can check your support on [WebGL Report](http://webglreport.com/).
 
@@ -41,9 +43,16 @@ This compression and decompression of the normal depends on the normal being uni
 
 The lighting shader also reconstructs the world position of a pixel from its depth and screen coordinates with the current view`s camera matrix. More details on the technique can be found [here](https://mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/) and [here](http://stackoverflow.com/questions/22360810/reconstructing-world-coordinates-from-depth-buffer-and-arbitrary-view-projection).
 
-Using "compressed" g-buffers is essentially a tradeoff between memory access and computation, which is usually ideal for GPU applications as GPUs are better at compute than memory access. Even in this imperfect case, in which the 2-component normals are still stored in a vec4 texture, reducing the number of g-buffers still leads to a noticeable improvement in performance. This performance improvement is apparent even as the number of lights increases, as the default pipeline runs the lighting shader once per light.
+Using "compressed" g-buffers is essentially a tradeoff between memory access and computation, which is usually ideal for GPU applications as GPUs are better at compute than memory access. Even in this imperfect case, in which the 2-component normals are still stored in a vec4 texture, reducing the number of g-buffers still leads to a noticeable improvement in performance. This performance improvement is apparent even as the number of lights increases, as the both pipelines run the lighting shader once per light.
 
 ![](img/charts/gbufs.png)
 
 ### Scissor test
+
+Both the "compressed" and "uncompressed" g-buffer pipelines can restrict the render area of each light using a scissor test, which in most cases speeds up the lighting shader computation for each light. This scissor test also allows us to skip lighting for lights that couldn't possibly be visible in the viewport, which is likely a large part of the performance boost. However, the scissor test is only really useful for the "general" case, where a light's influence covers a relatively small area of the screen. In the case that a light is very close to the camera, the scissor test becomes less beneficial as the light pass for that particular light will essentially span the entire screen.
+
+![](img/charts/scissor.png)
+
+### Tile based lighting
+
 
