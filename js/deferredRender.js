@@ -162,11 +162,8 @@
                     }
                     renderFullScreenQuad(R.prog_BlinnPhong_PointLight);
                 }
-               
-        
-                
-                
-            }
+ 
+           }
 
         }
          gl.disable(gl.SCISSOR_TEST);

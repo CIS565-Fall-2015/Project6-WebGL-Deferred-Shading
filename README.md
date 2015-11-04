@@ -9,18 +9,16 @@ WebGL Deferred Shading
 
 ### Live Online
 
-![](img/thumb.png)
+![](img/thumb.png)(http://kongsally.github.io/Project6-WebGL-Deferred-Shading/)
 
 ### Demo Video
 
-[![](img/deferredShading.gif)]
+![](img/deferredShading.gif)
 
 ###Toon Shading
 * With Ramp Shading and Outlines
 ![](img/toonShading.png)
 
-###Scissor Test
-![](img/scissor_test.png)
 
 ### Debug Images
 
@@ -30,3 +28,15 @@ WebGL Deferred Shading
 |Color Map | Normal Map | Surface Normal|
 |![](img/color_map.png) | ![](img/normal_map.png) | ![](img/surface_normal.png)|
 
+## Performance Analysis
+
+* Enabling the Scissor Test almost quadrupled the FPS
+![](img/FPSChart.png)
+
+* It reduced rendering time by about half
+ |With Scissor Test | Without Scissor Test | 
+ |:-------------:|:-------------:|
+ |0~11 MS| 0~20 MS|
+
+* Scissor Test Screenshot
+![](img/scissor_test.png)
