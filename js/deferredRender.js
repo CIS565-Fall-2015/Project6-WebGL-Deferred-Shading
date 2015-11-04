@@ -35,7 +35,7 @@
             // OPTIONAL TODO: Edit if you want to change how lights move
             var mn = R.light_min[1];
             var mx = R.light_max[1];
-            //R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
+            R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
         }
 
         // Execute deferred shading pipeline

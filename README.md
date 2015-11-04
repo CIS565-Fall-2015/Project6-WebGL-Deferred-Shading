@@ -13,7 +13,7 @@ WebGL Deferred Shading
 
 ### Demo Video
 
-[![](img/video.png)](TODO)
+[![](img/video.png)](https://vimeo.com/144582823)
 
 This repository contains a WebGL deferred shader with the following features:
 - deferred shading using WEBGL_draw_buffers
@@ -26,7 +26,7 @@ This repository contains a WebGL deferred shader with the following features:
 Running the demo above requires support for `OES_texture_float`, `OES_texture_float_linear`, `WEBGL_depth_texture`, and `WEBGL_draw_buffers`. You can check your support on [WebGL Report](http://webglreport.com/).
 
 ### Deferred Shading Overview
-The standard deferred shader in this project renders data (position, normals, sampled color, depth, etc.) about what is visible in the scene to a set of WebGL textures referred to as g-buffers. These can be viewed in the debugView settings in the demo. These textures are then passed to a lighting shader that only performs lighting calculations on what is visible in the scene.
+The standard deferred shader in this project renders data (position, normals, sampled color, depth, etc.) about what is visible in the scene to a set of WebGL textures referred to as g-buffers. These can be viewed in the debugView settings in the demo. These textures are then passed to a lighting shader that only performs lighting calculations on what is visible in the scene. Finally, a post processing shader can add effects like bloom (implemented here) or efficient depth-of-field simulation and toon shading edge detection if g-buffers are also passed in.
 
 ### G-buffer compression
 The default pipeline uses 4 g-buffers of vec4s to pass scene information to the lighting shader, along with a buffer for depth:
