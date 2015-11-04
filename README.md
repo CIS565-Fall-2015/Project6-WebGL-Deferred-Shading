@@ -33,11 +33,14 @@ when
 ##### gl.scissor
 Instead of render the whole scene for each light source (which is expensive), why not render only the area that the light covers instead? To do this, we calculates AABB of the light source "sphere" and, if the AABB is in the viewing volume, use it to calculate x, y, width, height for gl.scissor.
 
-[![](img/scissor.PNG)]
+![](img/scissor.PNG)
 *Each red box represents the areas we render for each light source*
 
 ##### Tile-based deferred shading
 The previous method has one serious drawback, that is, the amount of time the g-buffers will be passed into the shader program will be equal to the number of lights. This will slow things down if # of lights are large, while the size of geometries/models (or g-buffer) are relatively small.
+
+![](img/scissor-tile.PNG)
+*Each red box represents the # of light sources of each tiles *
 
 Another way to speed things up is to divide screens into "tiles", say 40x40. Then we *count* how many lights are involved in each tile's calculation. We then create 3 textures to store light information.
 1. **A texture containing light colors** : This can be uploaded during the initialization once and doesn't require any update
@@ -48,7 +51,7 @@ Because of this, the g-buffers will be passed into the program for a fixed amoun
 
 Please note that the drawback of this method is the CPU calculation for packing texture #2 and #3. So if the # of light source is significantly small, this method might not be the best choice.
 
-[![](img/result.PNG)]
+![](img/result.PNG)
 *Scissor vs tiled-based (40x40)*
 
 ###  Acknowledgement
