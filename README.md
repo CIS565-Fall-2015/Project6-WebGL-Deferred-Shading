@@ -21,7 +21,7 @@ This repository contains a WebGL deferred shader with the following features:
 - toon shading and bloom post processing
 - a tile-based lighting pipeline
 
-Running the demo above requires support for 'OES_texture_float', 'OES_texture_float_linear', 'WEBGL_depth_texture', and 'WEBGL_draw_buffers'. You can check your support on [WebGL Report](http://webglreport.com/).
+Running the demo above requires support for `OES_texture_float`, `OES_texture_float_linear`, `WEBGL_depth_texture`, and `WEBGL_draw_buffers`. You can check your support on [WebGL Report](http://webglreport.com/).
 
 ### Deferred Shading Overview
 The standard deferred shader in this project renders data (position, normals, sampled color, depth, etc.) about what is visible in the scene to a set of WebGL textures referred to as g-buffers. These can be viewed in the debugView settings in the demo. These textures are then passed to a lighting shader that only performs lighting calculations on what is visible in the scene.
@@ -37,10 +37,13 @@ The "compressed" pipeline instead uses 2 g-buffers along with depth:
 - texture mapped color
 - "compressed" 2-component normal vector (computed from texture mapped and geometry)
 
-This compression and decompression of the normal depends on the normal being unit length, which lets the lighting shader compute the magnitude of the normal's 'z' component from its 'x' and 'y' components. The cardinality of the 'z' component is sent as part of the 'y' component by padding. If the 'z' component is negative , the 'y' component is "padded" with a constant so that its magnitude is greater than 1. The lighting shader then only needs to assess the 'y' component's magnitude to determine the 'z' component's cardinality and correctly rebuild the 'y' component.
+This compression and decompression of the normal depends on the normal being unit length, which lets the lighting shader compute the magnitude of the normal`s `z` component from its `x` and `y` components. The cardinality of the `z` component is sent as part of the `y` component by padding. If the `z` component is negative , the `y` component is "padded" with a constant so that its magnitude is greater than 1. The lighting shader then only needs to assess the `y` component`s magnitude to determine the `z` component`s cardinality and correctly rebuild the `y` component.
 
-The lighting shader also reconstructs the world position of a pixel from its depth and screen coordinates with the current view's camera matrix. More details on the technique can be found [here](https://mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/) and [here](http://stackoverflow.com/questions/22360810/reconstructing-world-coordinates-from-depth-buffer-and-arbitrary-view-projection).
+The lighting shader also reconstructs the world position of a pixel from its depth and screen coordinates with the current view`s camera matrix. More details on the technique can be found [here](https://mynameismjp.wordpress.com/2009/03/10/reconstructing-position-from-depth/) and [here](http://stackoverflow.com/questions/22360810/reconstructing-world-coordinates-from-depth-buffer-and-arbitrary-view-projection).
 
-Using "compressed" g-buffers is essentially a tradeoff between memory access and computation, which is usually ideal for GPU applications as GPUs are better at compute than memory access. Even in this imperfect case, in which the 2-component normals are still stored in a vec4 texture, reducing the number of g-buffers still leads to a noticeable improvement in performance.
+Using "compressed" g-buffers is essentially a tradeoff between memory access and computation, which is usually ideal for GPU applications as GPUs are better at compute than memory access. Even in this imperfect case, in which the 2-component normals are still stored in a vec4 texture, reducing the number of g-buffers still leads to a noticeable improvement in performance. This performance improvement is apparent even as the number of lights increases, as the default pipeline runs the lighting shader once per light.
 
+![](img/charts/gbufs.png)
+
+### Scissor test
 

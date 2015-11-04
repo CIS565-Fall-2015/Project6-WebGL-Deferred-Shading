@@ -171,3 +171,9 @@ TODO: [done] -> but there's still some artifacting, possibly remnant of scissor 
 	-this shouldn't be that hard
 	-we can devote half the tile to colors and half the tile to positions, for better visualization
 	-will need to remove the fake global light list. who needs it anyway?
+
+G-buffer format change performance:
+-10 lights: 32 ms 30 ms
+-20 lights: 65 ms 40 ms
+-40 lights: 110 ms 82 ms
+-80 lights: 210 ms 130 ms

@@ -1,0 +1,5 @@
+"";"4 gbuffers";"2 gbuffers"
+"10 lights";"32";"30"
+"20 lights";"65";"40"
+"40 lights";"110";"82"
+"80 lights";"210";"130"
