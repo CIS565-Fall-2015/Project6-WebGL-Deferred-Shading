@@ -30,7 +30,7 @@ WebGL Deferred Shading
 
 ## Performance Analysis
 
-* Enabling the Scissor Test almost quadrupled the FPS
+* Enabling the Scissor Test almost quadrupled the FPS. The Toon Shader didn't change the performance. 
 ![](img/FPSChart.png)
 
 * It reduced rendering time by about half
