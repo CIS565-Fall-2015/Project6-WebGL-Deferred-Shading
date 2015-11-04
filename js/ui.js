@@ -23,10 +23,8 @@ var cfg;
             'None':             -1,
             '0 Depth':           0,
             '1 Position':        1,
-            '2 Geometry normal': 2,
-            '3 Color map':       3,
-            '4 Normal map':      4,
-            '5 Surface normal':  5
+            '2 Color map':       2,
+            '3 Surface normal':  3
         });
         gui.add(cfg, 'debugScissor');
         gui.add(cfg, 'tiledBased');

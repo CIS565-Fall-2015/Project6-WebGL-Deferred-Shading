@@ -8,8 +8,6 @@ uniform int u_height;
 
 varying vec2 v_uv;
 
-const vec4 SKY_COLOR = vec4(0.01, 0.14, 0.42, 1.0);
-
 #define BLOOM_DISTANCE 5
 
 //from https://www.shadertoy.com/view/XdfGDH
@@ -20,11 +18,6 @@ float gaussian(in float x, in float sigma){
 void main() {
     vec4 color = texture2D(u_color, v_uv);
 
-    if (color.a == 0.0) {
-        gl_FragColor = SKY_COLOR;
-        return;
-    }
-    
     float increment = 1.0/float(u_height);
     //scan y pixels leftward and rightward, check if the color is > 1
     float sigma = 7.0;

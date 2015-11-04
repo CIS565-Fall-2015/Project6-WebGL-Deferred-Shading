@@ -381,11 +381,7 @@
     R.pass_post1.render = function(state) {
         // * Unbind any existing framebuffer (if there are no more passes)
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-        // * Clear the framebuffer depth to 1.0
-        gl.clearDepth(1.0);
-        gl.clear(gl.DEPTH_BUFFER_BIT);
-
+        
         // * Bind the postprocessing shader program
         gl.useProgram(R.progPost1.prog);
 
@@ -406,10 +402,6 @@
     R.pass_bloomGaussian_x.render = function(state, previousPass) {
         // * Unbind any existing framebuffer (if there are no more passes)
         gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_bloomGaussian_x.fbo);
-
-        // * Clear the framebuffer depth to 1.0
-        gl.clearDepth(1.0);
-        gl.clear(gl.DEPTH_BUFFER_BIT);
 
         // * Bind the postprocessing shader program
         gl.useProgram(R.prog_bloomGaussian_x.prog);
@@ -432,10 +424,6 @@
         else
             gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_bloomGaussian_y.fbo);
 
-        // * Clear the framebuffer depth to 1.0
-        gl.clearDepth(1.0);
-        gl.clear(gl.DEPTH_BUFFER_BIT);
-
         // * Bind the postprocessing shader program
         gl.useProgram(R.prog_bloomGaussian_y.prog);
 
@@ -456,10 +444,6 @@
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         else
             gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_toonShade.fbo);
-
-        // * Clear the framebuffer depth to 1.0
-        gl.clearDepth(1.0);
-        gl.clear(gl.DEPTH_BUFFER_BIT);
 
         // * Bind the postprocessing shader program
         gl.useProgram(R.prog_toonShade.prog);
@@ -486,10 +470,6 @@
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         else
             gl.bindFramebuffer(gl.FRAMEBUFFER, R.pass_mBlur.fbo);
-
-        // * Clear the framebuffer depth to 1.0
-        gl.clearDepth(1.0);
-        gl.clear(gl.DEPTH_BUFFER_BIT);
 
         // * Bind the postprocessing shader program
         gl.useProgram(R.prog_mBlur.prog);
