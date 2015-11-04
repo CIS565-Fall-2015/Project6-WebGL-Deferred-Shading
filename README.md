@@ -9,7 +9,7 @@ WebGL Deferred Shading
 
 ### Live Online
 
-![](img/thumb.png)(http://kongsally.github.io/Project6-WebGL-Deferred-Shading/)
+[![](img/thumb.png)](http://kongsally.github.io/Project6-WebGL-Deferred-Shading/)
 
 ### Demo Video
 
@@ -34,9 +34,11 @@ WebGL Deferred Shading
 ![](img/FPSChart.png)
 
 * It reduced rendering time by about half
- |With Scissor Test | Without Scissor Test | 
+
+ | With Scissor Test | Without Scissor Test | 
  |:-------------:|:-------------:|
- |0~11 MS| 0~20 MS|
+ | 0~11 MS| 0~20 MS|
 
 * Scissor Test Screenshot
+
 ![](img/scissor_test.png)
