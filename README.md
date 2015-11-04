@@ -7,7 +7,9 @@ Terry Sun; Arch Linux, Intel i7-4600, integrated graphics
 
 A tile-based deferred shader.
 
-## [Live Online](http://terrysun.blue/WebGL-Deferred-Shader/)
+Check it out: [live online](http://terrysun.blue/WebGL-Deferred-Shader/)!
+There are a lot of available sliders and options for
+you to play with.
 
 ![](img/normal.png)
 
@@ -50,6 +52,14 @@ toon shader. This consists of two main effects:
   which lie farther away.
 
 ![](img/toon.png)
+
+### Watercolor
+
+Actually a cool blooper: this is what happens if you discretize over the *sum*
+of colors in a tile rather than each individual light.
+
+(Currently, supported on tile-based deferred shading only. On non-tile-based
+shading, this would have to be a post-processing step.)
 
 ## Performance
 

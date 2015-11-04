@@ -68,10 +68,12 @@
         }
 
         // Move the R.lights
-        for (var i = 0; i < R.lights.length; i++) {
-            var mn = R.light_min[1];
-            var mx = R.light_max[1];
-            //R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
+        if (cfg.movingLights) {
+            for (var i = 0; i < R.lights.length; i++) {
+                var mn = R.light_min[1];
+                var mx = R.light_max[1];
+                R.lights[i].pos[1] = (R.lights[i].pos[1] + R.light_dt - mn + mx) % mx + mn;
+            }
         }
 
         // Update light textures with new position values
@@ -220,6 +222,7 @@
         var cam = state.cameraPos;
         gl.uniform3f(program.u_cameraPos, cam.x, cam.y, cam.z);
         gl.uniform1i(program.u_toon, cfg.toon ? 1 : 0);
+        gl.uniform1i(program.u_watercolor, cfg.watercolor ? 1 : 0);
 
         bindTexturePR(program,
                       R.pass_tiled.lightDataPosRad, R.lightTexturePosRad,

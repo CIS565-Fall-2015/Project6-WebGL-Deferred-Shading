@@ -6,6 +6,7 @@ precision highp int;
 
 uniform int u_toon;
 uniform int u_debug;
+uniform int u_watercolor;
 
 uniform vec3 u_cameraPos;
 uniform sampler2D u_gbufs[NUM_GBUFFERS];
@@ -69,6 +70,10 @@ float maxDepth(float depth, vec2 v_uv) {
             );
 }
 
+float discretize(float f) {
+    return float(int(f * TOON_STEPS)) / TOON_STEPS;
+}
+
 void main() {
     vec4 gb0 = texture2D(u_gbufs[0], v_uv);
     vec4 gb1 = texture2D(u_gbufs[1], v_uv);
@@ -98,6 +103,13 @@ void main() {
 
     vec3 fullColor = vec3(0);
     vec2 offsetIdx = lightOffset * u_lightStep;
+
+    float surroundingDepth = maxDepth(depth, v_uv);
+    if (surroundingDepth > .005) {
+        gl_FragColor = vec4(0, 0, 0, 1);
+        return;
+    }
+
     float lastLightIdx = 0.0;
     for (int i = 0; i < c_maxLights; i++) {
         if (i >= lightCount) {
@@ -120,15 +132,10 @@ void main() {
         float lightColorTerm = diff + spec;
 
         if (u_toon == 1) {
-            lightColorTerm = float(int(lightColorTerm * TOON_STEPS)) / TOON_STEPS;
-            float surroundingDepth = maxDepth(depth, v_uv);
-            if (surroundingDepth > .01) {
-                gl_FragColor = vec4(0, 0, 0, 1);
-                return;
-            }
+            lightColorTerm = discretize(lightColorTerm);
         }
 
-        vec3 lightColor = 0.3 * atten * color * lightCol * (diff + spec);
+        vec3 lightColor = 0.15 * atten * color * lightCol * (diff + spec);
 
         fullColor += lightColor;
         offsetIdx.x += u_lightStep.x;
@@ -138,5 +145,10 @@ void main() {
         }
     }
 
+    if (u_watercolor == 1) {
+        fullColor = vec3(discretize(fullColor.x),
+                            discretize(fullColor.y),
+                            discretize(fullColor.z));
+    }
     gl_FragColor = vec4(fullColor, 1);
 }

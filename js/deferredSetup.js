@@ -212,6 +212,7 @@
             // Save the object into this variable for access later
             p.u_cameraPos    = gl.getUniformLocation(p.prog, 'u_cameraPos');
             p.u_toon         = gl.getUniformLocation(p.prog, 'u_toon');
+            p.u_watercolor   = gl.getUniformLocation(p.prog, 'u_watercolor');
             p.u_debugView    = gl.getUniformLocation(p.prog, 'u_debug');
 
             p.u_lightsPR     = gl.getUniformLocation(p.prog, 'u_lightsPR');

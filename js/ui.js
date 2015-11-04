@@ -8,7 +8,9 @@ var cfg;
         this.debugScissor = false;
 
         this.optimization = 1;
+        this.movingLights = true;
         this.toon = false;
+        this.watercolor = false;
 
         this.ambient = 0.1;
         this.lightRadius = 4.0;
@@ -44,7 +46,9 @@ var cfg;
         opt.open();
 
         var effects = gui.addFolder('Effects');
+        effects.add(cfg, 'movingLights');
         effects.add(cfg, 'toon');
+        effects.add(cfg, 'watercolor');
         effects.open();
 
         var updateLights = function() {
