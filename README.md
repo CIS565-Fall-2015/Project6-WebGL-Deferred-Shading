@@ -48,7 +48,7 @@ Another way to speed things up is to divide screens into "tiles", say 40x40. The
 ![](img/scissor-tile.PNG)
 *Each red box represents the # of light sources of each tiles*
 
-Because of this, the g-buffers will be passed into the program for a fixed amount of time (= total # of tiles) regardless of # of lights. Given that the "light textures" passed into the program should be significantly smaller than the total g-buffer size in the previous method, this should give a significant speed-up to our renderer.
+Because of this, the g-buffers will be accessed into the program for a fixed amount of time (= total # of tiles) regardless of # of lights. Given that the total "light textures" accessed by the program should be significantly smaller than the total g-buffer size in the previous method, this should give a significant speed-up to our renderer.
 
 Please note that the drawback of this method is the CPU calculation for packing texture #2 and #3. So if the # of light source is significantly small, this method might not be the best choice.
 
