@@ -43,7 +43,7 @@ Another way to speed things up is to divide screens into "tiles", say 40x40. The
 
  1. **A texture containing light colors** : This can be uploaded during the initialization once and doesn't require any update (Unless you want the colors to change over time)
  2. **A texture containing light position** : If the light sources are moving, this needs to be updated in every frame.
- 3. **A texture that tells which lights are included in each tile's calculation** : This is basically a 2D texture (each row representing each tile's light source) that contains indexes of the lights in texture 1 and 2. This also needs to be updated if the light sources are moving.
+ 3. **A texture that tells which lights are included in each tile's calculation** : This is basically a 2D texture (each row representing each tile's light source) that contains indexes of the lights in texture 1 and 2. This also needs to be updated if the light sources or camera are moving.
 
 ![](img/scissor-tile.PNG)
 *Each red box represents the # of light sources of each tiles*
