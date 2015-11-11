@@ -10,7 +10,7 @@ WebGL Deferred Shading
 
 [![](img/Bloom.PNG)](http://bcrusco.github.io/Project6-WebGL-Deferred-Shading/)
 
-Click the above image or the following link to view the project in your browser: [http://bcrusco.github.io/Project6-WebGL-Deferred-Shading/](http://bcrusco.github.io/Project6-WebGL-Deferred-Shading/)
+Click the above image or the following link to view the project in your browser: [http://bcrusco.github.io/Project6-WebGL-Deferred-Shading/](http://bcrusco.github.io/WebGL-Deferred-Shader/)
 
 ### Demo Video
 
