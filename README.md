@@ -61,6 +61,8 @@ of colors in a tile rather than each individual light.
 (Currently, supported on tile-based deferred shading only. On non-tile-based
 shading, this would have to be a post-processing step.)
 
+![](img/watercolor.png)
+
 ## Performance
 
 Performance numbers were taken with stats.js, with the camera placed inside the
