@@ -45,7 +45,7 @@ Increasing the number of the models, makes the program much slower.
 <p><img src="img/chart2.png"  width="330" height="120"><p>
 <p><img src="img/chart3.png"  width="360" height="200"> <img src="img/chart4.png"  width="360" height="200"><p>
 <p>The debug view of the original bounding box</p>
-<p><img src="img/debug2.png"  width="360" height="200">
+<p><img src="img/debug.png"  width="360" height="200">
 <p>The debug view of the current bounding box. I calculate is as a "box" not a plane so the length of the box maybe bigger </p>
 <img src="img/debug2.png"  width="360" height="200"><p>
 
